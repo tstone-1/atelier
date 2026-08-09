@@ -1,0 +1,24 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "atelier/album",
+	"title": "Atelier Album",
+	"category": "media",
+	"icon": "format-image",
+	"description": "Places an existing Atelier album in the post.",
+	"keywords": [ "album", "galleries", "envira" ],
+	"textdomain": "atelier",
+	"attributes": {
+		"id": {
+			"type": "number",
+			"default": 0
+		}
+	},
+	"supports": {
+		"html": false,
+		"multiple": true,
+		"reusable": true
+	},
+	"editorScript": "atelier-blocks",
+	"editorStyle": "atelier-blocks"
+}

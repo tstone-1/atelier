@@ -1,0 +1,428 @@
+<?php
+/**
+ * A single image inside a gallery.
+ *
+ * @package Atelier
+ */
+
+defined( 'ABSPATH' ) || exit;
+
+/**
+ * One gallery image, combining Envira's stored item record with live WordPress data.
+ *
+ * Envira stores a frozen copy of the URL, title and caption at the time the image was
+ * added to the gallery. Where the attachment still exists we prefer WordPress as the
+ * source of truth for dimensions and derivative sizes, because Envira's record has no
+ * dimensions at all and its `src` always points at the original full-size file — which
+ * is what made Envira galleries heavy. Where the attachment is gone (deleted from the
+ * media library but left in the gallery), the frozen record is all there is, so it is used
+ * after a scheme check and the item degrades to a plain unsized image rather than
+ * disappearing. Such an item has no known dimensions, which is why it is kept out of the
+ * lightbox rather than handed to it as a zero-sized slide.
+ */
+class Atelier_Item {
+
+	/**
+	 * Attachment ID, or 0 when the item is not backed by an attachment.
+	 *
+	 * @var int
+	 */
+	private $id;
+
+	/**
+	 * Envira's stored item record.
+	 *
+	 * @var array
+	 */
+	private $record;
+
+	/**
+	 * Cached attachment metadata, or null until first looked up.
+	 *
+	 * @var array|null
+	 */
+	private $meta;
+
+	/**
+	 * Whether the attachment metadata has been looked up yet.
+	 *
+	 * @var bool
+	 */
+	private $meta_loaded = false;
+
+	/**
+	 * Taxonomy per-image tags are read from.
+	 *
+	 * @var string
+	 */
+	private $tag_taxonomy;
+
+	/**
+	 * Wraps one Envira gallery item.
+	 *
+	 * @param int    $id           Attachment ID, or 0 when unknown.
+	 * @param array  $record       Envira's stored item record.
+	 * @param string $tag_taxonomy Taxonomy per-image tags are read from.
+	 */
+	public function __construct( $id, array $record, $tag_taxonomy = 'envira-tag' ) {
+		$this->id           = (int) $id;
+		$this->record       = $record;
+		$this->tag_taxonomy = (string) $tag_taxonomy;
+	}
+
+	/**
+	 * Turns one submitted item row into a stored item record.
+	 *
+	 * This lives beside the code that reads those keys on purpose. The record shape is
+	 * asserted in exactly two places — here and in the migration's converter — and a field
+	 * added to one without the other is a field that silently stops surviving a save, which
+	 * is why the suite compares the two rather than trusting them to stay in step.
+	 *
+	 * @param array $input Raw submitted row, already unslashed.
+	 *
+	 * @return array|null Item record, or null when the row names nothing that can be shown.
+	 */
+	public static function sanitize_record( array $input ) {
+		$id  = isset( $input['id'] ) ? (int) $input['id'] : 0;
+		$src = self::clean_url( self::text( $input, 'src' ) );
+
+		// An item is worth keeping if it can produce an image: either an attachment to ask
+		// WordPress about, or a frozen URL from before that attachment was deleted. A row with
+		// neither renders as an empty box, so dropping it is the only sane reading.
+		if ( $id <= 0 && '' === $src ) {
+			return null;
+		}
+
+		$status = self::text( $input, 'status' );
+
+		return array(
+			'id'      => $id,
+			'status'  => 'pending' === $status ? 'pending' : 'active',
+			'src'     => $src,
+			'link'    => self::clean_url( self::text( $input, 'link' ) ),
+			'title'   => sanitize_text_field( self::text( $input, 'title' ) ),
+			'caption' => wp_kses_post( self::text( $input, 'caption' ) ),
+			'alt'     => sanitize_text_field( self::text( $input, 'alt' ) ),
+		);
+	}
+
+	/**
+	 * Reads one submitted field as text, treating anything else as unsubmitted.
+	 *
+	 * A form field is a string or it is absent — except that `atelier_items[i0][title][]` is an
+	 * array, and nothing stops a request carrying one. Cast, that becomes the literal word
+	 * "Array" stored as the image's title, with a PHP warning on the way; the array-aware
+	 * sanitisers downstream never get the chance to help, because the cast happens first.
+	 *
+	 * @param array  $input Raw submitted row.
+	 * @param string $key   Field name.
+	 *
+	 * @return string The submitted text, or an empty string.
+	 */
+	private static function text( array $input, $key ) {
+		return isset( $input[ $key ] ) && is_string( $input[ $key ] ) ? $input[ $key ] : '';
+	}
+
+	/**
+	 * Returns the keys a stored item record carries.
+	 *
+	 * @return string[] Record keys.
+	 */
+	public static function record_keys() {
+		return array( 'id', 'status', 'src', 'link', 'title', 'caption', 'alt' );
+	}
+
+	/**
+	 * Restricts a submitted URL to a scheme safe to hand a visitor.
+	 *
+	 * @param mixed $url Candidate URL.
+	 *
+	 * @return string The URL, or an empty string.
+	 */
+	private static function clean_url( $url ) {
+		$url = trim( (string) $url );
+
+		return '' === $url ? '' : (string) esc_url_raw( $url, array( 'http', 'https' ) );
+	}
+
+	/**
+	 * Returns the attachment ID backing this item.
+	 *
+	 * @return int Attachment ID, or 0 when the item has no attachment.
+	 */
+	public function id() {
+		return $this->id;
+	}
+
+	/**
+	 * Reports whether Envira marked this item as active.
+	 *
+	 * Envira uses a `pending` status for items queued by its own import routines; those
+	 * are not shown on the front end and Atelier matches that.
+	 *
+	 * @return bool True when the item should be displayed.
+	 */
+	public function is_active() {
+		$status = isset( $this->record['status'] ) ? $this->record['status'] : 'active';
+
+		return 'pending' !== $status;
+	}
+
+	/**
+	 * Loads and caches the attachment metadata.
+	 *
+	 * @return array Attachment metadata, empty when unavailable.
+	 */
+	private function meta() {
+		if ( ! $this->meta_loaded ) {
+			$this->meta_loaded = true;
+			$this->meta        = array();
+
+			if ( $this->id > 0 ) {
+				$meta = wp_get_attachment_metadata( $this->id );
+
+				if ( is_array( $meta ) ) {
+					$this->meta = $meta;
+				}
+			}
+		}
+
+		return $this->meta;
+	}
+
+	/**
+	 * Returns the intrinsic width and height of the original image.
+	 *
+	 * @return array{0:int,1:int} Width and height in pixels; zeroes when unknown.
+	 */
+	public function dimensions() {
+		$meta = $this->meta();
+
+		if ( ! empty( $meta['width'] ) && ! empty( $meta['height'] ) ) {
+			return array( (int) $meta['width'], (int) $meta['height'] );
+		}
+
+		return array( 0, 0 );
+	}
+
+	/**
+	 * Returns the aspect ratio used to lay the item out.
+	 *
+	 * Falls back to 3:2 for items whose dimensions are unknown, which keeps a deleted
+	 * attachment from collapsing the justified row it sits in.
+	 *
+	 * @return float Width divided by height.
+	 */
+	public function aspect() {
+		list( $width, $height ) = $this->dimensions();
+
+		if ( $width > 0 && $height > 0 ) {
+			return $width / $height;
+		}
+
+		return 1.5;
+	}
+
+	/**
+	 * Returns the URL for a registered image size, falling back to Envira's stored URL.
+	 *
+	 * @param string $size Registered image size name.
+	 *
+	 * @return string Image URL, empty when nothing is available.
+	 */
+	public function url( $size ) {
+		if ( $this->id > 0 ) {
+			$src = wp_get_attachment_image_src( $this->id, $size );
+
+			if ( is_array( $src ) && ! empty( $src[0] ) ) {
+				return $src[0];
+			}
+		}
+
+		return isset( $this->record['src'] ) ? $this->safe_url( $this->record['src'] ) : '';
+	}
+
+	/**
+	 * Returns the URL and pixel size of the image shown in the lightbox.
+	 *
+	 * PhotoSwipe needs the exact dimensions of the file it is about to display, not the
+	 * dimensions of the original, or it opens with the wrong zoom and the wrong aspect.
+	 *
+	 * @param string $size Registered image size name.
+	 *
+	 * @return array{url:string,width:int,height:int} Lightbox source description.
+	 */
+	public function lightbox_source( $size ) {
+		if ( $this->id > 0 ) {
+			$src = wp_get_attachment_image_src( $this->id, $size );
+
+			if ( is_array( $src ) && ! empty( $src[0] ) ) {
+				// The dimensions declared are the FULL-size ones, not this size's, and that is
+				// the whole point rather than a detail.
+				//
+				// PhotoSwipe computes its `fit` zoom level as `Math.min( 1, viewport / natural )`
+				// — capped at 1, so it never scales an image up. Declaring the configured size
+				// therefore caps the lightbox at that size: on this site `large` is 1024px wide
+				// and exists on 1,563 of 2,243 attachments, so most photographs opened at 1024px
+				// on any display, however large. That is what "the lightbox does not fill the
+				// viewport" is, and it was true under Envira too.
+				//
+				// Declaring the full size lets PhotoSwipe fill the viewport, and the srcset is
+				// what stops that costing a phone the original file: PhotoSwipe writes `sizes`
+				// from the displayed width on every resize, so the browser fetches the smallest
+				// candidate that covers what is actually on screen. Without the srcset this would
+				// be a straight bandwidth regression for everyone.
+				list( $full_width, $full_height ) = $this->dimensions();
+
+				return array(
+					'url'    => $src[0],
+					'width'  => $full_width > 0 ? $full_width : (int) $src[1],
+					'height' => $full_height > 0 ? $full_height : (int) $src[2],
+					'srcset' => $this->srcset( $size ),
+				);
+			}
+		}
+
+		$link                   = isset( $this->record['link'] ) ? $this->safe_url( $this->record['link'] ) : '';
+		list( $width, $height ) = $this->dimensions();
+
+		return array(
+			'url'    => '' !== $link ? $link : $this->url( 'full' ),
+			'width'  => $width,
+			'height' => $height,
+			// An attachment that no longer exists has no generated sizes to offer.
+			'srcset' => '',
+		);
+	}
+
+	/**
+	 * Returns the responsive srcset for the grid thumbnail.
+	 *
+	 * @param string $size Registered image size name.
+	 *
+	 * @return string A srcset attribute value, empty when unavailable.
+	 */
+	public function srcset( $size ) {
+		if ( $this->id <= 0 ) {
+			return '';
+		}
+
+		$srcset = wp_get_attachment_image_srcset( $this->id, $size );
+
+		return is_string( $srcset ) ? $srcset : '';
+	}
+
+	/**
+	 * Returns the item title, preferring Envira's per-gallery override.
+	 *
+	 * @return string Title text.
+	 */
+	public function title() {
+		$title = isset( $this->record['title'] ) ? trim( (string) $this->record['title'] ) : '';
+
+		if ( '' !== $title ) {
+			return $title;
+		}
+
+		return $this->id > 0 ? (string) get_the_title( $this->id ) : '';
+	}
+
+	/**
+	 * Returns the item caption, filtered to the markup post content may carry.
+	 *
+	 * Captions legitimately contain inline markup, and the lightbox inserts them as HTML.
+	 * Transporting the string through an escaped HTML attribute does not make that safe —
+	 * `getAttribute()` hands back the original text, and `innerHTML` then parses whatever it
+	 * was. So the allowlist has to be applied here, on the way out of the database, rather
+	 * than relied upon from the escaping that happens later for a different reason.
+	 *
+	 * @return string Caption text, restricted to post-content markup.
+	 */
+	public function caption() {
+		$caption = isset( $this->record['caption'] ) ? trim( (string) $this->record['caption'] ) : '';
+
+		if ( '' === $caption && $this->id > 0 ) {
+			$excerpt = get_post_field( 'post_excerpt', $this->id );
+			$caption = is_string( $excerpt ) ? $excerpt : '';
+		}
+
+		return '' !== $caption ? wp_kses_post( $caption ) : '';
+	}
+
+	/**
+	 * Returns a URL only if it uses a scheme safe to put in front of a visitor.
+	 *
+	 * Envira froze the URL of every item at the time it was added, and Atelier falls back to
+	 * that frozen value whenever the attachment is gone. That value is whatever was in the
+	 * database, so it is validated rather than trusted — otherwise a stored `javascript:`
+	 * URL reaches an anchor's href, and the JSON endpoint hands it out unescaped besides.
+	 *
+	 * @param string $url Candidate URL.
+	 *
+	 * @return string The URL, or an empty string when its scheme is not allowed.
+	 */
+	private function safe_url( $url ) {
+		$url = trim( (string) $url );
+
+		if ( '' === $url ) {
+			return '';
+		}
+
+		return (string) esc_url_raw( $url, array( 'http', 'https' ) );
+	}
+
+	/**
+	 * Returns the alt text, falling back to the title so the image is never unlabelled.
+	 *
+	 * @return string Alt text.
+	 */
+	public function alt() {
+		$alt = isset( $this->record['alt'] ) ? trim( (string) $this->record['alt'] ) : '';
+
+		if ( '' !== $alt && '""' !== $alt ) {
+			return $alt;
+		}
+
+		if ( $this->id > 0 ) {
+			$stored = get_post_meta( $this->id, '_wp_attachment_image_alt', true );
+
+			if ( is_string( $stored ) && '' !== trim( $stored ) ) {
+				return $stored;
+			}
+		}
+
+		return $this->title();
+	}
+
+	/**
+	 * Returns the tag slugs assigned to this image.
+	 *
+	 * Envira's tag addon migrated per-item tags into the `envira-tag` taxonomy on the
+	 * attachment (the `_processed_tag_upgrade` meta records that having happened), so the
+	 * taxonomy is authoritative and the item record's `tags` key is left empty.
+	 *
+	 * @return array<int,array{slug:string,name:string}> Tags, in taxonomy order.
+	 */
+	public function tags() {
+		if ( $this->id <= 0 ) {
+			return array();
+		}
+
+		$terms = get_the_terms( $this->id, $this->tag_taxonomy );
+
+		if ( ! is_array( $terms ) ) {
+			return array();
+		}
+
+		$tags = array();
+
+		foreach ( $terms as $term ) {
+			$tags[] = array(
+				'slug' => $term->slug,
+				'name' => $term->name,
+			);
+		}
+
+		return $tags;
+	}
+}

@@ -1,0 +1,116 @@
+# Runs the render suite and the mutation harness on every push.
+#
+# This is possible at all only because tests/make-fixture.php exists. The real fixture is the
+# site's own content and is gitignored, so before it there was nothing here a runner could
+# execute — every claim in this repo rested on a file that lived on one laptop.
+#
+# Two jobs rather than one, because they answer different questions. The matrix asks whether
+# the plugin behaves identically on the interpreter the live site runs; the mutation job asks
+# whether the suite that says so is capable of going red. A green suite that pins nothing is
+# the failure mode this project has written down more often than any other, and it is exactly
+# the one a passing CI badge hides.
+
+name: tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  suite:
+    name: suite (PHP ${{ matrix.php }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # Oldest first, so a floor that has moved shows up as the first red row. 8.1 is what
+        # `Requires PHP` names and 8.2 is what timo-stein.com runs; the rest are portability.
+        php: ['8.1', '8.2', '8.3', '8.4', '8.5']
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: none
+          # The suite is plain PHP with no WordPress and no database. `dom` is the one thing
+          # it genuinely needs: every markup assertion goes through DOMDocument.
+          extensions: dom, json, mbstring
+
+      - name: Build the synthetic fixture
+        run: php tests/make-fixture.php
+
+      - name: Prove the generator is deterministic
+        # A fixture that differs between runs turns every equivalence check in the suite into
+        # a coin toss, and the failure would read as a defect in the plugin rather than in the
+        # corpus. Cheap to assert, and it also catches a PHP version serialising differently.
+        run: |
+          php tests/make-fixture.php /tmp/again.json
+          cmp tests/fixture-synthetic.json /tmp/again.json
+
+      - name: Run the suite
+        run: php tests/render-test.php tests/fixture-synthetic.json
+
+      - name: Check the translation catalogue is complete
+        # A catalogue rots the moment a string is added and not translated, and the symptom is
+        # one English line among German ones — invisible to every other check here.
+        run: php tests/i18n-test.php
+
+      - name: Check AGENTS.md is still an index
+        # A step in a job that is already running, not a job of its own: this costs milliseconds
+        # and no additional runner minutes, which is the whole reason it is here rather than in
+        # a workflow of its own. It guards an arrangement that is otherwise only a habit —
+        # AGENTS.md is read in full before every task and appending is always the cheapest move,
+        # which is how it reached 158 KB and stopped loading.
+        run: php tests/docs-index-test.php
+
+      - name: Run the block editor script
+        # The only JavaScript this repository tests, and the only file whose failure mode is
+        # total and silent: `blocks.js` runs once at the top of the block editor, and a throw
+        # anywhere in it means both blocks are absent from the inserter while the page still
+        # serves 200 with the script tag, the picker data and the block definitions all
+        # present. Node is on every runner; this needs nothing else.
+        run: node tests/blocks-js-test.js
+
+      - name: Check the front-end deep-link pattern
+        # Deep links are the only URLs this plugin produces that leave the site — pasted into
+        # messages, bookmarked — so one carrying the pre-rename prefix cannot be recalled and
+        # must keep resolving. It fails silently: the page loads, the photograph the link was
+        # about is simply not shown, and every rendering, PHP and live-URL check passes over it.
+        run: node tests/frontend-js-test.js
+
+  mutations:
+    name: mutations (PHP 8.2)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          # The production version. Running the mutations on all five would be five times the
+          # minutes to answer a question about the tests rather than about portability.
+          php-version: '8.2'
+          coverage: none
+          extensions: dom, json, mbstring
+
+      - name: Build the synthetic fixture
+        run: php tests/make-fixture.php
+
+      - name: Run every mutation
+        # Each entry names the one edit it makes and, in advance, the check it expects to kill.
+        # A non-zero exit means a mutation SURVIVED, was MISSED by the check that claimed it,
+        # BROKE the harness, or made checks VANISH from the report instead of failing.
+        run: php tests/mutations.php --fixture=tests/fixture-synthetic.json
+
+      - name: Prove the harness restored every file it edited
+        # The mutation harness writes to includes/ and restores by bytes, verifying each
+        # restore by digest. This is the belt to that brace, and it is here because a harness
+        # that lies about restoring is worse than none: the next job would measure a tree
+        # nobody wrote.
+        run: git diff --exit-code

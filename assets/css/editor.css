@@ -1,0 +1,125 @@
+/**
+ * The gallery and album editors.
+ *
+ * Sized against the admin's own metrics rather than a grid of its own: a row is one
+ * thumbnail tall, and everything else fits beside it.
+ *
+ * One stylesheet for both because the two screens are the same screen with different
+ * fields — a thumbnail, a stack of inputs, a remove button, a drag handle. Giving the
+ * album its own copy would mean a spacing change had to be made twice.
+ */
+
+.atelier-editor__actions {
+	align-items: baseline;
+	display: flex;
+	gap: 12px;
+}
+
+.atelier-editor__items {
+	margin: 0;
+	padding: 0;
+}
+
+.atelier-editor__item {
+	align-items: flex-start;
+	background: #fff;
+	border: 1px solid #dcdcde;
+	border-radius: 4px;
+	display: flex;
+	gap: 16px;
+	margin: 0 0 8px;
+	padding: 12px;
+}
+
+.atelier-editor__item:hover {
+	border-color: #8c8f94;
+}
+
+.atelier-editor__placeholder {
+	background: #f0f0f1;
+	border: 1px dashed #8c8f94;
+	border-radius: 4px;
+	margin: 0 0 8px;
+	min-height: 96px;
+}
+
+.atelier-editor__thumb {
+	align-items: center;
+	background: #f0f0f1;
+	border-radius: 2px;
+	cursor: move;
+	display: flex;
+	flex: 0 0 96px;
+	height: 96px;
+	justify-content: center;
+	overflow: hidden;
+	width: 96px;
+}
+
+.atelier-editor__thumb img {
+	display: block;
+	height: 100%;
+	object-fit: cover;
+	width: 100%;
+}
+
+.atelier-editor__missing {
+	color: #d63638;
+	font-size: 11px;
+	padding: 4px;
+	text-align: center;
+}
+
+.atelier-editor__fields {
+	display: grid;
+	flex: 1 1 auto;
+	gap: 6px 16px;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.atelier-editor__fields label {
+	align-items: baseline;
+	display: flex;
+	gap: 8px;
+}
+
+.atelier-editor__fields label span {
+	color: #50575e;
+	flex: 0 0 70px;
+	font-size: 12px;
+}
+
+.atelier-editor__fields input[type="text"],
+.atelier-editor__fields select {
+	flex: 1 1 auto;
+	min-width: 0;
+}
+
+/* The member gallery's name, which spans both field columns because it is a heading. */
+.atelier-editor__name {
+	grid-column: 1 / -1;
+	margin: 0;
+}
+
+.atelier-editor__controls {
+	flex: 0 0 auto;
+}
+
+.atelier-editor__remove {
+	color: #b32d2e;
+}
+
+.atelier-editor__empty {
+	background: #f6f7f7;
+	border-radius: 4px;
+	color: #50575e;
+	margin: 0;
+	padding: 24px;
+	text-align: center;
+}
+
+@media screen and (max-width: 782px) {
+	.atelier-editor__fields {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}

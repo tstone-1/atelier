@@ -1,0 +1,495 @@
+/*
+ * Atelier front-end styles.
+ *
+ * The justified grid is pure CSS. Within a flex row every item is both sized and grown in
+ * proportion to its own aspect ratio, so each settles at a width of `aspect * k` for one
+ * shared constant k, which makes every height in that row exactly k. No measuring, no
+ * layout pass after the images load, and correct geometry in the first paint.
+ */
+
+/*
+ * `auto` on the horizontal margins, and it is not decoration.
+ *
+ * A theme that caps its content column narrower than the page centres the block itself with
+ * `margin-left: auto; margin-right: auto` — Twenty Twenty does exactly that on
+ * `.entry-content > *`, alongside a `max-width: 58rem` that this element receives as a direct
+ * child. That rule and this one have the same specificity, so the later stylesheet wins, and a
+ * plugin's stylesheet is always the later one. Writing `margin: 0 0 1.5em` therefore does not
+ * leave the theme's centring alone — it silently replaces it, and the gallery lands flush left
+ * with the whole remainder of the column empty to its right (612px of it at 1200px wide).
+ *
+ * Envira centred here, at this same 580px, and that is measured rather than remembered: the
+ * same gallery under Envira on a local copy of this site reports `margin-left: 306px` where
+ * Atelier reported `0px`. So this was a regression introduced by the switchover, invisible to
+ * every check in this repo for the reason recorded at 26.8.11 — the markup never changed.
+ *
+ * `auto` costs nothing where no theme constrains the width: on a full-width block it resolves
+ * to zero, which is what the declaration it replaced said explicitly.
+ */
+.atelier-wrap {
+	--atelier-gap: 10px;
+	--atelier-row: 150;
+	--atelier-columns: 3;
+	margin: 0 auto 1.5em;
+}
+
+.atelier {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--atelier-gap);
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.atelier-item {
+	position: relative;
+	margin: 0;
+	padding: 0;
+	overflow: hidden;
+	background: rgba(127, 127, 127, 0.12);
+}
+
+.atelier-justified .atelier-item {
+	flex-grow: var(--atelier-aspect, 1.5);
+	flex-basis: calc(var(--atelier-aspect, 1.5) * var(--atelier-row) * 1px);
+}
+
+/*
+ * A spacer with an enormous flex-grow soaks up the free space in the final row only, so a
+ * half-full last row keeps its natural size instead of being stretched across the width.
+ * Earlier rows never see it, and stay fully justified.
+ */
+.atelier-justified::after {
+	content: "";
+	flex-grow: 1000000;
+	min-width: 0;
+}
+
+.atelier-columns {
+	display: grid;
+	grid-template-columns: repeat(var(--atelier-columns), minmax(0, 1fr));
+}
+
+.atelier-link {
+	position: relative;
+	display: block;
+	width: 100%;
+	line-height: 0;
+	text-decoration: none;
+	box-shadow: none;
+	outline-offset: 2px;
+}
+
+.atelier-justified .atelier-link::before {
+	content: "";
+	display: block;
+	padding-top: calc(100% / var(--atelier-aspect, 1.5));
+}
+
+.atelier-columns .atelier-link::before {
+	content: "";
+	display: block;
+	padding-top: 75%;
+}
+
+.atelier-link img {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	max-width: none;
+	object-fit: cover;
+	border: 0;
+	border-radius: inherit;
+	transition: transform 0.35s ease, opacity 0.35s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.atelier-link img {
+		transition: none;
+	}
+}
+
+.atelier-link:hover img,
+.atelier-link:focus-visible img {
+	transform: scale(1.04);
+}
+
+/* Captions ---------------------------------------------------------------- */
+
+.atelier-caption {
+	margin: 0.4em 0 0;
+	font-size: 0.85em;
+	line-height: 1.35;
+	opacity: 0.85;
+}
+
+.atelier-caption-float {
+	position: absolute;
+	inset: auto 0 0 0;
+	margin: 0;
+	padding: 1.6em 0.7em 0.55em;
+	color: #fff;
+	background: linear-gradient(to top, rgba(0, 0, 0, 0.72), rgba(0, 0, 0, 0));
+	opacity: 0;
+	transform: translateY(0.4em);
+	transition: opacity 0.25s ease, transform 0.25s ease;
+	pointer-events: none;
+}
+
+.atelier-item:hover .atelier-caption-float,
+.atelier-link:focus-visible ~ .atelier-caption-float {
+	opacity: 1;
+	transform: translateY(0);
+}
+
+/* Image protection -------------------------------------------------------- */
+
+.atelier-protected .atelier-link img {
+	-webkit-user-select: none;
+	user-select: none;
+	-webkit-user-drag: none;
+	pointer-events: none;
+}
+
+/* Tag filter -------------------------------------------------------------- */
+
+.atelier-tags {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.4em;
+	margin: 0 0 0.9em;
+}
+
+.atelier-tags + .atelier {
+	margin-top: 0;
+}
+
+.atelier-tag {
+	padding: 0.32em 0.8em;
+	font: inherit;
+	font-size: 0.82em;
+	line-height: 1.4;
+	color: inherit;
+	cursor: pointer;
+	background: transparent;
+	border: 1px solid currentColor;
+	border-radius: 2em;
+	opacity: 0.6;
+	transition: opacity 0.2s ease, background-color 0.2s ease;
+}
+
+.atelier-tag:hover,
+.atelier-tag:focus-visible {
+	opacity: 1;
+}
+
+.atelier-tag.is-current {
+	opacity: 1;
+	color: #fff;
+	background: currentColor;
+}
+
+.atelier-tag.is-current {
+	color: inherit;
+	box-shadow: inset 0 0 0 2em currentColor;
+}
+
+.atelier-item.is-filtered {
+	display: none;
+}
+
+/* Pagination -------------------------------------------------------------- */
+
+.atelier-pagination {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: center;
+	gap: 0.3em;
+	margin: 1em 0 0;
+}
+
+.atelier-page-list {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.3em;
+}
+
+.atelier-pagination button {
+	min-width: 2.2em;
+	padding: 0.35em 0.7em;
+	font: inherit;
+	font-size: 0.85em;
+	color: inherit;
+	cursor: pointer;
+	background: transparent;
+	border: 1px solid currentColor;
+	border-radius: 3px;
+	opacity: 0.55;
+	transition: opacity 0.2s ease;
+}
+
+.atelier-pagination button:hover:not(:disabled),
+.atelier-pagination button:focus-visible:not(:disabled) {
+	opacity: 1;
+}
+
+.atelier-pagination button:disabled {
+	cursor: default;
+	opacity: 0.25;
+}
+
+.atelier-pagination button.is-current {
+	font-weight: 700;
+	opacity: 1;
+}
+
+.atelier.is-loading {
+	opacity: 0.45;
+	transition: opacity 0.15s ease;
+}
+
+/* Albums ------------------------------------------------------------------ */
+
+/* Flex rather than grid, for one reason: an album with fewer members than columns.
+ *
+ * `repeat(var(--atelier-album-columns), 1fr)` always fills the row, so an album with two members
+ * in a three-column layout puts both in columns one and two and leaves a hole on the right.
+ * That is `American Football` on the live site, and it is what "the covers used to be centred"
+ * turned out to mean in part. Flex with `justify-content: center` centres any incomplete row —
+ * including the only row, which is the case here — while a full row lays out identically to the
+ * grid it replaces.
+ *
+ * The basis reproduces the grid's own column arithmetic: the track width is the container less
+ * the gaps between N columns, divided by N. Items may shrink below it on narrow screens, which
+ * is what the wrap is for, but they never grow past one column's worth. */
+/*
+ * The horizontal `auto` is the same fix as on `.atelier-wrap` above, and an album needed it just
+ * as badly: `justify-content: center` centres the covers *within* this box, which is what
+ * 26.8.11 and 26.8.12 were about, while the box itself was sitting flush left in a column twice
+ * its width. Centring the contents of a misplaced container is the kind of half-fix that
+ * survives review because the part that was measured is genuinely correct.
+ */
+.atelier-album {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 1.1em;
+	margin: 0 auto 1.5em;
+}
+
+.atelier-album-item {
+	margin: 0;
+	flex: 0 1 calc(
+		(100% - (var(--atelier-album-columns, 3) - 1) * 1.1em) / var(--atelier-album-columns, 3)
+	);
+	min-width: 0;
+}
+
+.atelier-album-link {
+	display: block;
+	text-decoration: none;
+	color: inherit;
+	box-shadow: none;
+}
+
+.atelier-album-link img {
+	display: block;
+	width: 100%;
+	height: auto;
+	aspect-ratio: 3 / 2;
+	object-fit: cover;
+}
+
+/* Centred because Envira centred it, and this is meant to render the same site.
+ *
+ * `envira-albums/assets/css/albums.css` sets `text-align: center` on the album title, caption
+ * and image count unconditionally — not behind the `album_alignment` setting, which is `0` on
+ * both live albums. Atelier inherited the theme's left alignment instead, so the labels under
+ * every cover moved on the day Envira was uninstalled. Nothing in the markup or the settings
+ * recorded the difference, which is why it took someone looking at the page to notice. */
+.atelier-album-caption {
+	display: block;
+	margin-top: 0.5em;
+	line-height: 1.4;
+	text-align: center;
+}
+
+.atelier-album-title {
+	display: block;
+	font-weight: 600;
+}
+
+.atelier-album-count {
+	display: block;
+	font-size: 0.82em;
+	opacity: 0.7;
+}
+
+.atelier-album-excerpt {
+	display: block;
+	margin-top: 0.2em;
+	font-size: 0.85em;
+	opacity: 0.8;
+}
+
+@media (max-width: 700px) {
+	/* The flex twin of the `repeat( auto-fit, minmax( 190px, 1fr ) )` this replaced.
+	 *
+	 * That rule was left in place when the container moved from grid to flex, and
+	 * `grid-template-columns` is inert on a flex container — so it did nothing, the desktop
+	 * basis of one-third-of-the-width stayed in force, and album covers rendered about 117px
+	 * wide on a 390px phone instead of filling it. Measured in a real engine, which is the only
+	 * thing that would have caught it: the markup was identical and every check stayed green.
+	 *
+	 * `flex: 1 1 190px` is the equivalent — at least 190px, growing to share whatever is left,
+	 * wrapping when two no longer fit. `grow: 1` here and `0` above is deliberate: on a phone
+	 * filling the width matters more than matching the configured column count. */
+	.atelier-album-item {
+		flex: 1 1 190px;
+	}
+
+	.atelier-wrap {
+		--atelier-row: 110;
+	}
+}
+
+/* Lightbox additions ------------------------------------------------------ */
+
+.pswp__atelier-info {
+	position: absolute;
+	inset: auto 0 0 0;
+	z-index: 10;
+	box-sizing: border-box;
+	padding: 1.1em 1.4em 1.3em;
+	color: #fff;
+	background: linear-gradient(to top, rgba(0, 0, 0, 0.78), rgba(0, 0, 0, 0));
+	text-align: center;
+	transition: opacity 0.2s ease;
+	pointer-events: none;
+}
+
+.pswp--ui-visible .pswp__atelier-info {
+	opacity: 1;
+}
+
+.pswp__atelier-info:empty {
+	display: none;
+}
+
+.pswp__atelier-title {
+	display: block;
+	font-size: 1rem;
+	font-weight: 600;
+	line-height: 1.35;
+}
+
+.pswp__atelier-caption {
+	display: block;
+	max-width: 62ch;
+	margin: 0.3em auto 0;
+	font-size: 0.88rem;
+	line-height: 1.45;
+	opacity: 0.88;
+}
+
+.pswp__atelier-exif {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 0.35em 1.1em;
+	margin: 0.6em 0 0;
+	padding: 0;
+	font-size: 0.78rem;
+	letter-spacing: 0.01em;
+	list-style: none;
+	opacity: 0.72;
+}
+
+.pswp__atelier-exif li {
+	margin: 0;
+	white-space: nowrap;
+}
+
+.pswp__atelier-exif b {
+	font-weight: 400;
+	opacity: 0.65;
+}
+
+.pswp__atelier-exif b::after {
+	content: " ";
+}
+
+.pswp__atelier-share {
+	position: relative;
+}
+
+.pswp__atelier-share-menu {
+	position: absolute;
+	top: 100%;
+	right: 0;
+	z-index: 20;
+	min-width: 11em;
+	padding: 0.35em;
+	margin: 0;
+	list-style: none;
+	background: #1e1e1e;
+	border-radius: 4px;
+	box-shadow: 0 6px 22px rgba(0, 0, 0, 0.45);
+}
+
+.pswp__atelier-share-menu[hidden] {
+	display: none;
+}
+
+.pswp__atelier-share-menu a,
+.pswp__atelier-share-menu button {
+	display: block;
+	width: 100%;
+	padding: 0.5em 0.8em;
+	font: inherit;
+	font-size: 0.85rem;
+	color: #fff;
+	text-align: left;
+	text-decoration: none;
+	cursor: pointer;
+	background: transparent;
+	border: 0;
+	border-radius: 3px;
+}
+
+.pswp__atelier-share-menu a:hover,
+.pswp__atelier-share-menu a:focus-visible,
+.pswp__atelier-share-menu button:hover,
+.pswp__atelier-share-menu button:focus-visible {
+	background: rgba(255, 255, 255, 0.14);
+}
+
+.pswp--atelier-light .pswp__bg {
+	background: #f6f6f6;
+}
+
+.pswp--atelier-light .pswp__atelier-info {
+	color: #111;
+	background: linear-gradient(to top, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0));
+}
+
+/* The failure state, which had a class and no rule.
+ *
+ * `is-error` was being added to the grid by the pagination's catch handler and matched nothing
+ * in either stylesheet, so a failed fetch looked exactly like a successful one that returned the
+ * same page. It dims the stale grid rather than hiding it: the content is still correct, it is
+ * merely not the page that was asked for. */
+.atelier.is-error {
+	opacity: 0.55;
+}
+
+.atelier-message {
+	margin: 0.8em 0 0;
+	padding: 0.6em 0.9em;
+	border-left: 3px solid currentColor;
+	font-size: 0.9em;
+	opacity: 0.85;
+}

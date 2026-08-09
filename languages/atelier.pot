@@ -1,0 +1,939 @@
+# Copyright (C) 2026 tstone-1
+# This file is distributed under the GPL-2.0-or-later.
+msgid ""
+msgstr ""
+"Project-Id-Version: Atelier 26.8.17\n"
+"Report-Msgid-Bugs-To: https://github.com/tstone-1/atelier/issues\n"
+"Last-Translator: tstone-1\n"
+"Language-Team: tstone-1\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-08-08T17:43:43+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.12.0\n"
+"X-Domain: atelier\n"
+
+#. Plugin Name of the plugin
+#: atelier.php
+#: includes/class-atelier-post-types.php:216
+#: includes/class-atelier-settings.php:321
+#: includes/class-atelier-settings.php:322
+#: includes/class-atelier-settings.php:371
+msgid "Atelier"
+msgstr ""
+
+#. Plugin URI of the plugin
+#: atelier.php
+msgid "https://github.com/tstone-1/atelier"
+msgstr ""
+
+#. Description of the plugin
+#: atelier.php
+msgid "Responsive galleries for WordPress. Reads existing Envira Gallery data in place, so galleries keep working without migration or a licence."
+msgstr ""
+
+#. Author of the plugin
+#: atelier.php
+msgid "tstone-1"
+msgstr ""
+
+#: includes/class-atelier-ajax.php:201
+#: includes/class-atelier-ajax.php:209
+#: includes/class-atelier-album-editor.php:625
+msgid "Gallery not found."
+msgstr ""
+
+#: includes/class-atelier-album-editor.php:92
+#: includes/class-atelier-album-editor.php:688
+#: includes/class-atelier-post-types.php:208
+msgid "Galleries"
+msgstr ""
+
+#: includes/class-atelier-album-editor.php:101
+msgid "Album Settings"
+msgstr ""
+
+#: includes/class-atelier-album-editor.php:110
+#: includes/class-atelier-album-editor.php:689
+#: includes/class-atelier-editor.php:141
+#: includes/class-atelier-editor.php:882
+msgid "Shortcode"
+msgstr ""
+
+#: includes/class-atelier-album-editor.php:152
+msgid "This album is still stored in Envira Gallery's format."
+msgstr ""
+
+#: includes/class-atelier-album-editor.php:153
+msgid "Atelier reads that format but never writes to it, so that switching between the two plugins stays lossless. Migrate to Atelier's own storage to edit albums here."
+msgstr ""
+
+#: includes/class-atelier-album-editor.php:169
+msgid "Gallery to add"
+msgstr ""
+
+#: includes/class-atelier-album-editor.php:174
+msgid "Add Gallery"
+msgstr ""
+
+#: includes/class-atelier-album-editor.php:176
+msgid "Drag to reorder. A cover must be one of the gallery's own images; left unset, its first image is used."
+msgstr ""
+
+#: includes/class-atelier-album-editor.php:193
+msgid "This album has no galleries yet."
+msgstr ""
+
+#: includes/class-atelier-album-editor.php:222
+msgid "There are no galleries to add yet."
+msgstr ""
+
+#: includes/class-atelier-album-editor.php:261
+msgid "No cover"
+msgstr ""
+
+#. translators: %d: post ID that is no longer a gallery.
+#: includes/class-atelier-album-editor.php:277
+#, php-format
+msgid "Gallery %d is missing and will be removed when you save."
+msgstr ""
+
+#: includes/class-atelier-album-editor.php:289
+#: includes/class-atelier-album-editor.php:398
+msgid "Cover"
+msgstr ""
+
+#: includes/class-atelier-album-editor.php:294
+#: includes/class-atelier-album-editor.php:402
+#: includes/class-atelier-editor.php:245
+#: includes/class-atelier-editor.php:307
+msgid "Caption"
+msgstr ""
+
+#: includes/class-atelier-album-editor.php:301
+#: includes/class-atelier-album-editor.php:406
+#: includes/class-atelier-editor.php:278
+#: includes/class-atelier-editor.php:315
+msgid "Remove"
+msgstr ""
+
+#: includes/class-atelier-album-editor.php:319
+#: includes/class-atelier-album-editor.php:400
+#: includes/class-atelier-album-editor.php:671
+msgid "First image in the gallery"
+msgstr ""
+
+#. translators: %d: attachment ID.
+#: includes/class-atelier-album-editor.php:354
+#, php-format
+msgid "Image %d"
+msgstr ""
+
+#: includes/class-atelier-album-editor.php:434
+#: includes/class-atelier-editor.php:381
+msgid "Columns"
+msgstr ""
+
+#: includes/class-atelier-album-editor.php:439
+msgid "How many covers sit side by side."
+msgstr ""
+
+#: includes/class-atelier-album-editor.php:442
+msgid "Under each cover"
+msgstr ""
+
+#: includes/class-atelier-album-editor.php:445
+msgid "Show the gallery title"
+msgstr ""
+
+#: includes/class-atelier-album-editor.php:448
+msgid "Show how many images it holds"
+msgstr ""
+
+#: includes/class-atelier-album-editor.php:464
+#: includes/class-atelier-editor.php:668
+msgid "Paste this into a post or page:"
+msgstr ""
+
+#: includes/class-atelier-album-editor.php:468
+msgid "The album also has its own page, which needs no shortcode at all."
+msgstr ""
+
+#: includes/class-atelier-album-editor.php:617
+msgid "Not allowed."
+msgstr ""
+
+#: includes/class-atelier-assets.php:97
+msgid "Close"
+msgstr ""
+
+#: includes/class-atelier-assets.php:98
+#: includes/class-atelier-renderer.php:305
+msgid "Next"
+msgstr ""
+
+#: includes/class-atelier-assets.php:99
+#: includes/class-atelier-renderer.php:284
+msgid "Previous"
+msgstr ""
+
+#: includes/class-atelier-assets.php:100
+msgid "Zoom"
+msgstr ""
+
+#: includes/class-atelier-assets.php:101
+msgid "Download"
+msgstr ""
+
+#: includes/class-atelier-assets.php:102
+msgid "Share"
+msgstr ""
+
+#. translators: %s: name of a social network, e.g. Facebook.
+#: includes/class-atelier-assets.php:104
+#, php-format
+msgid "Share on %s"
+msgstr ""
+
+#: includes/class-atelier-assets.php:105
+msgid "Copy link"
+msgstr ""
+
+#: includes/class-atelier-assets.php:106
+msgid "Link copied"
+msgstr ""
+
+#: includes/class-atelier-assets.php:107
+msgid "This page could not be loaded."
+msgstr ""
+
+#: includes/class-atelier-block.php:208
+msgid "Atelier Gallery"
+msgstr ""
+
+#: includes/class-atelier-block.php:209
+msgid "Atelier Album"
+msgstr ""
+
+#: includes/class-atelier-block.php:210
+msgid "Choose a gallery"
+msgstr ""
+
+#: includes/class-atelier-block.php:211
+msgid "Choose an album"
+msgstr ""
+
+#: includes/class-atelier-block.php:212
+msgid "Pick one of the galleries on this site. Edit its images and settings on the gallery itself, not here."
+msgstr ""
+
+#: includes/class-atelier-block.php:213
+msgid "Pick one of the albums on this site. Edit its galleries and settings on the album itself, not here."
+msgstr ""
+
+#: includes/class-atelier-block.php:214
+#: includes/class-atelier-post-types.php:209
+msgid "Gallery"
+msgstr ""
+
+#: includes/class-atelier-block.php:215
+#: includes/class-atelier-post-types.php:253
+msgid "Album"
+msgstr ""
+
+#: includes/class-atelier-block.php:216
+msgid "— Select —"
+msgstr ""
+
+#: includes/class-atelier-block.php:217
+msgid "This site has no galleries yet."
+msgstr ""
+
+#: includes/class-atelier-block.php:218
+msgid "This site has no albums yet."
+msgstr ""
+
+#: includes/class-atelier-block.php:219
+msgid "This gallery has nothing to show. It may be empty, a draft, or password-protected."
+msgstr ""
+
+#: includes/class-atelier-block.php:220
+msgid "This album has nothing to show. It may be empty, a draft, or password-protected."
+msgstr ""
+
+#: includes/class-atelier-editor.php:123
+#: includes/class-atelier-editor.php:881
+msgid "Images"
+msgstr ""
+
+#: includes/class-atelier-editor.php:132
+msgid "Gallery Settings"
+msgstr ""
+
+#: includes/class-atelier-editor.php:183
+msgid "This gallery is still stored in Envira Gallery's format."
+msgstr ""
+
+#: includes/class-atelier-editor.php:184
+msgid "Atelier reads that format but never writes to it, so that switching between the two plugins stays lossless. Migrate the galleries to Atelier's own storage to edit them here."
+msgstr ""
+
+#: includes/class-atelier-editor.php:200
+msgid "Add Images"
+msgstr ""
+
+#: includes/class-atelier-editor.php:202
+msgid "Drag to reorder. Titles, captions and alt text are stored on the gallery; tags are stored on the image itself and are shared by every gallery it appears in."
+msgstr ""
+
+#: includes/class-atelier-editor.php:219
+msgid "This gallery has no images yet."
+msgstr ""
+
+#: includes/class-atelier-editor.php:244
+#: includes/class-atelier-editor.php:305
+msgid "Title"
+msgstr ""
+
+#: includes/class-atelier-editor.php:246
+#: includes/class-atelier-editor.php:309
+msgid "Alt text"
+msgstr ""
+
+#: includes/class-atelier-editor.php:256
+msgid "Image missing"
+msgstr ""
+
+#: includes/class-atelier-editor.php:271
+#: includes/class-atelier-editor.php:311
+msgid "Tags"
+msgstr ""
+
+#: includes/class-atelier-editor.php:374
+msgid "Layout"
+msgstr ""
+
+#: includes/class-atelier-editor.php:376
+msgid "Justified rows — images keep their aspect ratio"
+msgstr ""
+
+#: includes/class-atelier-editor.php:377
+msgid "Fixed columns"
+msgstr ""
+
+#: includes/class-atelier-editor.php:381
+msgid "Used by the fixed-column layout."
+msgstr ""
+
+#: includes/class-atelier-editor.php:382
+msgid "Row height"
+msgstr ""
+
+#: includes/class-atelier-editor.php:382
+msgid "Target height in pixels for justified rows."
+msgstr ""
+
+#: includes/class-atelier-editor.php:383
+msgid "Gutter"
+msgstr ""
+
+#: includes/class-atelier-editor.php:383
+msgid "Space between images, in pixels."
+msgstr ""
+
+#: includes/class-atelier-editor.php:385
+msgid "Grid image size"
+msgstr ""
+
+#: includes/class-atelier-editor.php:386
+msgid "Lightbox image size"
+msgstr ""
+
+#: includes/class-atelier-editor.php:391
+msgid "Show titles"
+msgstr ""
+
+#: includes/class-atelier-editor.php:393
+msgid "Not at all"
+msgstr ""
+
+#: includes/class-atelier-editor.php:394
+msgid "On hover, over the image"
+msgstr ""
+
+#: includes/class-atelier-editor.php:395
+msgid "Below the image"
+msgstr ""
+
+#: includes/class-atelier-editor.php:401
+msgid "Behaviour"
+msgstr ""
+
+#: includes/class-atelier-editor.php:403
+msgid "Load images lazily"
+msgstr ""
+
+#: includes/class-atelier-editor.php:404
+msgid "Discourage right-click saving"
+msgstr ""
+
+#: includes/class-atelier-editor.php:405
+msgid "Keyboard navigation in the lightbox"
+msgstr ""
+
+#: includes/class-atelier-editor.php:406
+msgid "Offer a download button in the lightbox"
+msgstr ""
+
+#: includes/class-atelier-editor.php:413
+msgid "Lightbox theme"
+msgstr ""
+
+#: includes/class-atelier-editor.php:415
+msgid "Dark"
+msgstr ""
+
+#: includes/class-atelier-editor.php:416
+msgid "Light"
+msgstr ""
+
+#: includes/class-atelier-editor.php:422
+msgid "Pagination"
+msgstr ""
+
+#: includes/class-atelier-editor.php:424
+msgid "Split the gallery into pages"
+msgstr ""
+
+#: includes/class-atelier-editor.php:425
+msgid "Scroll back to the top when the page changes"
+msgstr ""
+
+#: includes/class-atelier-editor.php:426
+msgid "Let the lightbox run through every page, not just the visible one"
+msgstr ""
+
+#: includes/class-atelier-editor.php:430
+msgid "Images per page"
+msgstr ""
+
+#: includes/class-atelier-editor.php:430
+msgid "Zero switches pagination off."
+msgstr ""
+
+#: includes/class-atelier-editor.php:434
+msgid "Tag filter"
+msgstr ""
+
+#: includes/class-atelier-editor.php:436
+msgid "Show a tag filter"
+msgstr ""
+
+#: includes/class-atelier-editor.php:437
+msgid "Include a button that clears the filter"
+msgstr ""
+
+#: includes/class-atelier-editor.php:444
+msgid "Filter position"
+msgstr ""
+
+#: includes/class-atelier-editor.php:446
+msgid "Above the images"
+msgstr ""
+
+#: includes/class-atelier-editor.php:447
+msgid "Below the images"
+msgstr ""
+
+#: includes/class-atelier-editor.php:451
+msgid "Label for the clear button"
+msgstr ""
+
+#: includes/class-atelier-editor.php:451
+msgid "Left empty, this reads \"All\"."
+msgstr ""
+
+#: includes/class-atelier-editor.php:453
+msgid "EXIF"
+msgstr ""
+
+#: includes/class-atelier-editor.php:453
+msgid "Show camera data in the lightbox"
+msgstr ""
+
+#: includes/class-atelier-editor.php:454
+msgid "EXIF fields"
+msgstr ""
+
+#: includes/class-atelier-editor.php:455
+msgid "Capture date format"
+msgstr ""
+
+#: includes/class-atelier-editor.php:455
+msgid "A PHP date format. Left empty, the site's own is used."
+msgstr ""
+
+#: includes/class-atelier-editor.php:457
+msgid "Sharing"
+msgstr ""
+
+#: includes/class-atelier-editor.php:457
+msgid "Show sharing buttons in the lightbox"
+msgstr ""
+
+#: includes/class-atelier-editor.php:461
+msgid "Networks"
+msgstr ""
+
+#: includes/class-atelier-editor.php:463
+msgid "Facebook"
+msgstr ""
+
+#: includes/class-atelier-editor.php:464
+msgid "X / Twitter"
+msgstr ""
+
+#: includes/class-atelier-editor.php:465
+msgid "Pinterest"
+msgstr ""
+
+#: includes/class-atelier-editor.php:466
+msgid "Email"
+msgstr ""
+
+#: includes/class-atelier-editor.php:499
+msgid "Camera make"
+msgstr ""
+
+#: includes/class-atelier-editor.php:500
+msgid "Camera model"
+msgstr ""
+
+#: includes/class-atelier-editor.php:501
+#: includes/class-atelier-exif.php:79
+msgid "Focal length"
+msgstr ""
+
+#: includes/class-atelier-editor.php:502
+#: includes/class-atelier-exif.php:91
+msgid "Aperture"
+msgstr ""
+
+#: includes/class-atelier-editor.php:503
+#: includes/class-atelier-exif.php:102
+msgid "Shutter speed"
+msgstr ""
+
+#: includes/class-atelier-editor.php:504
+#: includes/class-atelier-exif.php:113
+msgid "ISO"
+msgstr ""
+
+#: includes/class-atelier-editor.php:505
+msgid "Capture date"
+msgstr ""
+
+#: includes/class-atelier-editor.php:649
+msgid "Custom CSS"
+msgstr ""
+
+#: includes/class-atelier-editor.php:653
+msgid "Applies to this gallery only. Its wrapper is #atelier-<id>-wrap and the gallery itself is #atelier-<id>."
+msgstr ""
+
+#: includes/class-atelier-editor.php:672
+msgid "The Envira shortcode with this ID keeps working too, so nothing already published needs changing."
+msgstr ""
+
+#: includes/class-atelier-editor.php:863
+msgid "Add images to this gallery"
+msgstr ""
+
+#: includes/class-atelier-editor.php:864
+msgid "Add to gallery"
+msgstr ""
+
+#: includes/class-atelier-exif.php:68
+msgid "Camera"
+msgstr ""
+
+#. translators: %s: focal length in millimetres.
+#: includes/class-atelier-exif.php:81
+#, php-format
+msgid "%s mm"
+msgstr ""
+
+#: includes/class-atelier-exif.php:126
+msgid "Taken"
+msgstr ""
+
+#. translators: %s: exposure time in seconds.
+#: includes/class-atelier-exif.php:155
+#, php-format
+msgid "%s s"
+msgstr ""
+
+#: includes/class-atelier-gallery.php:453
+msgid "All"
+msgstr ""
+
+#: includes/class-atelier-metabox-editor.php:179
+msgid "Go to Settings > Atelier"
+msgstr ""
+
+#: includes/class-atelier-migration-screen.php:97
+msgid "Confirm that you have a database backup before migrating."
+msgstr ""
+
+#: includes/class-atelier-migration-screen.php:133
+msgid "This action must be submitted from the settings screen."
+msgstr ""
+
+#: includes/class-atelier-migration-screen.php:137
+msgid "You are not allowed to migrate galleries."
+msgstr ""
+
+#: includes/class-atelier-migration-screen.php:201
+msgid "Storage"
+msgstr ""
+
+#: includes/class-atelier-migration-screen.php:233
+msgid "The migration did not finish."
+msgstr ""
+
+#. translators: %d: number of rows under the other set of names.
+#: includes/class-atelier-migration-screen.php:237
+#, php-format
+msgid "%d row is stored under the other set of names, so some galleries are unreachable."
+msgid_plural "%d rows are stored under the other set of names, so some galleries are unreachable."
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/class-atelier-migration-screen.php:242
+msgid "Roll back to put everything on Envira's types, then migrate again. Nothing was deleted, so this is safe to repeat."
+msgstr ""
+
+#: includes/class-atelier-migration-screen.php:248
+#: includes/class-atelier-migration-screen.php:437
+msgid "Roll back to Envira's storage"
+msgstr ""
+
+#. translators: 1: galleries, 2: albums, 3: tags.
+#: includes/class-atelier-migration-screen.php:295
+#, php-format
+msgid "Rolled back. %1$d galleries, %2$d albums and %3$d image tags are back on Envira's types."
+msgstr ""
+
+#. translators: 1: galleries, 2: albums, 3: tags, 4: gallery records, 5: album records, 6: SEO settings.
+#: includes/class-atelier-migration-screen.php:308
+#, php-format
+msgid "Migrated. %1$d galleries, %2$d albums and %3$d image tags now belong to Atelier. %4$d gallery records and %5$d album records were converted, and %6$d Yoast SEO settings were carried onto the new names."
+msgstr ""
+
+#: includes/class-atelier-migration-screen.php:332
+msgid "Galleries are still stored the way Envira wrote them. Atelier reads them in place, so nothing needs to change — but while that is true, uninstalling Envira would take the gallery, album and tag URLs off the site along with it."
+msgstr ""
+
+#: includes/class-atelier-migration-screen.php:335
+msgid "Migrating moves the galleries onto Atelier's own post types. What it does:"
+msgstr ""
+
+#. translators: 1: galleries, 2: albums, 3: image tags.
+#: includes/class-atelier-migration-screen.php:342
+#, php-format
+msgid "Renames %1$d galleries, %2$d albums and %3$d image tags to Atelier's types, in place. Post IDs do not change, so every [envira-gallery id=\"…\"] shortcode keeps working."
+msgstr ""
+
+#. translators: 1: convertible galleries, 2: Envira's defaults record count.
+#: includes/class-atelier-migration-screen.php:353
+#, php-format
+msgid "Converts %1$d gallery records into Atelier's own format. %2$d are Envira's stored defaults rather than galleries and are skipped."
+msgstr ""
+
+#: includes/class-atelier-migration-screen.php:359
+msgid "Keeps every URL exactly as it is. /envira/, /envira_album/ and /envira-tag/ continue to work and are still canonical."
+msgstr ""
+
+#: includes/class-atelier-migration-screen.php:360
+msgid "Leaves Envira's own records untouched, so this can be reversed from this screen."
+msgstr ""
+
+#. translators: %d: number of galleries with no readable record.
+#: includes/class-atelier-migration-screen.php:368
+#, php-format
+msgid "%d gallery has no readable record. It will be renamed but not converted, and will render as empty."
+msgid_plural "%d galleries have no readable record. They will be renamed but not converted, and will render as empty."
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/class-atelier-migration-screen.php:378
+msgid "Deactivate Envira Gallery first."
+msgstr ""
+
+#: includes/class-atelier-migration-screen.php:379
+msgid "Migrating renames the rows out from under it, which would leave its screens empty and its shortcodes rendering nothing."
+msgstr ""
+
+#: includes/class-atelier-migration-screen.php:391
+msgid "I have a current backup of the database."
+msgstr ""
+
+#: includes/class-atelier-migration-screen.php:397
+msgid "Migrate galleries to Atelier"
+msgstr ""
+
+#: includes/class-atelier-migration-screen.php:418
+msgid "Galleries belong to Atelier."
+msgstr ""
+
+#. translators: 1: galleries, 2: albums, 3: image tags.
+#: includes/class-atelier-migration-screen.php:422
+#, php-format
+msgid "%1$d galleries, %2$d albums and %3$d image tags are stored under Atelier's own types. Envira Gallery can be uninstalled without taking any URL off the site."
+msgstr ""
+
+#: includes/class-atelier-migration-screen.php:431
+msgid "Envira's original records were left in place, so rolling back restores exactly what was there rather than reconstructing it."
+msgstr ""
+
+#: includes/class-atelier-migration.php:424
+msgid "The galleries have already been migrated."
+msgstr ""
+
+#: includes/class-atelier-migration.php:433
+msgid "Deactivate Envira Gallery before migrating."
+msgstr ""
+
+#. translators: %d: gallery post ID.
+#: includes/class-atelier-migration.php:445
+#, php-format
+msgid "Gallery %d could not be converted, so the migration was stopped before anything was renamed."
+msgstr ""
+
+#. translators: %d: album post ID.
+#: includes/class-atelier-migration.php:466
+#, php-format
+msgid "Album %d could not be converted, so the migration was stopped before anything was renamed."
+msgstr ""
+
+#. translators: %d: schema version that could not be stored.
+#: includes/class-atelier-migration.php:644
+#, php-format
+msgid "The rows were renamed but the schema version could not be set to %d. The site is still reading the old post types; do not deactivate anything until this is resolved."
+msgstr ""
+
+#. translators: 1: value being renamed, 2: table name.
+#: includes/class-atelier-migration.php:694
+#, php-format
+msgid "Renaming %1$s in %2$s failed. Roll back from this screen and try again."
+msgstr ""
+
+#: includes/class-atelier-migration.php:736
+msgid "This site has no Envira records, so there is nothing to roll back to."
+msgstr ""
+
+#: includes/class-atelier-migration.php:745
+msgid "The galleries are not migrated, so there is nothing to roll back."
+msgstr ""
+
+#: includes/class-atelier-post-types.php:159
+msgid "Envira Gallery is active on a migrated site."
+msgstr ""
+
+#: includes/class-atelier-post-types.php:160
+msgid "Both plugins are claiming the same gallery, album and tag URLs, and whichever registers last wins — which can make those URLs return 404. Deactivate Envira Gallery, or roll the migration back from Settings > Atelier."
+msgstr ""
+
+#: includes/class-atelier-post-types.php:210
+msgid "Add New Gallery"
+msgstr ""
+
+#: includes/class-atelier-post-types.php:211
+msgid "Edit Gallery"
+msgstr ""
+
+#: includes/class-atelier-post-types.php:212
+msgid "New Gallery"
+msgstr ""
+
+#: includes/class-atelier-post-types.php:213
+msgid "View Gallery"
+msgstr ""
+
+#: includes/class-atelier-post-types.php:214
+msgid "Search Galleries"
+msgstr ""
+
+#: includes/class-atelier-post-types.php:215
+msgid "No galleries found."
+msgstr ""
+
+#: includes/class-atelier-post-types.php:252
+#: includes/class-atelier-post-types.php:256
+msgid "Albums"
+msgstr ""
+
+#: includes/class-atelier-post-types.php:254
+msgid "Add New Album"
+msgstr ""
+
+#: includes/class-atelier-post-types.php:255
+msgid "Edit Album"
+msgstr ""
+
+#: includes/class-atelier-post-types.php:283
+#: includes/class-atelier-post-types.php:288
+msgid "Image Tags"
+msgstr ""
+
+#: includes/class-atelier-post-types.php:284
+msgid "Image Tag"
+msgstr ""
+
+#: includes/class-atelier-post-types.php:285
+msgid "Search Image Tags"
+msgstr ""
+
+#: includes/class-atelier-post-types.php:286
+msgid "All Image Tags"
+msgstr ""
+
+#: includes/class-atelier-post-types.php:287
+msgid "Edit Image Tag"
+msgstr ""
+
+#: includes/class-atelier-renderer.php:278
+msgid "Gallery pages"
+msgstr ""
+
+#: includes/class-atelier-renderer.php:333
+msgid "Filter by tag"
+msgstr ""
+
+#. translators: %d: number of images in a gallery.
+#: includes/class-atelier-renderer.php:436
+#, php-format
+msgid "%d image"
+msgid_plural "%d images"
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %d: gallery post ID.
+#: includes/class-atelier-repository.php:244
+#, php-format
+msgid "Gallery %d"
+msgstr ""
+
+#. translators: %d: album post ID.
+#: includes/class-atelier-repository.php:266
+#, php-format
+msgid "Album %d"
+msgstr ""
+
+#: includes/class-atelier-settings.php:341
+msgid "Settings"
+msgstr ""
+
+#. translators: %d: number of galleries found.
+#: includes/class-atelier-settings.php:377
+#, php-format
+msgid "Reading %d gallery."
+msgid_plural "Reading %d galleries."
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/class-atelier-settings.php:382
+msgid "Envira Gallery is currently active."
+msgstr ""
+
+#: includes/class-atelier-settings.php:384
+msgid "Envira Gallery is not active."
+msgstr ""
+
+#: includes/class-atelier-settings.php:393
+msgid "Handle Envira shortcodes"
+msgstr ""
+
+#: includes/class-atelier-settings.php:399
+msgid "Automatically — only when Envira Gallery is deactivated"
+msgstr ""
+
+#: includes/class-atelier-settings.php:404
+msgid "Always — render every gallery with Atelier, even if Envira is active"
+msgstr ""
+
+#: includes/class-atelier-settings.php:409
+msgid "Never — only the [atelier-gallery] shortcode uses Atelier"
+msgstr ""
+
+#: includes/class-atelier-settings.php:414
+msgid "This setting no longer applies. The galleries have been migrated to Atelier's own storage, so Envira cannot read them whatever it is set to, and Atelier handles both shortcodes."
+msgstr ""
+
+#: includes/class-atelier-settings.php:416
+msgid "Atelier reads the same gallery records Envira wrote and never modifies them, so switching between the two is lossless in both directions."
+msgstr ""
+
+#: includes/class-atelier-settings.php:432
+msgid "Shortcodes"
+msgstr ""
+
+#: includes/class-atelier-settings.php:435
+msgid "renders a gallery, and always uses Atelier regardless of the setting above."
+msgstr ""
+
+#: includes/class-atelier-settings.php:439
+msgid "renders an album as a grid of gallery covers."
+msgstr ""
+
+#: blocks/album/block.json
+msgctxt "block title"
+msgid "Atelier Album"
+msgstr ""
+
+#: blocks/album/block.json
+msgctxt "block description"
+msgid "Places an existing Atelier album in the post."
+msgstr ""
+
+#: blocks/album/block.json
+msgctxt "block keyword"
+msgid "album"
+msgstr ""
+
+#: blocks/album/block.json
+msgctxt "block keyword"
+msgid "galleries"
+msgstr ""
+
+#: blocks/album/block.json
+#: blocks/gallery/block.json
+msgctxt "block keyword"
+msgid "envira"
+msgstr ""
+
+#: blocks/gallery/block.json
+msgctxt "block title"
+msgid "Atelier Gallery"
+msgstr ""
+
+#: blocks/gallery/block.json
+msgctxt "block description"
+msgid "Places an existing Atelier gallery in the post."
+msgstr ""
+
+#: blocks/gallery/block.json
+msgctxt "block keyword"
+msgid "gallery"
+msgstr ""
+
+#: blocks/gallery/block.json
+msgctxt "block keyword"
+msgid "images"
+msgstr ""
+
+#: blocks/gallery/block.json
+msgctxt "block keyword"
+msgid "photos"
+msgstr ""
