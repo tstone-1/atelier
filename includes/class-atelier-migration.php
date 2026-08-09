@@ -118,6 +118,7 @@ class Atelier_Migration {
 
 		$written = 0;
 
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- enumerating every row of a post type is what WP_Query cannot do without instantiating each post; this runs once, inside a migration the user triggered, and caching a list that the next statement renames would cache a lie.
 		$ids = $wpdb->get_col(
 			$wpdb->prepare(
 				"SELECT ID FROM {$wpdb->posts} WHERE post_type = %s",
@@ -267,6 +268,7 @@ class Atelier_Migration {
 		global $wpdb;
 
 		return array(
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- a count for the confirmation screen, which must reflect the database at the moment it is read; a cached count is precisely the wrong answer to "what am I about to migrate".
 			'galleries' => (int) $wpdb->get_var(
 				$wpdb->prepare(
 					"SELECT COUNT(*) FROM {$wpdb->posts} WHERE post_type = %s",
@@ -330,6 +332,7 @@ class Atelier_Migration {
 
 		$ids = array_map(
 			'intval',
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- as above: the set being migrated, read once at the moment of migrating it.
 			(array) $wpdb->get_col(
 				$wpdb->prepare(
 					"SELECT ID FROM {$wpdb->posts} WHERE post_type = %s",
@@ -668,6 +671,7 @@ class Atelier_Migration {
 	private function move( $table, $column, $from, $to, array &$errors ) {
 		global $wpdb;
 
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- renaming a post type in place is the whole point: it keeps every post ID, so no permalink moves and no shortcode breaks. There is no core API for it, and a write is not a cache candidate.
 		$changed = $wpdb->update( $table, array( $column => $to ), array( $column => $from ), array( '%s' ), array( '%s' ) );
 
 		if ( false === $changed ) {

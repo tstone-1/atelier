@@ -56,6 +56,7 @@ foreach ( $atelier_options as $atelier_option ) {
 // left behind for anyone who ran a migration within five minutes of deleting the plugin.
 global $wpdb;
 
+// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- uninstall runs once, with no request after it to serve from a cache; transients are keyed by a name pattern that no core API enumerates.
 $atelier_transients = $wpdb->get_col(
 	"SELECT option_name FROM {$wpdb->options}
 	 WHERE option_name LIKE '\\_transient\\_atelier\\_migration\\_result\\_%'

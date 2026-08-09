@@ -45,6 +45,7 @@ defined( 'ABSPATH' ) || exit;
  * @return void
  */
 function atelier_load_textdomain() {
+	// phpcs:ignore PluginCheck.CodeAnalysis.DiscouragedFunctions.load_plugin_textdomainFound -- discouraged for translations wordpress.org SERVES, which it does automatically since 4.6. This loads the catalogue BUNDLED in /languages, which nothing else loads, and the header declares support back to WordPress 6.0. Remove it once the bundled catalogue is dropped in favour of the directory's, not before.
 	load_plugin_textdomain( 'atelier', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
 }
 

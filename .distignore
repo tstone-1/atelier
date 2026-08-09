@@ -40,6 +40,17 @@ tools
 urls.txt
 *.tsv
 
+# Agent instruction directories. Plugin Check raises an ERROR on these by name, and the build
+# stages from `git archive` so an untracked one cannot reach the zip anyway -- listed so the
+# intent survives a change of staging method.
+.claude
+.cursor
+.aider*
+
+# Build output, including previously built archives: Plugin Check rejects a plugin that contains
+# a compressed file.
+build
+
 # Editor and OS debris
 .DS_Store
 .vscode

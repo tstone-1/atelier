@@ -119,6 +119,7 @@ class Atelier_Settings {
 		// reads correctly against real WordPress and yet cannot be modelled by a stub that
 		// answers a count -- which is exactly what this project's stub does, correctly, for
 		// every other query it serves. A count is unambiguous to both.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- asked once per site, and its answer is then stored in an option and never re-derived; that option IS the cache. A meta_key existence test has no WP_Query form that does not load every matching post.
 		$found = $wpdb->get_var(
 			"SELECT COUNT(*) FROM {$wpdb->postmeta} WHERE meta_key IN ( '_eg_gallery_data', '_eg_album_data' )"
 		);

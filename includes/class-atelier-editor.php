@@ -95,10 +95,12 @@ class Atelier_Editor extends Atelier_Metabox_Editor {
 	 * @return array Attachment data, with `atelierTags` when it applies.
 	 */
 	public function attachment_tags( $response, $attachment ) {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- a read on a media-library response, gated below on the frame having been opened from one of our own galleries; nothing is written and `(int)` is the sanitisation. The nonce for this request is WordPress's own, already verified by core before the filter runs.
 		if ( ! $this->settings->has_migrated() || ! isset( $_REQUEST['post_id'] ) ) {
 			return $response;
 		}
 
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- as above.
 		$parent = (int) $_REQUEST['post_id'];
 
 		if ( $parent <= 0 || get_post_type( $parent ) !== $this->post_type() ) {
@@ -687,6 +689,20 @@ class Atelier_Editor extends Atelier_Metabox_Editor {
 			return;
 		}
 
+		/*
+		 * The nonce IS verified for this request -- in `authorised_save()`, one statement above,
+		 * which returns early on an absent or wrong nonce, on an autosave, on the wrong post
+		 * type and without the capability. A static analyser cannot follow verification into a
+		 * helper, so it reports every `$_POST` read below as unverified; suppressing that is
+		 * therefore a statement about the analyser, not about the request.
+		 *
+		 * The two arrays are unslashed here and sanitized per field afterwards, which is the
+		 * only order that works: `collect_items()` decides field by field what each value may
+		 * contain, and `Atelier_Config::sanitize()` does the same for the settings. Sanitising
+		 * the array wholesale at the read would have to assume one type for every field it
+		 * holds, which is how a caption loses its punctuation and a boolean becomes a string.
+		 */
+		// phpcs:disable WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		$submitted = isset( $_POST['atelier_items'] ) && is_array( $_POST['atelier_items'] )
 			? wp_unslash( $_POST['atelier_items'] )
 			: array();
@@ -696,6 +712,7 @@ class Atelier_Editor extends Atelier_Metabox_Editor {
 		$settings = isset( $_POST['atelier_settings'] ) && is_array( $_POST['atelier_settings'] )
 			? wp_unslash( $_POST['atelier_settings'] )
 			: array();
+		// phpcs:enable WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 
 		$collected = $this->collect_items( $submitted, $order, $post_id );
 

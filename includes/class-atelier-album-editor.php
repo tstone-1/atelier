@@ -483,6 +483,14 @@ class Atelier_Album_Editor extends Atelier_Metabox_Editor {
 			return;
 		}
 
+		/*
+		 * Verified in `authorised_save()` one statement above, exactly as in
+		 * `Atelier_Editor::save()`; the suppression below is about what a static analyser can
+		 * see across a method boundary, not about the request. The arrays are unslashed here and
+		 * sanitized per field afterwards, by `collect_entries()` and
+		 * `Atelier_Album_Config::sanitize()`.
+		 */
+		// phpcs:disable WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		$submitted = isset( $_POST['atelier_album_items'] ) && is_array( $_POST['atelier_album_items'] )
 			? wp_unslash( $_POST['atelier_album_items'] )
 			: array();
@@ -494,6 +502,7 @@ class Atelier_Album_Editor extends Atelier_Metabox_Editor {
 		$settings = isset( $_POST['atelier_album_settings'] ) && is_array( $_POST['atelier_album_settings'] )
 			? wp_unslash( $_POST['atelier_album_settings'] )
 			: array();
+		// phpcs:enable WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 
 		// `wp_slash()` because `update_post_meta()` unslashes what it is given — core's metadata
 		// layer calls `wp_unslash()` on the value, which is right for the raw `$_POST` WordPress

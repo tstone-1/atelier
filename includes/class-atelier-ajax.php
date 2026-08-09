@@ -62,8 +62,10 @@ class Atelier_Ajax {
 	 */
 	public function handle_page() {
 		$gallery = $this->authorised_gallery();
-		$page    = isset( $_REQUEST['page'] ) ? max( 1, (int) $_REQUEST['page'] ) : 1;
-		$tag     = $this->requested_tag();
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- see authorised_gallery(): the nonce is verified and deliberately not refused on, because a full-page cache serves pages older than a nonce's twelve-hour life. This endpoint reads and changes nothing; authorization is Atelier_Repository::is_viewable(). `(int)` is the sanitisation.
+		$page = isset( $_REQUEST['page'] ) ? max( 1, (int) $_REQUEST['page'] ) : 1;
+		$tag  = $this->requested_tag();
 
 		// A tag makes this walk the whole gallery to work out which items match and how many
 		// pages that leaves; without one, only the page being returned is ever read.
@@ -178,9 +180,15 @@ class Atelier_Ajax {
 	 * @return string Tag slug, or an empty string when the request named none.
 	 */
 	private function requested_tag() {
-		$raw = isset( $_REQUEST['tag'] ) ? $_REQUEST['tag'] : '';
+		// Unslashed at the read rather than at the use. The two are equivalent here --
+		// `wp_unslash()` recurses and leaves a non-string alone, and the `is_string()` test below
+		// is what actually keeps an array away from `sanitize_title()` -- but only this order
+		// lets a static analyser see that the value is unslashed before it is sanitized, and a
+		// reviewer reads the analyser's output before reading the code.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- a public read endpoint on cacheable pages, see authorised_gallery(); sanitized by `sanitize_title()` on return, which cannot happen at the read because a non-string has to reach the `is_string()` test intact rather than be coerced by a sanitiser first.
+		$raw = isset( $_REQUEST['tag'] ) ? wp_unslash( $_REQUEST['tag'] ) : '';
 
-		return is_string( $raw ) ? sanitize_title( wp_unslash( $raw ) ) : '';
+		return is_string( $raw ) ? sanitize_title( $raw ) : '';
 	}
 
 	/**
