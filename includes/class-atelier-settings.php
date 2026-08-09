@@ -191,6 +191,21 @@ class Atelier_Settings {
 			return (bool) $own;
 		}
 
+		/*
+		 * Both sentences above are about a site that HAS an Envira history, and a site without
+		 * one inherited their conclusion by accident: there is no Envira option to read, so the
+		 * fallback returned Envira's own default of off, and a brand-new gallery's permalink
+		 * answered 200 with the title and no photographs on it. Nothing had copied a value
+		 * across, because there had been no migration to copy one.
+		 *
+		 * So the fallback is asked only where it means something. A site on Atelier's own
+		 * storage from the start renders a gallery on its own permalink, which is the only
+		 * defensible answer for a public post type that WordPress offers a "View" link for.
+		 */
+		if ( ! $this->continues_envira() ) {
+			return true;
+		}
+
 		return (bool) get_option( self::OPTION_STANDALONE_ENVIRA, false );
 	}
 

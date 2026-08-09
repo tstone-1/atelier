@@ -18,6 +18,22 @@ landed before anything was deployed, so the two shipped together as 26.8.4.
 > at the time. Nothing else about those entries was altered: the dates, the counts, the measured
 > numbers and the reasoning are as they were written.
 
+## [26.8.21] - 2026-08-09
+
+### Fixed
+- **A gallery renders on its own permalink on a site that never had Envira.** It answered HTTP
+  200 with the post title and none of its photographs. `Atelier_Settings::standalone()` falls
+  back to Envira's own option when Atelier's is unset, which is right for a site migrating from
+  Envira -- the switch is meant to be invisible, and the migration copies the value across. A
+  site with no Envira history has neither: no option to read and no migration to have copied
+  one, so it inherited Envira's default of off. The fallback is now consulted only where it
+  means something, and a site on Atelier's own storage from the start renders the gallery.
+
+  Found by installing the plugin on a clean WordPress and making a gallery, which nothing and
+  nobody had done before -- every fixture in the suite has an Envira history, so the whole
+  suite was blind to it. Pinned now by a check that goes red when the fix is reverted, with the
+  Envira-history leg as its control.
+
 ## [26.8.20] - 2026-08-09
 
 ### Fixed

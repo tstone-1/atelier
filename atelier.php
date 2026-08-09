@@ -3,7 +3,7 @@
  * Plugin Name: Atelier
  * Plugin URI:  https://github.com/tstone-1/atelier
  * Description: Responsive galleries for WordPress. Reads existing Envira Gallery data in place, so galleries keep working without migration or a licence.
- * Version:     26.8.20
+ * Version:     26.8.21
  * Author:      tstone-1
  * License:     GPL-2.0-or-later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -50,7 +50,7 @@ function atelier_load_textdomain() {
 
 add_action( 'init', 'atelier_load_textdomain' );
 
-define( 'ATELIER_VERSION', '26.8.20' );
+define( 'ATELIER_VERSION', '26.8.21' );
 define( 'ATELIER_FILE', __FILE__ );
 define( 'ATELIER_DIR', plugin_dir_path( __FILE__ ) );
 define( 'ATELIER_URL', plugin_dir_url( __FILE__ ) );

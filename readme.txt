@@ -4,7 +4,7 @@ Tags: gallery, photo gallery, image gallery, lightbox, photography
 Requires at least: 6.0
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 26.8.20
+Stable tag: 26.8.21
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -98,6 +98,11 @@ than only in one gallery.
 
 == Changelog ==
 
+= 26.8.21 =
+* A gallery created on a site that never had Envira Gallery now renders on its own permalink.
+  It answered with the page title and none of its photographs, because the setting that governs
+  this fell back to a value only a site migrating from Envira has.
+
 = 26.8.20 =
 * The currently selected button in the tag filter is legible again. It had been painted in the
   same colour as its own background, so the applied tag could not be read. Themes can now set
@@ -120,6 +125,10 @@ than only in one gallery.
 * Galleries and albums are centred in the content column again.
 
 == Upgrade Notice ==
+
+= 26.8.21 =
+Important for new installs: a gallery's own permalink rendered an empty page. Sites migrated
+from Envira Gallery were never affected.
 
 = 26.8.20 =
 Worth taking if you use the tag filter: the selected tag's label was invisible against its own

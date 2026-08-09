@@ -1,0 +1,48 @@
+# What does NOT go into the distributed plugin.
+#
+# This file answers by EXCLUSION rather than by listing what ships, and that is the whole point:
+# an enumerated ship list silently omits the next file somebody adds, while an exclusion list
+# fails in the safe direction -- a forgotten entry ships something harmless, not a plugin missing
+# a class. tools/build-zip.sh reads this, and asserts afterwards that every PHP file atelier.php
+# requires is present in the archive.
+#
+# The distributed plugin is: atelier.php, uninstall.php, readme.txt, LICENSE, and the
+# includes/ assets/ blocks/ languages/ directories. Everything below is development apparatus.
+
+# Version control and CI
+.git
+.gitignore
+.gitattributes
+.github
+.distignore
+
+# The engineering record. readme.txt is the user-facing documentation; these are not.
+AGENTS.md
+AGENTS.local.md
+CLAUDE.md
+CHANGELOG.md
+TODO.md
+README.md
+docs
+
+# Test harness and the fixtures it runs on -- 6.4 MB, none of it reachable at runtime.
+tests
+
+# Deployment, the local WordPress builder, and the live-site enumerator.
+tools
+
+# Listing images. These belong in SVN under assets/ at the repository root, which is NOT the
+# plugin's own assets/ directory and must never be confused with it: anything placed here would
+# otherwise be downloaded by every user for no reason.
+.wordpress-org
+
+# Deploy scratch, regenerated per release.
+urls.txt
+*.tsv
+
+# Editor and OS debris
+.DS_Store
+.vscode
+.idea
+node_modules
+*.log

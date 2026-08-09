@@ -4076,6 +4076,41 @@ foreach ( array( array( 1, true ), array( 0, false ) ) as $case ) {
 	);
 }
 
+// A site that never had Envira has no option to fall back TO, and inherited Envira's default of
+// off by accident: a brand-new gallery's permalink answered 200 with the title and none of its
+// photographs. Found on a real fresh install, not here, because every fixture in this suite has
+// an Envira history -- which is exactly why the check below sets the scheme explicitly and then
+// asserts the OTHER direction as its own control.
+$checks->expect( 'a site with no envira history renders galleries on their permalink', 'and one with an envira history still defers to envira' );
+
+unset( $site->options[ Atelier_Settings::OPTION_STANDALONE ] );
+unset( $site->options[ Atelier_Settings::OPTION_STANDALONE_ENVIRA ] );
+
+$scheme_before = $site->options[ Atelier_Settings::OPTION_SLUG_SCHEME ] ?? null;
+
+$site->options[ Atelier_Settings::OPTION_SLUG_SCHEME ] = 'generic';
+
+$checks->assert(
+	'a site with no envira history renders galleries on their permalink',
+	true === $settings->standalone(),
+	'a fresh install read standalone as ' . wp_json_encode( $settings->standalone() )
+);
+
+$site->options[ Atelier_Settings::OPTION_SLUG_SCHEME ] = 'envira';
+
+$checks->assert(
+	'and one with an envira history still defers to envira',
+	false === $settings->standalone(),
+	'a site continuing Envira, with Envira\'s option absent, read standalone as '
+		. wp_json_encode( $settings->standalone() )
+);
+
+if ( null === $scheme_before ) {
+	unset( $site->options[ Atelier_Settings::OPTION_SLUG_SCHEME ] );
+} else {
+	$site->options[ Atelier_Settings::OPTION_SLUG_SCHEME ] = $scheme_before;
+}
+
 // Atelier's own value wins once it exists, which is what makes uninstalling Envira safe.
 $site->options[ Atelier_Settings::OPTION_STANDALONE_ENVIRA ] = 0;
 $site->options[ Atelier_Settings::OPTION_STANDALONE ]        = 1;
