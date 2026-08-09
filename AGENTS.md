@@ -803,10 +803,26 @@ every uploaded file has to be verified by digest rather than by exit code or siz
 **If `deploy.sh` refuses with `set ATELIER_DEPLOY_HOST and ATELIER_DEPLOY_USER`, that is this
 change working, not a broken script.** Recreate `tools/deploy.env` with those two lines.
 
-## Submitting to wordpress.org — the state, checked 2026-08-09
+## Submitting to wordpress.org — submitted 2026-08-09, awaiting review
 
-Nothing has been submitted. What follows was verified against wordpress.org rather than recalled,
-because three of the four facts are the kind that get assumed.
+**26.8.21 was uploaded and the directory assigned the slug `atelier`**, confirming
+`https://wordpress.org/plugins/atelier/` as the eventual permalink. That URL is not live yet and
+will not be until a human approves the plugin: it currently 301s to
+`wordpress.org/plugins/search/atelier/`, which is worth knowing as the *expected* pre-approval
+shape — it is not a 404, so a 404 check would report the wrong thing.
+
+No reply to the submission email is needed or wanted. It says so explicitly, and it also says the
+slug needs confirming only if it is **wrong**; it is not. The queue has no published ETA.
+
+**The live risk is now email, not code.** The team states that the account address must stay
+operational, must not autorespond, and must not mark their mail as spam — and that a forwarder,
+alias or group address must allow-list `plugins@wordpress.org` too. `mail@timo-stein.com` is on
+All-Inkl (MX `v100427.kasserver.com`), so the allow-list that matters is the mailbox's own
+SpamAssassin configuration in KAS, upstream of any rule in Apple Mail. A review thread that dies
+in a spam folder looks exactly like a queue that is simply slow.
+
+What follows was verified against wordpress.org rather than recalled, because most of it is the
+kind of thing that gets assumed.
 
 - **The WordPress.org account is `tstone1`, and it will never match the GitHub handle.**
   wordpress.org usernames cannot contain a hyphen, so `tstone-1` is not registrable there and the
@@ -821,18 +837,27 @@ because three of the four facts are the kind that get assumed.
   right both times; the world moved. Worth stating because a fact recorded as "checked" carries a
   date for exactly this reason, and *account does not exist* is the one fact in this section that a
   single action by the user can invert overnight.
-- **The slug `atelier` is free, and it is permanent.** `api.wordpress.org/plugins/info/1.2/` 404s
-  for it, and the control — the same call for `akismet`, which returns full data — says the
-  endpoint works rather than that the query does nothing. The slug is taken from the plugin Name
-  at submission and **cannot be changed afterwards**; the display name can change freely. Two
-  unrelated "Atelier …" plugins by another author already exist, which is not a conflict but does
-  mean the name is not distinctive there.
-- **The three screenshots `readme.txt` describes do not exist.** They belong in an `assets/`
-  directory in SVN rather than in the zip, as `screenshot-1.png` and so on. Not grounds for
-  rejection, and for a gallery plugin it is most of the listing.
-- **`Plugin URI` points at a repository nobody can read.** It is shown in wp-admin, and
-  `github.com/tstone-1/atelier` is private. Making the repo public and submitting the plugin are
-  *separate* decisions — wordpress.org requires neither of the other.
+- **The slug `atelier` is assigned, and it is permanent once approved.** It was derived from the
+  plugin's display name at submission. It can still be changed from the Plugin Submission page
+  **until a reviewer begins**, and never afterwards; the display name stays changeable either way.
+  `api.wordpress.org/plugins/info/1.2/` still 404s for it, which is correct for an unapproved
+  plugin rather than evidence of a problem — the control that the endpoint works is the same call
+  for `akismet`, which returns full data. Two unrelated "Atelier …" plugins by another author
+  already exist, which is not a conflict but does mean the name is not distinctive there.
+- **The four screenshots exist, in `.wordpress-org/`, and are not in the zip.** They go into an
+  `assets/` directory at the root of the SVN checkout once there is one, as `screenshot-1` and so
+  on, matching the order `readme.txt` describes. That directory is the SVN root's, **not the
+  plugin's own `assets/`**, and confusing the two ships two megabytes of listing images to every
+  installation.
+- **`Plugin URI` resolves.** `github.com/tstone-1/atelier` was made public on 2026-08-09, from a
+  squashed root commit; the full pre-squash history is private in `tstone-1/atelier-history`. The
+  two decisions were separate — wordpress.org requires neither of the other — and this one was
+  taken for its own reasons.
+- **Plugin Check reports 0 errors and 0 warnings on the submitted archive**, run through the
+  official plugin against the actual zip on a clean WordPress. The team's own email says automated
+  tools have false positives and miss things, so this is a floor rather than a prediction: the
+  41 warnings it used to report were all either analysis limits or deliberate decisions, and each
+  now carries the justification in the code where a reviewer meets it.
 
 Two guidelines are worth knowing before a reviewer raises them, and both are now satisfied.
 **Guideline 17** forbids a trademark as the "sole or initial term of a plugin slug" — `atelier`
