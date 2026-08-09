@@ -11,6 +11,44 @@ earns them a file. Everything else that moved out is in [`lessons.md`](lessons.m
 
 ## The records, newest first
 
+### The 26.8.20 deploy, where "0 changed" was RIGHT and my reason for expecting otherwise was wrong
+
+**3 files, 4 chunks, every chunk first time, 160/160 URLs identical, 0 non-200,** `ver=26.8.19`
+before and `26.8.20` after. Fifteenth deploy with no failed chunk.
+
+The two records before this one say a version bump produces "0 changed" because the release
+touches no rendered byte. That reasoning does not apply here and I predicted the opposite:
+`?ver=` appears **in the HTML** of every page that enqueues the stylesheet, so bumping it should
+have changed the hash of all fifty gallery permalinks. The comparison said 160/160 identical
+anyway, which for about a minute looked like an upload that had not landed.
+
+It had landed. `capture` strips the version before hashing --- `sed 's/?ver=[0-9.]*//g'` --- and
+has since it was written. So the number was correct and the prediction was wrong, and the
+difference matters: I had reasoned about what `capture` hashes instead of reading the four lines
+that say. **A prediction derived from an assumption about your own instrument is not a
+prediction, it is the instrument agreeing with itself.** The normalisation is deliberate and
+right, because a `?ver=` change is exactly the noise a deploy comparison should ignore --- but
+its consequence is that `compare` is structurally blind to the only page-level evidence a
+CSS-plus-version release produces, and no amount of reading the number would have revealed that.
+
+What actually established the release, none of which is a page hash:
+
+- The served stylesheet's SHA-256 equals the local file's, which `push` verified per chunk and
+  then again for the whole set after everything had landed.
+- The served CSS contains **one** `.atelier-tag.is-current` block where it had two, and zero
+  occurrences of either old rule.
+- A headless browser loaded a **live** gallery permalink, built the button the stylesheet is
+  meant to style, and let the engine resolve it: white on `#1a1a1a`, **17.4:1**.
+- The control for that last one, which is what makes it evidence: the same probe, on the same
+  live page, with the *previous* two rules injected, still measures **1:1**. Without it,
+  "17.4:1" is equally consistent with a probe that cannot see the defect at all.
+
+One thing worked that has failed three releases running: `plan` printed **`versioned assets
+before the bootstrap: 1 of 1`** and derived it. The constraint --- an asset must precede
+`atelier.php`, which carries the `ATELIER_VERSION` that is the `?ver=` the asset is cached under
+--- was a prose note that bound twice in five releases before 26.8.19 turned it into code. This
+is the first release where it had a file to order, and it ordered it without being told.
+
 ### The 26.8.19 deploy, where "0 changed" was again the prediction and again proves nothing
 
 **4 files, 8 chunks, every chunk first time, 160/160 URLs identical, 0 non-200,** `ver=26.8.18`

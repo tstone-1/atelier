@@ -664,6 +664,12 @@ on exit, so it never reaches an argument list, a log line, or a transcript.
 **The deploy records — one per release that reached the site, newest first. Full text in
 [`docs/deploys.md`](docs/deploys.md):**
 
+- *The 26.8.20 deploy, where "0 changed" was RIGHT and my reason for expecting otherwise was
+  wrong* — `capture` strips `?ver=` before hashing, so it is structurally blind to the only
+  page-level evidence a CSS-plus-version release produces; a prediction derived from an
+  assumption about your own instrument is the instrument agreeing with itself. What
+  established the release was a live contrast measurement, and the control that says the
+  probe can still see the defect.
 - *The 26.8.19 deploy, where "0 changed" was again the prediction and again proves nothing* —
   neither change touches a rendered byte, so `capture` was going to say 160/160 whether the
   upload landed or never happened. Four before-and-after behavioural controls instead, and the
