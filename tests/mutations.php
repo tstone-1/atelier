@@ -769,8 +769,8 @@ $mutations = array(
 	array(
 		'id'      => 'W1',
 		'file'    => $ajax,
-		'find'    => "\t\treturn is_string( \$raw ) ? sanitize_title( wp_unslash( \$raw ) ) : '';",
-		'replace' => "\t\treturn sanitize_title( wp_unslash( \$raw ) );",
+		'find'    => "\t\treturn is_string( \$raw ) ? sanitize_title( \$raw ) : '';",
+		'replace' => "\t\treturn sanitize_title( \$raw );",
 		'expect'  => 'an array-shaped tag reads as no tag',
 		'why'     => 'tag[]=x is an uncaught TypeError on a public endpoint, so an http 500 at will',
 	),
