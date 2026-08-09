@@ -185,15 +185,23 @@
 	opacity: 1;
 }
 
-.atelier-tag.is-current {
-	opacity: 1;
-	color: #fff;
-	background: currentColor;
+/*
+ * The selected tag has to be filled AND legible, and `currentColor` cannot do both on one
+ * element: whatever fills the button is the same value the label is painted in, so any rule
+ * that fills with `currentColor` renders the label invisible against its own background.
+ * Two earlier attempts did exactly that -- one white-on-white, one dark-on-dark -- so the
+ * pair is stated explicitly here and exposed as custom properties for themes to override.
+ */
+.atelier-tags {
+	--atelier-tag-fill: #1a1a1a;
+	--atelier-tag-label: #fff;
 }
 
 .atelier-tag.is-current {
-	color: inherit;
-	box-shadow: inset 0 0 0 2em currentColor;
+	opacity: 1;
+	color: var(--atelier-tag-label);
+	background: var(--atelier-tag-fill);
+	border-color: var(--atelier-tag-fill);
 }
 
 .atelier-item.is-filtered {

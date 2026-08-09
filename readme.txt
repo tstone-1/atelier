@@ -4,7 +4,7 @@ Tags: gallery, photo gallery, image gallery, lightbox, photography
 Requires at least: 6.0
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 26.8.19
+Stable tag: 26.8.20
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -89,11 +89,19 @@ than only in one gallery.
 
 == Screenshots ==
 
-1. A justified gallery with the tag filter above it.
-2. The gallery editor, with drag-to-order and per-image details.
-3. The lightbox, showing EXIF for an image.
+1. A justified grid. Every row settles at one height with no JavaScript and no layout pass after
+   the images load.
+2. Per-image tags, filtered server-side. The filter lists every tag in the gallery, not only the
+   ones on the page currently shown.
+3. The gallery editor: drag to reorder, with title, caption, alt text and tags per image.
+4. The lightbox, showing the EXIF WordPress already parsed at upload.
 
 == Changelog ==
+
+= 26.8.20 =
+* The currently selected button in the tag filter is legible again. It had been painted in the
+  same colour as its own background, so the applied tag could not be read. Themes can now set
+  the pair through the `--atelier-tag-fill` and `--atelier-tag-label` custom properties.
 
 = 26.8.19 =
 * Pagination, tag filtering and the lightbox no longer stop working on sites that use full-page
@@ -112,6 +120,10 @@ than only in one gallery.
 * Galleries and albums are centred in the content column again.
 
 == Upgrade Notice ==
+
+= 26.8.20 =
+Worth taking if you use the tag filter: the selected tag's label was invisible against its own
+background. Sites with the filter switched off are unaffected.
 
 = 26.8.19 =
 Recommended for any site using a page cache: gallery pagination and filtering kept working only

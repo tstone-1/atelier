@@ -18,6 +18,20 @@ landed before anything was deployed, so the two shipped together as 26.8.4.
 > at the time. Nothing else about those entries was altered: the dates, the counts, the measured
 > numbers and the reasoning are as they were written.
 
+## [26.8.20] - 2026-08-09
+
+### Fixed
+- **The selected button in the tag filter is legible again.** It was painted in the same colour
+  as its own background, so the label of whichever tag was currently applied could not be read at
+  all -- a contrast ratio of 1:1. Two rules had accumulated for the same selector, one resolving
+  to white on white and the other, which won, to dark on dark; `currentColor` cannot fill a
+  button and colour its label at once, because both resolve to the same value. The fill and the
+  label are now stated as an explicit pair, exposed as the `--atelier-tag-fill` and
+  `--atelier-tag-label` custom properties so a theme can change them. Measured contrast is
+  17.4:1.
+
+  No gallery on a site that has not switched the tag filter on was affected.
+
 ## [26.8.19] - 2026-08-08
 
 ### Fixed

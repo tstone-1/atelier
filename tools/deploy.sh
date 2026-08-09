@@ -81,8 +81,7 @@ CHUNK=8192
 # `readme.txt` changed (stable tag and changelog) and is inert to WordPress, so it can land
 # anywhere.
 UPLOAD_ORDER=(
-	"assets/js/atelier.js"
-	"includes/class-atelier-ajax.php"
+	"assets/css/atelier.css"
 	"readme.txt"
 	"atelier.php"
 )

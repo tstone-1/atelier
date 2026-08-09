@@ -1,0 +1,1 @@
+tags=41 painted=10/10 exif="Focal length120 mm Aperturef/6.3 Shutter speed1/400 s ISO160"

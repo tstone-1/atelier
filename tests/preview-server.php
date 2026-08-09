@@ -23,6 +23,7 @@ define( 'ATELIER_DIR', dirname( __DIR__ ) . '/' );
 define( 'ATELIER_URL', '/' );
 
 require __DIR__ . '/wp-stubs.php';
+require ATELIER_DIR . 'includes/class-atelier-settings.php';
 require ATELIER_DIR . 'includes/class-atelier-assets.php';
 require ATELIER_DIR . 'includes/class-atelier-config.php';
 require ATELIER_DIR . 'includes/class-atelier-album-config.php';
@@ -59,11 +60,23 @@ $renderer   = new Atelier_Renderer( $assets );
 if ( '/wp-admin/admin-ajax.php' === $path ) {
 	$ajax = new Atelier_Ajax( $repository, $renderer );
 
-	if ( isset( $_REQUEST['action'] ) && 'atelier_items' === $_REQUEST['action'] ) {
-		$ajax->handle_items();
+	/*
+	 * `wp_send_json_*()` ends the request in WordPress; the stub cannot call `exit` because the
+	 * test harness has to keep running, so it throws instead. Uncaught, that appended a PHP
+	 * fatal-error dump after a perfectly good JSON body -- which `response.json()` rejects, so
+	 * the browser silently kept the previous page and pagination and tag filtering appeared to
+	 * do nothing at all. The endpoint was correct throughout; only the harness around it lied.
+	 */
+	try {
+		if ( isset( $_REQUEST['action'] ) && 'atelier_items' === $_REQUEST['action'] ) {
+			$ajax->handle_items();
+		}
+
+		$ajax->handle_page();
+	} catch ( Atelier_Test_Halt $halt ) {
+		// The response has already been written; this only stands in for the exit.
 	}
 
-	$ajax->handle_page();
 	exit;
 }
 
