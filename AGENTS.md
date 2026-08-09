@@ -664,6 +664,11 @@ on exit, so it never reaches an argument list, a log line, or a transcript.
 **The deploy records — one per release that reached the site, newest first. Full text in
 [`docs/deploys.md`](docs/deploys.md):**
 
+- *The 26.8.21 deploy, whose release was found on an install that had never been done* — a
+  deliberate no-op on the only site it reached, which is the recommended shape; `UPLOAD_ORDER`
+  held the previous release's list **again**, after that was written down, because the note
+  says re-derive and the script says nothing; and a control that grepped a `.php` URL measured
+  the host's willingness to execute PHP, not the file.
 - *The 26.8.20 deploy, where "0 changed" was RIGHT and my reason for expecting otherwise was
   wrong* — `capture` strips `?ver=` before hashing, so it is structurally blind to the only
   page-level evidence a CSS-plus-version release produces; a prediction derived from an

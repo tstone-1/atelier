@@ -73,16 +73,16 @@ the diagnostic cascade that inflated a dozen red sets.
 
 ## The block editor
 
-- **Nobody has looked at the blocks in a browser.** The script is proved to run and register
-  (`tests/blocks-js-test.js`), the editor page is proved to carry it, and the render callbacks
-  are proved to delegate — but every one of those is a fact about *code*, and 26.8.11 is the
-  entry recording that two live defects were invisible to 207 checks because the markup was
-  right and the rendering was not. Insert both blocks once after the next deploy: the picker,
-  the preview, and specifically that `pointer-events: none` on the preview does not stop the
-  editor selecting the block itself. It should not: the property makes the element transparent
-  to pointer events, so the click lands on the `useBlockProps()` wrapper above it, which is what
-  Gutenberg selects on. That is a prediction from how the property is specified, not an
-  observation, and it is the one interaction the mock cannot model.
+- **Closed 26.8.21: both blocks were used in a browser, on a fresh install.** Inserter offers
+  both, the picker lists the gallery, the preview renders it server-side, and clicking the
+  preview *does* select the block --- `pointer-events: none` makes the element transparent to the
+  click, which lands on the `useBlockProps()` wrapper above it, exactly as this entry predicted
+  from how the property is specified. Prediction and observation agreed, which is worth recording
+  precisely because it means the reasoning was sound rather than lucky.
+
+  What replaced it is a bigger gap: **that session ran against a WordPress built for it, and
+  nothing re-runs it.** `tests/blocks-js-test.js` still only proves the script parses and
+  registers. A browser check of the editor is not in CI and would need a WordPress in CI to be.
 
 ## Code
 
@@ -106,11 +106,17 @@ which is gitignored** — it is a list of one deployment's leftover rows, terms 
 and it says nothing about the plugin. Nothing here depends on it.
 
 One item in it generalises and stays, because it is a fact about Atelier's own code rather than
-about any site: **`Atelier_Settings::standalone()` falls back to Envira's
-`envira_gallery_standalone_enabled` option when `atelier_standalone` is unset.** So a tidy-up that
-deletes Envira's leftover options from a site that never set Atelier's own turns every gallery
-permalink into an empty page, with no error anywhere. The dependency is invisible from the options
-table, which is exactly why it is written down rather than left to be rediscovered.
+about any site: **on a site with an Envira history, `Atelier_Settings::standalone()` falls back to
+Envira's `envira_gallery_standalone_enabled` option when `atelier_standalone` is unset.** So a
+tidy-up that deletes Envira's leftover options from such a site, without Atelier's own option
+being set, turns every gallery permalink into an empty page with no error anywhere. The dependency
+is invisible from the options table, which is exactly why it is written down rather than left to
+be rediscovered.
+
+Since 26.8.21 that fallback is consulted **only** where it means something: a site with no Envira
+history returns `true` outright, because there is neither an option to inherit nor a migration to
+have copied one, and inheriting Envira's "off" default gave a brand-new gallery a permalink with
+no photographs on it.
 
 ## Documentation
 

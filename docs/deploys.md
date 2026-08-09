@@ -11,6 +11,42 @@ earns them a file. Everything else that moved out is in [`lessons.md`](lessons.m
 
 ## The records, newest first
 
+### The 26.8.21 deploy, whose release was found on an install that had never been done
+
+**3 files, 4 chunks, every chunk first time, 160/160 URLs identical, 0 non-200,** `ver=26.8.20`
+before and `26.8.21` after. Sixteenth deploy with no failed chunk.
+
+Identical was predicted and is the correct answer here for a reason worth stating: the fix only
+fires where `continues_envira()` is false, and this site's slug scheme is `envira`, so the
+release is a deliberate no-op on the only site it was deployed to. That is the shape the
+switchover record recommends --- deploy in a state where the change should be nothing, and check
+that it is nothing --- and it is the first time it has been done on purpose rather than by
+accident of what a release contained.
+
+**`UPLOAD_ORDER` held the previous release's file list again.** `plan` validated it happily:
+three files, constraints satisfied, and every one of them a file this release does not touch.
+That is the 26.8.10 trap exactly, and the thing to notice is that it recurred *after* being
+written down, because the note says "re-derive" and the script says nothing. Re-derived from
+`git diff --name-only <deployed-sha> HEAD` restricted to shipped paths, which is the mechanical
+form of the same instruction and should probably be what `plan` does itself.
+
+`plan` did adapt correctly once corrected: with no asset in the set it reported **`versioned
+assets in this upload: none, so no cache-buster to sequence`** rather than asserting a
+constraint it could not have satisfied.
+
+**One control was invalid and said so loudly, which is the only reason it was not believed.**
+Fetching `includes/class-atelier-settings.php` over HTTP and grepping it for the new branch
+returned zero --- because the host executes PHP, so the file exits at its `ABSPATH` guard and the
+response is 200 with a **zero-byte body**. The instrument was measuring the web server's
+willingness to run PHP, not the content of the file. The evidence that stands is the push's own
+two-stage digest verification, which pulls each file back over FTPS and compares SHA-256: once
+per file, and again for the whole set after everything had landed.
+
+The controls that did hold: `ver=26.8.21` in the served HTML, which can only come from
+`ATELIER_VERSION` in the `atelier.php` now executing; a gallery permalink still rendering ten
+tiles; and 0 non-200 across all 160 URLs, which is what a fatal in a freshly uploaded class
+would have shown up as immediately.
+
 ### The 26.8.20 deploy, where "0 changed" was RIGHT and my reason for expecting otherwise was wrong
 
 **3 files, 4 chunks, every chunk first time, 160/160 URLs identical, 0 non-200,** `ver=26.8.19`
