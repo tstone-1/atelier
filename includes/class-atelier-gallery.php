@@ -471,12 +471,4 @@ class Atelier_Gallery {
 		return 'light' === $this->settings['lightbox_theme'] ? 'light' : 'dark';
 	}
 
-	/**
-	 * Returns the gallery's custom CSS.
-	 *
-	 * @return string CSS text, empty when none is set.
-	 */
-	public function custom_css() {
-		return (string) $this->settings['custom_css'];
-	}
 }

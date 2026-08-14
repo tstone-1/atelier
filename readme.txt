@@ -4,7 +4,7 @@ Tags: gallery, photo gallery, image gallery, lightbox, photography
 Requires at least: 6.0
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 26.8.21
+Stable tag: 26.8.22
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -98,6 +98,18 @@ than only in one gallery.
 
 == Changelog ==
 
+= 26.8.22 =
+* Per-gallery Custom CSS has been removed, in line with the Plugin Directory guideline against
+  storing and printing arbitrary CSS entered through a plugin's own interface. Style your
+  galleries in Appearance > Customize > Additional CSS instead: a gallery is `#atelier-<id>` and
+  its wrapper `#atelier-<id>-wrap`, so existing rules keep working once moved.
+* The upgrade itself deletes no CSS, and `tools/export-custom-css.py` in the source repository
+  prints what is still stored, ready to paste. Move it before you next save an affected gallery:
+  saving rewrites that gallery's settings record, which is where the most recent version of the
+  CSS lives on a site migrated from Envira Gallery.
+* Translations now come from translate.wordpress.org rather than a catalogue bundled in the
+  plugin.
+
 = 26.8.21 =
 * A gallery created on a site that never had Envira Gallery now renders on its own permalink.
   It answered with the page title and none of its photographs, because the setting that governs
@@ -125,6 +137,12 @@ than only in one gallery.
 * Galleries and albums are centred in the content column again.
 
 == Upgrade Notice ==
+
+= 26.8.22 =
+Read before upgrading if you set Custom CSS on any gallery: the field is gone, so those rules
+stop being applied. The upgrade deletes nothing, and the CSS moves to Appearance > Customize >
+Additional CSS unchanged, since the element ids have not changed. Move it before you next save
+an affected gallery, which is the point at which the newer of its two stored copies is dropped.
 
 = 26.8.21 =
 Important for new installs: a gallery's own permalink rendered an empty page. Sites migrated

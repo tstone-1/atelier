@@ -158,13 +158,6 @@ attachment and the media library is used all over the admin. The server also tre
 with **no** `tags` key as "leave them alone", which is the belt to that brace and is checked
 directly.
 
-**`>` is deliberately not stripped from custom CSS.** It is the child combinator and appears
-in ordinary selectors, so removing it would silently rewrite people's stylesheets to guard
-against something `wp_strip_all_tags()` has already dealt with. One of the two checks on
-that line exists only to stop it being "hardened" back. A second pass scrubbing an
-unterminated `</style` was written and then deleted: `strip_tags()` consumes from a `<` to
-the next `>` **or to the end of the string**, so no mutation could make that pass matter.
-
 **`Atelier_Config::sanitize()` is not `fill()` with sanitising bolted on**, and confusing the
 two is a silent bug in the interesting direction. They answer opposite questions about an
 absent key: a *stored* record is missing one because the version that wrote it predated it,
@@ -256,10 +249,10 @@ Of the 18 active Envira plugins, about six carry real weight.
   `envira-tag` taxonomy on the attachment — the `_processed_tag_upgrade` meta on 51
   galleries records that having happened — and the item's own `tags` key is now empty
   everywhere. Read the taxonomy, not the item.
-- 16 galleries carry hand-written `custom_css` keyed on `#envira-gallery-<id>`.
-  `Atelier_Config::rewrite_css()` rewrites the selector to `#atelier-<id>` at conversion time, so
-  that CSS keeps working without Atelier emitting the old plugin's element ids;
-  `Atelier_Gallery::custom_css()` only returns what was stored.
+- 16 galleries carry hand-written `custom_css` keyed on `#envira-gallery-<id>`. **Atelier no
+  longer reads it** — see *The wordpress.org review, and the feature it cost* below. It survives
+  in **two** records that can disagree — Envira's permanently, Atelier's own only until that
+  gallery is next saved — and `tools/export-custom-css.py` reads both.
 
 ## Security posture
 
@@ -803,7 +796,7 @@ every uploaded file has to be verified by digest rather than by exit code or siz
 **If `deploy.sh` refuses with `set ATELIER_DEPLOY_HOST and ATELIER_DEPLOY_USER`, that is this
 change working, not a broken script.** Recreate `tools/deploy.env` with those two lines.
 
-## Submitting to wordpress.org — submitted 2026-08-09, awaiting review
+## Submitting to wordpress.org — submitted 2026-08-09, **pended 2026-08-14**
 
 **26.8.21 was uploaded and the directory assigned the slug `atelier`**, confirming
 `https://wordpress.org/plugins/atelier/` as the eventual permalink. That URL is not live yet and
@@ -811,8 +804,22 @@ will not be until a human approves the plugin: it currently 301s to
 `wordpress.org/plugins/search/atelier/`, which is worth knowing as the *expected* pre-approval
 shape — it is not a 404, so a 404 check would report the wrong thing.
 
-No reply to the submission email is needed or wanted. It says so explicitly, and it also says the
-slug needs confirming only if it is **wrong**; it is not. The queue has no published ETA.
+**The submission was pended by an automated pre-review on 2026-08-14** (`AUTOPREREVIEW
+atelier/tstone1/14Aug26/T1`) — before any human read it, and it is a *reply* to that thread, not
+a fresh upload, that puts the plugin into a named volunteer's queue. Four findings, all
+addressed in 26.8.22; the one with teeth cost a feature.
+
+- *The wordpress.org review, and the feature it cost* — a plugin may not store and print CSS
+  entered through its own UI, so the setting, its conversion, its sanitiser, the textarea and the
+  `<style>` all went together; nothing was destroyed, because Envira's record still holds it.
+  - *The CRLF checkout, which had been quietly disabling the mutation harness* — found while
+    running it, not part of the review: no `.gitattributes`, so every **multi-line** mutation
+    matched nothing on Windows. The harness said `BROKEN`, which is the only reason it was
+    visible.
+
+That earlier note saying no reply was needed described the **submission confirmation**, and it
+stopped being true the moment this arrived: silence on a pended submission is a rejection after
+three months, not a queue position.
 
 **The live risk is now email, not code.** The team states that the account address must stay
 operational, must not autorespond, and must not mark their mail as spam — and that a forwarder,

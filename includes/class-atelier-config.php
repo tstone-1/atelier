@@ -35,6 +35,19 @@ class Atelier_Config {
 	 * Every default matches Envira's own, so a gallery saved by a version that predates a
 	 * given key renders the way it does today rather than changing under the reader.
 	 *
+	 * There is deliberately no `custom_css` key, and it is not an oversight to be repaired.
+	 * Through 26.8.21 a gallery carried a free-text CSS block that the renderer printed in an
+	 * inline `<style>` element; the wordpress.org Plugin Directory does not permit a plugin to
+	 * store and emit arbitrary CSS entered through its own UI, so the setting, the textarea,
+	 * the conversion from Envira's key and the `<style>` output were all removed together.
+	 * Removing only one of the four would leave a stored value nothing reads, which this
+	 * codebase has already paid for once.
+	 *
+	 * Anything a gallery needs beyond the settings here belongs in the theme or in
+	 * Appearance -> Customize -> Additional CSS, where WordPress's own editor validates it.
+	 * The element ids are stable and documented for exactly that purpose: a gallery is
+	 * `#atelier-<id>` and its wrapper `#atelier-<id>-wrap`.
+	 *
 	 * @return array Normalised settings.
 	 */
 	public static function defaults() {
@@ -64,7 +77,6 @@ class Atelier_Config {
 			'tags_position'       => 'below',
 			'tags_all_enabled'    => true,
 			'tags_all_label'      => '',
-			'custom_css'          => '',
 		);
 	}
 
@@ -159,7 +171,10 @@ class Atelier_Config {
 		$settings['tags_all_enabled'] = self::flag( $envira, 'tags_all_enabled', true );
 		$settings['tags_all_label']   = trim( (string) self::get( $envira, 'tags_all', '' ) );
 
-		$settings['custom_css'] = self::rewrite_css( (string) self::get( $envira, 'custom_css', '' ) );
+		// Envira's `custom_css` is deliberately NOT converted. See the note on `defaults()`:
+		// the plugin no longer has a setting to convert it into, and a conversion whose result
+		// nothing reads is worse than no conversion at all. Envira's own record still holds it,
+		// so nothing is lost -- `tools/export-custom-css.py` is how it comes back out.
 
 		/**
 		 * Filters the settings converted from an Envira gallery.
@@ -269,7 +284,10 @@ class Atelier_Config {
 		$out['exif_fields']     = self::subset( $input, 'exif_fields', Atelier_Exif::SUPPORTED );
 		$out['social_networks'] = self::subset( $input, 'social_networks', array( 'facebook', 'twitter', 'pinterest', 'email' ) );
 
-		$out['custom_css'] = self::css( isset( $input['custom_css'] ) ? $input['custom_css'] : '' );
+		// A submitted `custom_css` is dropped rather than sanitised. The form no longer offers
+		// the field, so anything arriving under that name is either a stale bookmark or someone
+		// posting by hand -- and an allowlisted record is the one shape that cannot be talked
+		// into carrying a key the reader has no code for.
 
 		/**
 		 * Filters settings submitted through the gallery editor.
@@ -351,75 +369,6 @@ class Atelier_Config {
 		$value = isset( $input[ $key ] ) ? (string) $input[ $key ] : '';
 
 		return sanitize_text_field( $value );
-	}
-
-	/**
-	 * Reads submitted custom CSS.
-	 *
-	 * The value is printed inside a `<style>` element, so the one thing that must not survive
-	 * is anything that could close it. The rest of CSS is left alone, because a gallery's CSS
-	 * is written by whoever can already edit the gallery.
-	 *
-	 * Note what is deliberately *not* done here: `>` is not stripped. It is the child
-	 * combinator and appears in perfectly ordinary selectors, so removing it would silently
-	 * rewrite people's stylesheets to sanitise against a threat that stripping tags has
-	 * already dealt with. This is one line of code and one of the two checks on it exists
-	 * only to stop it being "hardened" back.
-	 *
-	 * A second pass scrubbing an unterminated `</style` was written here and then deleted:
-	 * `strip_tags()` consumes from a `<` to the next `>` **or to the end of the string**, so
-	 * there is no way past it that the second pass would have caught, and no mutation could
-	 * make that pass matter. Unreachable defence reads as load-bearing and quietly becomes
-	 * wrong.
-	 *
-	 * @param mixed $css Submitted CSS.
-	 *
-	 * @return string CSS that cannot close the element it is printed in.
-	 */
-	private static function css( $css ) {
-		return trim( wp_strip_all_tags( (string) $css ) );
-	}
-
-	/**
-	 * Rewrites Envira's element ids in a gallery's custom CSS.
-	 *
-	 * Sixteen galleries on the site this was built for carry hand-written CSS keyed on
-	 * `#envira-gallery-<id>`. Rewriting the selector rather than emitting Envira's ids keeps
-	 * that CSS working while leaving Atelier's markup free of the old plugin's names.
-	 *
-	 * The gallery ID is not needed and was once taken as an argument as though it were: the
-	 * rewrite is a **prefix** replacement, so whatever id follows the prefix is carried across
-	 * untouched, and every id in the stylesheet is handled rather than only the gallery's own.
-	 *
-	 * @param string $css Stored CSS.
-	 *
-	 * @return string CSS with Atelier's element ids.
-	 */
-	private static function rewrite_css( $css ) {
-		if ( '' === trim( $css ) ) {
-			return '';
-		}
-
-		// The wrapper's id is `atelier-<id>-wrap`, NOT `atelier-wrap-<id>`.
-		//
-		// Those two were written independently -- the renderer builds `'%s-wrap'` from the dom id,
-		// this mapped to a `-wrap-` infix -- and they never agreed, in this plugin or in the one
-		// it was renamed from. Any converted rule targeting Envira's wrapper has therefore been
-		// dead since the switchover, silently, because a CSS selector that matches nothing is
-		// indistinguishable from one whose rules do nothing.
-		//
-		// It survived a mutation-proved suite because each half was pinned against itself: one
-		// check asserted this function's output, another asserted the markup, and a writer
-		// agreeing with its own reader cannot be falsified by mutating either. Aligned onto the
-		// markup rather than the other way, since changing the emitted id would move a rendered
-		// byte on every live gallery to fix something no stored rule currently relies on.
-		// The wrapper form has to move the id PAST the suffix, which `str_replace` cannot do --
-		// `#envira-gallery-wrap-12` becomes `#atelier-12-wrap`, not `#atelier-wrap-12`. It runs
-		// first because `#envira-gallery-wrap-` also starts with `#envira-gallery-`, so the
-		// general rule would otherwise consume it and produce exactly the broken form.
-		$css = preg_replace( '/#envira-gallery-wrap-(\d+)/', '#atelier-$1-wrap', $css );
-
-		return str_replace( '#envira-gallery-', '#atelier-', $css );
 	}
 
 	/**

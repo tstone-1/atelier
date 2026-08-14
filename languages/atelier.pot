@@ -534,14 +534,6 @@ msgstr ""
 msgid "Capture date"
 msgstr ""
 
-#: includes/class-atelier-editor.php:649
-msgid "Custom CSS"
-msgstr ""
-
-#: includes/class-atelier-editor.php:653
-msgid "Applies to this gallery only. Its wrapper is #atelier-<id>-wrap and the gallery itself is #atelier-<id>."
-msgstr ""
-
 #: includes/class-atelier-editor.php:672
 msgid "The Envira shortcode with this ID keeps working too, so nothing already published needs changing."
 msgstr ""

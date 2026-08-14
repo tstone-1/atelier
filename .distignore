@@ -40,6 +40,18 @@ tools
 urls.txt
 *.tsv
 
+# The compiled German catalogue. It stays in the repository and it still goes to the site this
+# plugin was built for -- it is only the wordpress.org PACKAGE it must not be in.
+#
+# Plugins hosted on the directory get their translations from translate.wordpress.org, delivered
+# into WP_LANG_DIR/plugins/, so a bundled .po/.mo is at best dead weight and at worst a copy that
+# silently overrides the community's. Shipping one is what the directory asked us to stop doing.
+#
+# languages/atelier.pot is deliberately NOT excluded: a template is not a translation. It is what
+# a translator starts from, and tests/i18n-test.php compares it against the source on every run.
+languages/atelier-de_DE.po
+languages/atelier-de_DE.mo
+
 # Agent instruction directories. Plugin Check raises an ERROR on these by name, and the build
 # stages from `git archive` so an untracked one cannot reach the zip anyway -- listed so the
 # intent survives a change of staging method.

@@ -80,11 +80,12 @@ class Atelier_Renderer {
 			$gallery->columns()
 		);
 
-		$out  = '';
-		$css  = $gallery->custom_css();
-		$out .= '' !== $css ? '<style>' . wp_strip_all_tags( $css ) . '</style>' : '';
-
-		$out .= sprintf(
+		// No `<style>` element is emitted here, and nothing else in this class emits one either.
+		// A gallery used to carry a free-text CSS block that was printed inline at this point;
+		// the wordpress.org guidelines do not permit a plugin to store and print arbitrary CSS
+		// entered through its own UI, and an inline `<style>` is the wrong way to ship CSS in
+		// any case -- `Atelier_Assets` enqueues every stylesheet this plugin has.
+		$out = sprintf(
 			'<div id="%s-wrap" class="atelier-wrap"%s>',
 			esc_attr( $dom_id ),
 			$gallery->has_protection() ? ' oncontextmenu="return false"' : ''

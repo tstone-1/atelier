@@ -18,6 +18,42 @@ landed before anything was deployed, so the two shipped together as 26.8.4.
 > at the time. Nothing else about those entries was altered: the dates, the counts, the measured
 > numbers and the reasoning are as they were written.
 
+## [26.8.22] - Unreleased
+
+Answers the wordpress.org pre-review that pended the submission on 2026-08-14.
+
+### Removed
+- **Per-gallery Custom CSS.** The Plugin Directory does not permit a plugin to store and print
+  arbitrary CSS entered through its own UI, so the setting, the textarea, the conversion of
+  Envira's `custom_css`, the sanitiser and the inline `<style>` element were all removed —
+  `Atelier_Config::defaults()` is now twenty-five settings, and `Atelier_Config::css()`,
+  `Atelier_Config::rewrite_css()` and `Atelier_Gallery::custom_css()` are gone.
+
+  **The upgrade deletes no CSS**, and the new `tools/export-custom-css.py` prints what a site
+  still holds — selectors already rewritten — ready to paste into Appearance -> Customize ->
+  Additional CSS. The ids do not change, so the same rules keep matching the same elements; only
+  the delivery moves.
+
+  **Two records can hold it, and only one of them is permanent.** Envira's `_eg_gallery_data` is
+  untouched by anything Atelier does, so its copy survives indefinitely. But on a migrated site
+  the record Atelier renders from is `_atelier_gallery`, and Atelier's own editor wrote CSS
+  there — so a gallery edited after the migration has its *current* value only in that record,
+  and **saving that gallery under 26.8.22 rewrites the record through the new allowlist and drops
+  it**. Export before saving galleries. The exporter reads both records, prefers the one the site
+  is actually rendering, and exits non-zero after printing both if they disagree.
+- **The bundled German translation, from the distributed package.** Plugins on wordpress.org get
+  their translations from translate.wordpress.org. The catalogue stays in the repository and is
+  still installed on sites that deploy from it; it is excluded from the release zip.
+- **`load_plugin_textdomain()`.** Unnecessary for anything the directory serves since WordPress
+  4.6, and the bundled catalogue it existed for is no longer in the package. `Domain Path`
+  remains, so a copy installed from elsewhere still loads a catalogue in `languages/`.
+
+### Added
+- `.gitattributes`, pinning the working tree to LF. Git for Windows defaults to CRLF checkouts,
+  which made every multi-line entry in `tests/mutations.php` match nothing — the harness reported
+  `BROKEN` rather than a false pass, but most of the suite's falsifiability had stopped running
+  on that machine. The full pass now completes at 206 mutations, 206 killed.
+
 ## [26.8.21] - 2026-08-09
 
 ### Fixed

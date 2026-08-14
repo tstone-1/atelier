@@ -1447,3 +1447,113 @@ Two properties fell out of writing it that were not in the original change:
   string prefix where `restoreFromHash()` already used a regular expression, and two spellings of
   one rule is how half a rename survives review. A check asserts no hash is matched by a bare
   string literal anywhere in the file, and hand-mutating `clearHash()` back turns two checks red.
+
+## The wordpress.org review, and the feature it cost
+
+The submission was pended on 2026-08-14 by an automated pre-review — `AUTOPREREVIEW
+atelier/tstone1/14Aug26/T1`, sent before any human read the plugin. Four findings. Three were
+mechanical; one removed a feature, and the interesting part is that all four are a *policy*
+disagreement rather than a defect. Nothing they flagged was broken.
+
+**The one with teeth: a plugin may not store and print arbitrary CSS entered through its own
+UI.** Gallery settings carried a Custom CSS textarea, saved into the gallery's record, printed
+by the renderer inside an inline `<style>`. Their reasoning is that WordPress already ships a
+validating CSS editor in the Customizer, and that a plugin duplicating it is surface area with
+no upside. The finding is marked ✨, meaning it was written by their AI rather than a person —
+which changes nothing about whether to comply, and is worth saying because the instinct is to
+argue with a machine.
+
+**Removing it meant removing all four halves, and that was the only real decision.** The
+setting in `defaults()`, the conversion of Envira's own `custom_css`, the sanitiser, the
+textarea, and the `<style>` output are five places; leaving any of them would have left a
+stored value nothing reads, which this codebase has already paid for once and has an entry
+about. So `Atelier_Config::css()` and `rewrite_css()` are gone, `Atelier_Gallery::custom_css()`
+is gone, and `Atelier_Config::defaults()` is twenty-five settings rather than twenty-six.
+
+**Nothing was destroyed, and that is what made it an easy call.** Envira's `_eg_gallery_data`
+still holds the CSS on the sixteen galleries that had it — untouched since before the migration,
+for exactly this class of reason — so the removal costs rendering, not data.
+`tools/export-custom-css.py` prints it for the Customizer. **It is lossless because the element
+ids do not move**: a gallery is `#atelier-<id>` whether the rule arrives inline from a plugin or
+from Appearance -> Customize -> Additional CSS. Only the delivery changes. That script is the
+deleted `rewrite_css()`'s only surviving copy, which is why the ordering trap is restated in its
+docstring rather than left in the commit that removed it.
+
+**The first version of that script was wrong, in the one direction that reads as success — and
+an independent review caught it, not the tests.** It read Envira's record only. But on a
+*migrated* site the record Atelier renders from is `_atelier_gallery`, and Atelier's own editor
+wrote CSS into that one, so any gallery whose CSS was edited after 2026-08-07 has its current
+value there and a pre-migration value in Envira's. The exporter would have returned the older
+text and reported success, because **older CSS is perfectly valid CSS** — there is no
+malformedness to notice, no error to raise, and the only way to know is to compare the two.
+
+Two things make that worse than an ordinary stale read. The window closes by itself: saving a
+gallery under 26.8.22 rewrites the v2 record through the new allowlist, which has no
+`custom_css`, so the newer copy is dropped at that moment while Envira's survives — the export
+therefore has to happen before the next save, not merely before some future cleanup. And the
+release notes said *"nothing was deleted"* and *"still stored in the original gallery record"*,
+which was true of Envira's copy and false of the one that mattered. **A claim about data
+retention has to name the record**, because "the gallery record" is two records here and the
+project's whole design is that they can disagree.
+
+The fix reads both, prefers what `Atelier_Repository` prefers, prints both and exits non-zero
+when they differ rather than choosing for the reader. Its decision function is now importable so
+it can be tested at all — `tests/export-custom-css-test.py`, 15 checks, outside CI because it
+covers a one-shot tool rather than the plugin — and the check that matters was shown to go red
+by inverting the migrated preference, which is exactly the first version's bug.
+
+**A removal needs guards, and the useful ones are not keyed to the thing removed.** Four new
+checks: the conversion drops the key, `sanitize()` drops it, the settings form offers no
+textarea, and — the one that matters — *no gallery emits a style element*, asserted over the
+whole rendered population rather than over the gallery someone remembered. That last is worth
+nothing on its own: a corpus in which no gallery ever *had* custom CSS satisfies it by having
+nothing to print. So it is paired with a control, `envira css in the corpus is not zero`, that
+reads the Envira records through `get_post_meta()` and requires at least one to carry CSS.
+**The control failed on its first run** — for the right reason in the wrong place: it read
+`$record['config']` where the fixture exposes `$record['data']['config']`, so it was asserting
+against a shape the reader never sees. A control that passes immediately is the one to distrust.
+
+Deliberately not keyed to the removed setting: mutation `CSS1` re-introduces a `<style>` built
+from the gallery *title*, nothing to do with `custom_css`. The guideline is about the element,
+not about the field that used to feed one, and a check written against the old field would go
+green the day somebody prints CSS from somewhere else.
+
+**The three mechanical findings, one of which is not what it looks like.** The `<style>` output
+was cited separately as "use wp_enqueue commands" — it disappears with the feature, so it needed
+no separate fix. The bundled German `.po`/`.mo` had to leave the package, because the directory
+serves translations from translate.wordpress.org and a bundled copy at best duplicates them. And
+`load_plugin_textdomain()` had to go with it: its own comment had carried the condition
+*"remove it once the bundled catalogue is dropped in favour of the directory's, not before"*,
+and that condition had now been met by the finding above it. The catalogue is excluded from the
+zip by `.distignore` rather than deleted, because **the site this was built for does not install
+from wordpress.org** — it runs WP 7, where the textdomain registry finds a catalogue in
+`languages/` from the `Domain Path` header alone, so German survives the call going away.
+
+The fourth finding, on nonces, cited no file and is boilerplate. The one place it could point at
+is `Atelier_Ajax`, which verifies and deliberately does not refuse so that pagination survives a
+full-page cache; both endpoints are reads gated on `is_viewable()`. That reasoning goes in the
+reply as context rather than as a change, which is the one thing their instructions actually ask
+for: findings and clarifications, not a list of edits.
+
+### The CRLF checkout, which had been quietly disabling the mutation harness
+
+Not part of the review, found while running it. This repository had **no `.gitattributes`**, and
+Git for Windows ships `core.autocrlf=true` in its system config, so the Windows desktop's working
+tree was CRLF throughout while every blob in the repository is LF.
+
+`tests/mutations.php` matches its target text exactly, and its targets are written with `\n`. On
+that checkout **every multi-line mutation matched nothing** — including pre-existing ones like
+`E1`, untouched for weeks. The harness was honest about it, reporting `BROKEN: target text occurs
+0 times` rather than `SURVIVED`, which is the entire reason that rule exists and is the only
+reason this was visible at all. But the effect was that most of the suite's proof of
+falsifiability had silently stopped running on this machine, while single-line mutations kept
+killing their checks and the run looked normal.
+
+The same defect is the one `AGENTS.md` already warns about for the deploy: `tools/deploy.sh`
+uploads working-tree bytes and verifies each file against *that same local file*, so a whole-tree
+CRLF conversion would be reported as 40 files "uploaded and verified". The rule had been written
+down and never enforced. `.gitattributes` now pins `* text=auto eol=lf` with explicit `binary`
+rules, and the tree was normalised: 69 files converted, 2 already LF, 5 skipped as binary. The
+measurement that says it was worth doing is that `E1` went from `BROKEN` to `KILLED` with no
+change to `E1` — and the full pass then ran **206 mutations, 206 killed by the predicted check**,
+the first clean mutation run this box has ever produced.

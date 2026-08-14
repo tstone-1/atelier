@@ -469,6 +469,23 @@ foreach ( array_keys( $site->galleries ) as $gallery_id ) {
 
 	$checks->assert( 'renders without PHP notices', empty( $errors ), $label . ' -> ' . implode( '; ', $errors ) );
 
+	// Nothing this plugin renders may carry an inline `<style>` element.
+	//
+	// Through 26.8.21 a gallery could store a free-text CSS block that was printed here; the
+	// wordpress.org guidelines do not permit a plugin to store and print arbitrary CSS entered
+	// through its own UI, so the setting and the output were removed together. This is the guard
+	// that they stay removed, and it is a whole-population check rather than a check on the one
+	// gallery someone remembered to look at.
+	//
+	// It is worth nothing on its own -- a corpus in which no gallery ever HAD custom CSS would
+	// satisfy it by having nothing to print. `envira css in the corpus is not zero` below is the
+	// control that says the input this guards against is actually present.
+	$checks->assert(
+		'no gallery emits a style element',
+		false === stripos( $html, '<style' ),
+		$label . ' emitted a style element'
+	);
+
 	if ( 0 === $gallery->count() ) {
 		$checks->assert( 'empty gallery renders nothing', '' === $html, $label . ' emitted ' . strlen( $html ) . ' bytes' );
 		continue;
@@ -1796,65 +1813,59 @@ $checks->assert(
 	'exif=' . wp_json_encode( $fallback['exif'] ) . ' fields=' . wp_json_encode( $fallback['exif_fields'] )
 );
 
-// Custom CSS is rewritten onto Atelier's element ids at conversion time.
+// Custom CSS is not converted, not stored, and not rendered -- three separate guards, because
+// the feature had three separate halves and removing any two of them would leave the third.
+//
+// Envira's own record still holds `custom_css` on the galleries that had it, and that is
+// deliberate: nothing was destroyed, and `tools/export-custom-css.py` is how it comes back out
+// for pasting into the Customizer. What must not happen is Atelier reading it again.
 $styled = Atelier_Config::from_envira(
 	array( 'custom_css' => '#envira-gallery-2423 { margin: 0 } #envira-gallery-wrap-2423 { padding: 0 }' ),
 	2423
 );
 
 $checks->assert(
-	'custom css is rewritten to atelier ids',
-	false !== strpos( $styled['custom_css'], '#atelier-2423' ) &&
-		false !== strpos( $styled['custom_css'], '#atelier-2423-wrap' ) &&
-		false === strpos( $styled['custom_css'], '#envira-gallery-' ),
-	$styled['custom_css']
+	'conversion drops envira custom css',
+	! array_key_exists( 'custom_css', $styled ),
+	'converted keys: ' . implode( ', ', array_keys( $styled ) )
 );
 
-// The check the pair above could not be: does the rewritten selector match an element that is
-// actually emitted?
-//
-// The two halves were pinned separately for months and disagreed the whole time — the rewrite
-// produced `#atelier-wrap-<id>` while the renderer emitted `id="atelier-<id>-wrap"` — so every
-// converted rule targeting a gallery's wrapper was dead. Neither check could fail, because each
-// asserted a literal against the code that produced it: a writer agreeing with its own reader.
-// No mutation of either side can expose that; only comparing them can.
-//
-// So this takes the selectors the converter produced, strips the `#`, and requires each one to
-// appear as an `id=` in the markup the renderer actually emits for that gallery.
-$checks->expect( 'rewritten css selectors match ids that are rendered' );
+// The submitted-form side of the same rule. `sanitize()` builds an allowlisted record, so this
+// asserts the allowlist has no entry rather than that some stripping ran.
+$css_in = Atelier_Config::sanitize(
+	array( 'custom_css' => '#atelier-1 > figure { color: red } </style><script>alert(1)</script>' )
+);
 
-$css_ids = array();
-if ( preg_match_all( '/#([A-Za-z0-9_-]+)/', $styled['custom_css'], $css_found ) ) {
-	$css_ids = array_unique( $css_found[1] );
-}
+$checks->assert(
+	'a submitted custom css is not stored',
+	! array_key_exists( 'custom_css', $css_in ),
+	'sanitised keys: ' . implode( ', ', array_keys( $css_in ) )
+);
 
-$css_gallery = null;
-foreach ( array_keys( $site->galleries ) as $css_candidate ) {
-	$maybe = $repository->gallery( $css_candidate );
+// The editor must no longer offer the field either; that check lives beside the schema/form
+// drift section further down, which is where the settings form is already rendered.
+$checks->expect( 'the settings form offers no custom css field' );
 
-	if ( $maybe instanceof Atelier_Gallery ) {
-		$css_gallery = $maybe;
-		break;
+// The control for `no gallery emits a style element`, which that check needs and cannot supply
+// for itself: at least one gallery in whichever corpus is loaded must actually carry custom CSS
+// in its Envira record. Without this, a corpus with none would satisfy the guard by having
+// nothing to print, and the guard would go on passing after the feature came back.
+// Read through `get_post_meta()` rather than off the fixture record: that is the door the
+// plugin itself uses, so this cannot pass by reading a shape the reader never sees.
+$envira_css = 0;
+foreach ( array_keys( $site->galleries ) as $css_id ) {
+	$css_record = get_post_meta( $css_id, '_eg_gallery_data', true );
+	$css_config = is_array( $css_record ) && isset( $css_record['config'] ) ? (array) $css_record['config'] : array();
+
+	if ( '' !== trim( (string) ( isset( $css_config['custom_css'] ) ? $css_config['custom_css'] : '' ) ) ) {
+		$envira_css++;
 	}
 }
 
-$css_markup  = $css_gallery ? $renderer->gallery( $css_gallery, 1 ) : '';
-$css_dom_id  = 'atelier-' . ( $css_gallery ? $css_gallery->id() : 0 );
-$rendered_ok = array();
-
-foreach ( array( $css_dom_id, $css_dom_id . '-wrap' ) as $needed ) {
-	$rendered_ok[ $needed ] = false !== strpos( $css_markup, 'id="' . $needed . '"' );
-}
-
 $checks->assert(
-	'rewritten css selectors match ids that are rendered',
-	// Both shapes the converter can emit must exist in the markup, with the ids rewritten to
-	// the gallery actually being rendered.
-	$rendered_ok[ $css_dom_id ] && $rendered_ok[ $css_dom_id . '-wrap' ]
-		&& in_array( '2423-wrap', array_map( static function ( $id ) {
-			return str_replace( 'atelier-', '', $id );
-		}, $css_ids ), true ),
-	'ids rendered: ' . wp_json_encode( $rendered_ok ) . ' selectors produced: ' . implode( ', ', $css_ids )
+	'envira css in the corpus is not zero',
+	$envira_css > 0,
+	'galleries carrying envira custom_css: ' . $envira_css
 );
 
 // --- running the migration, for real, over the whole site -----------------------------
@@ -2167,8 +2178,6 @@ $checks->expect(
 	'a number out of range is clamped, not reset',
 	'pagination without a page size is off',
 	'a list setting keeps its canonical order',
-	'custom css cannot close its style element',
-	'custom css keeps the child combinator',
 	'the settings form has a field for every setting',
 	'both item templates carry every record field',
 	'the editor and the migration agree on the record shape',
@@ -2625,23 +2634,6 @@ $checks->assert(
 	'exif ' . wp_json_encode( $listed['exif_fields'] ) . ' social ' . wp_json_encode( $listed['social_networks'] )
 );
 
-$css_in = Atelier_Config::sanitize(
-	array( 'custom_css' => '#atelier-1 > figure { color: red } </style><script>alert(1)</script>' )
-);
-
-$checks->assert(
-	'custom css cannot close its style element',
-	false === stripos( $css_in['custom_css'], '</style' ) && false === stripos( $css_in['custom_css'], '<script' ),
-	'stored css: ' . $css_in['custom_css']
-);
-
-// And the thing that must survive: `>` is a child combinator, not markup.
-$checks->assert(
-	'custom css keeps the child combinator',
-	false !== strpos( $css_in['custom_css'], '#atelier-1 > figure' ),
-	'stored css: ' . $css_in['custom_css']
-);
-
 // ---------------------------------------------------------------------------
 // Drift between the schema, the form and the record shape.
 //
@@ -2661,6 +2653,19 @@ foreach ( array_keys( Atelier_Config::defaults() ) as $setting_key ) {
 		$setting_key . ' has no field on the settings form'
 	);
 }
+
+// The drift check above runs over the settings that EXIST, so it is structurally incapable of
+// noticing a field for one that does not -- put `custom_css` back on the form alone and it stays
+// green. This is the other direction, and it is the one the wordpress.org guidelines care about:
+// the plugin must offer no way to type CSS into it. A `<textarea>` anywhere on this form is
+// treated as that way back, because a free-text control is what the guideline is about rather
+// than the particular field name it once had.
+$checks->assert(
+	'the settings form offers no custom css field',
+	false === strpos( $settings_form, 'atelier_settings[custom_css]' )
+		&& false === stripos( $settings_form, '<textarea' ),
+	'the settings form still carries a free-text CSS control'
+);
 
 ob_start();
 $editor->render_images_box( (object) array( 'ID' => $editor_id ) );

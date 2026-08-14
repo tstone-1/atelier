@@ -552,18 +552,6 @@ msgstr "ISO"
 msgid "Capture date"
 msgstr "Aufnahmedatum"
 
-#: includes/class-atelier-editor.php:649
-msgid "Custom CSS"
-msgstr "Eigenes CSS"
-
-#: includes/class-atelier-editor.php:653
-msgid ""
-"Applies to this gallery only. Its wrapper is #atelier-<id>-wrap and the "
-"gallery itself is #atelier-<id>."
-msgstr ""
-"Gilt nur für diese Galerie. Der äußere Container ist #atelier-<id>-wrap, die "
-"Galerie selbst #atelier-<id>."
-
 #: includes/class-atelier-editor.php:672
 msgid ""
 "The Envira shortcode with this ID keeps working too, so nothing already "

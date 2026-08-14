@@ -3,7 +3,7 @@
  * Plugin Name: Atelier
  * Plugin URI:  https://github.com/tstone-1/atelier
  * Description: Responsive galleries for WordPress. Reads existing Envira Gallery data in place, so galleries keep working without migration or a licence.
- * Version:     26.8.21
+ * Version:     26.8.22
  * Author:      tstone-1
  * License:     GPL-2.0-or-later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -28,30 +28,33 @@
 
 defined( 'ABSPATH' ) || exit;
 
-/**
- * Loads the bundled translations.
+/*
+ * There is no `load_plugin_textdomain()` call, and its absence is the finished state of a
+ * condition the call itself carried: "remove it once the bundled catalogue is dropped in favour
+ * of the directory's, not before." The distributed plugin no longer ships a `.po`/`.mo`, so that
+ * is now the case.
  *
- * `Domain Path` in the header plus WordPress's textdomain registry is enough on WP 7, which is
- * what this was verified against -- but the header promises `Requires at least: 6.0`, and every
- * WP 6.x just-in-time loader reads only from `WP_LANG_DIR/plugins/`. A plugin that ships its own
- * `.mo` and is not distributed through wordpress.org therefore renders in English on 6.x, for
- * every string, silently: nothing errors, nothing is logged, the catalogue is simply never asked
- * for. The call costs one line and is a no-op where it is not needed.
+ * Translations come from translate.wordpress.org, which delivers them into
+ * `WP_LANG_DIR/plugins/` -- the one place every WordPress 6.x and 7.x just-in-time loader reads
+ * without being told to. That is why the call was unnecessary from 4.6 onward for anything the
+ * directory serves, and it is what the directory's own guidelines ask for.
  *
- * Hooked on `init` rather than run at file scope: since WP 6.7 loading a textdomain earlier
- * triggers a `_doing_it_wrong` notice, so the fix for one version must not become a warning on
- * another.
+ * `Domain Path` stays in the header. It is not vestigial: a copy of this plugin installed from
+ * somewhere other than wordpress.org can still carry a catalogue in `languages/`, and on WP 7
+ * the textdomain registry finds it from that header alone -- verified on WP 7.0.3, which is what
+ * the site this was built for runs, and the reason its German kept working once this call went.
  *
- * @return void
+ * **That is verified for WP 7 and for nothing older.** The header still says
+ * `Requires at least: 6.0`, and which 6.x release began discovering a plugin's own `languages/`
+ * directory unaided has not been established here -- an independent review put it at 6.8 and
+ * cited a source that does not exist, so treat it as unknown rather than as 6.8. It costs
+ * nothing either way for a plugin the directory serves, because those translations arrive in
+ * `WP_LANG_DIR/plugins/`, which every version reads. It matters only for a copy installed from
+ * source onto an older WordPress, where the bundled catalogue may silently not load. Settle it
+ * on the local WordPress before relying on it.
  */
-function atelier_load_textdomain() {
-	// phpcs:ignore PluginCheck.CodeAnalysis.DiscouragedFunctions.load_plugin_textdomainFound -- discouraged for translations wordpress.org SERVES, which it does automatically since 4.6. This loads the catalogue BUNDLED in /languages, which nothing else loads, and the header declares support back to WordPress 6.0. Remove it once the bundled catalogue is dropped in favour of the directory's, not before.
-	load_plugin_textdomain( 'atelier', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
-}
 
-add_action( 'init', 'atelier_load_textdomain' );
-
-define( 'ATELIER_VERSION', '26.8.21' );
+define( 'ATELIER_VERSION', '26.8.22' );
 define( 'ATELIER_FILE', __FILE__ );
 define( 'ATELIER_DIR', plugin_dir_path( __FILE__ ) );
 define( 'ATELIER_URL', plugin_dir_url( __FILE__ ) );

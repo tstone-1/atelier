@@ -469,8 +469,6 @@ class Atelier_Editor extends Atelier_Metabox_Editor {
 			)
 		);
 
-		$this->row_css( $settings );
-
 		echo '</table>';
 	}
 
@@ -636,25 +634,6 @@ class Atelier_Editor extends Atelier_Metabox_Editor {
 		}
 
 		echo '</fieldset></td></tr>';
-	}
-
-	/**
-	 * Renders the custom CSS row.
-	 *
-	 * @param array $settings Current settings.
-	 *
-	 * @return void
-	 */
-	private function row_css( array $settings ) {
-		$value = isset( $settings['custom_css'] ) ? (string) $settings['custom_css'] : '';
-
-		echo '<tr><th scope="row"><label for="atelier-custom_css">' . esc_html__( 'Custom CSS', 'atelier' ) . '</label></th><td>';
-		echo '<textarea id="atelier-custom_css" name="atelier_settings[custom_css]" rows="6" class="large-text code">' .
-			esc_textarea( $value ) . '</textarea>';
-		echo '<p class="description">' .
-			esc_html__( 'Applies to this gallery only. Its wrapper is #atelier-<id>-wrap and the gallery itself is #atelier-<id>.', 'atelier' ) .
-			'</p>';
-		echo '</td></tr>';
 	}
 
 	/**
