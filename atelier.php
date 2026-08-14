@@ -43,6 +43,10 @@ defined( 'ABSPATH' ) || exit;
  * somewhere other than wordpress.org can still carry a catalogue in `languages/`, and on WP 7
  * the textdomain registry finds it from that header alone -- verified on WP 7.0.3, which is what
  * the site this was built for runs, and the reason its German kept working once this call went.
+ * Confirmed on that site in production after the 26.8.22 deploy, not only locally: the rendered
+ * page ships `Schließen`, `Weiter`, `Vergrößern` with no `load_plugin_textdomain()` anywhere.
+ * Worth having checked, because the failure mode is silent -- 28 strings revert to English and
+ * nothing is logged.
  *
  * **That is verified for WP 7 and for nothing older.** The header still says
  * `Requires at least: 6.0`, and which 6.x release began discovering a plugin's own `languages/`

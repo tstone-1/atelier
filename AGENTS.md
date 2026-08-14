@@ -657,6 +657,10 @@ on exit, so it never reaches an argument list, a log line, or a transcript.
 **The deploy records — one per release that reached the site, newest first. Full text in
 [`docs/deploys.md`](docs/deploys.md):**
 
+- *The 26.8.22 deploy, the first that was SUPPOSED to change rendered bytes* — every release
+  since 26.8.15 predicted `0 changed`; here it would have meant the upload never landed. The
+  discriminating check is an **anonymous** `<style>`, since core and the theme emit six with
+  ids. Settles the WP 7 textdomain question on production, and names two things it could not see.
 - *The 26.8.21 deploy, whose release was found on an install that had never been done* — a
   deliberate no-op on the only site it reached, which is the recommended shape; `UPLOAD_ORDER`
   held the previous release's list **again**, after that was written down, because the note

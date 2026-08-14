@@ -11,6 +11,51 @@ earns them a file. Everything else that moved out is in [`lessons.md`](lessons.m
 
 ## The records, newest first
 
+### The 26.8.22 deploy, the first that was SUPPOSED to change rendered bytes
+
+Deployed 2026-08-14 from the MacBook. `26.8.22` live on both assets, and the three URL spaces
+verified independently from the Windows desktop over HTTP after the push: **49/49 gallery
+permalinks, 2/2 albums and 5 of 40 sampled tag archives answer 200**, every gallery renders
+photographs, and **not one page carries an anonymous `<style>` element**.
+
+**"Identical" would have been the wrong answer here, and that is what makes this deploy readable
+at a glance.** Every release since 26.8.15 has predicted `0 changed` and then had to argue about
+what the comparison could actually see — `capture` strips `?ver=` before hashing, so a release
+touching only an asset or a nonce is invisible to it by construction. This one removes the inline
+`<style>` block from every page carrying one of the sixteen galleries that had custom CSS, so it
+moves rendered bytes on exactly those URLs and nowhere else. A `0 changed` here would have meant
+the upload never landed.
+
+**The check that matters is the absence of an ANONYMOUS style element, not of style elements.**
+The front page carries six — `classic-theme-styles-inline-css`, `global-styles-inline-css`,
+`twentytwenty-style-inline-css`, `wp-block-library-inline-css`, `wp-emoji-styles-inline-css`,
+`wp-img-auto-sizes-contain-inline-css` — every one of them WordPress's or the theme's, and every
+one carrying an `id=`. Atelier's removed element had none. Counting `<style>` tags outright
+reports six on every page whether the release worked or not; the discriminating property is the
+missing `id=`, and the sweep tests for that.
+
+**The open question this release was carrying is now answered, on production.** Removing
+`load_plugin_textdomain()` rested on WP 7's textdomain registry discovering the catalogue in
+`languages/` from the `Domain Path` header alone — previously verified locally, and the single
+most likely thing to have been mis-verified, because its failure mode is silent: 28 visitor-facing
+strings revert to English with nothing logged. The live page ships `"close":"Schließen"`,
+`"next":"Weiter"`, `"zoom":"Vergrößern"`, `"download":"Herunterladen"`, `"share":"Teilen"`,
+`"copied":"Link kopiert"`. It works. **What is still unknown is which WordPress before 7 does
+this**; an independent review put it at 6.8 and cited a make.wordpress.org post that returns 404,
+so the header's `Requires at least: 6.0` still carries an unverified span. It costs nothing for a
+directory-served copy, whose translations arrive in `WP_LANG_DIR/plugins/`.
+
+**Two things this verification could NOT see, and both are worth naming rather than leaving as an
+impression of completeness.** The sweep enumerated URLs from Yoast's sitemaps, which is a
+different set from `tools/live-urls.py`'s 159: the sitemap excludes the password-protected
+gallery, so the control that it still serves its form with zero upload filenames did not run
+here — nothing in this release touches that path, but the check that would have proved it was
+absent, not passing. And the Customizer had **no `wp-custom-css` block at the time of the sweep**,
+which means the exported CSS had not yet been pasted in: WordPress omits that block entirely when
+Additional CSS is empty, so its absence is evidence, not silence. Until it is pasted, those
+sixteen galleries render correctly but unstyled — which is the intended, recoverable state, not a
+regression.
+
 ### The 26.8.21 deploy, whose release was found on an install that had never been done
 
 **3 files, 4 chunks, every chunk first time, 160/160 URLs identical, 0 non-200,** `ver=26.8.20`
