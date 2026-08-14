@@ -101,23 +101,14 @@ the diagnostic cascade that inflated a dozen red sets.
 
 ## Live site
 
-- **Move the sixteen galleries' custom CSS into the Customizer before 26.8.22 reaches the site.**
-  The release removes the per-gallery CSS field to satisfy a wordpress.org guideline, so those
-  galleries render unstyled the moment it deploys. `tools/export-custom-css.py` prints what is
-  stored, selectors already rewritten, ready for Appearance -> Customize -> Additional CSS. It
-  needs `tests/.db.json`, so it runs from the Mac.
-
-  **Do it before saving any gallery under 26.8.22.** This site is migrated, so the record it
-  renders from is `_atelier_gallery`, and a save rewrites that record through the new allowlist —
-  which has no `custom_css`. Envira's `_eg_gallery_data` copy survives regardless, but on any
-  gallery whose CSS was edited through Atelier since 2026-08-07 that copy is the *older* text.
-  The exporter reads both and exits non-zero if they disagree.
-
-  **The script has never been run against a real database.** Its pure logic is covered by
-  `tests/export-custom-css-test.py` (15 checks, and the migrated-preference check was shown to go
-  red when the preference is inverted), but the SQL and the unserialise path are unexercised.
-  Treat the first run as a test of the script as much as of the site, and check the block count
-  against the sixteen this file has always claimed.
+**Closed 2026-08-14, and the answer was better than the task.** This section opened with "move the
+sixteen galleries' custom CSS into the Customizer before 26.8.22 reaches the site". `tools/export-custom-css.py`
+ran against the live database — its first real run, the SQL and unserialise paths having been
+unexercised — and exited clean: Envira's copy and Atelier's agreed everywhere, so nothing was
+lost when the feature went. Reading the 145 lines it produced is what mattered: **every
+declaration in all twenty blocks is commented out**, and 16 of the 20 target `#atelier-2423`
+whichever gallery holds them. The browser parsed an empty rule; the removal changed no pixel;
+there is nothing to paste. Full account in [`docs/deploys.md`](docs/deploys.md).
 
 **The inventory of what a particular site still has lying around moved to `AGENTS.local.md`,
 which is gitignored** — it is a list of one deployment's leftover rows, terms and cron events,

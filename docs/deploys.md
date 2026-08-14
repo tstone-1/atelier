@@ -172,6 +172,8 @@ absent, not passing. And the Customizer had **no `wp-custom-css` block at the ti
 which means the exported CSS had not yet been pasted in: WordPress omits that block entirely when
 Additional CSS is empty, so its absence is evidence, not silence.
 
+### The CSS this release removed had never applied to anything
+
 **That last observation is sound and the conclusion first drawn from it was not: there is nothing
 to paste, and no gallery is waiting to be styled.** Every declaration in all twenty exported
 blocks is commented out — `/* margin-bottom: 20px; */`, `/* font-size: 18px; */`,
@@ -190,6 +192,20 @@ four galleries, with nothing inside it that a browser acts on.
 The export is still worth keeping, for a different reason than restoration: it is the record that
 Envira's copy and Atelier's v2 copy agreed before any gallery gets saved under 26.8.22, which is
 the point at which the v2 copy is dropped.
+
+**`AGENTS.md` had asserted "16 galleries carry hand-written `custom_css`" for the life of the
+project, and it was true at the byte level and false in every way that mattered.** That
+measurement counted non-empty strings. It never asked whether any of them produced a
+declaration, and nothing downstream asked either: `rewrite_css()` existed to keep this CSS
+working, the `#atelier-wrap-N` versus `#atelier-N-wrap` defect was diagnosed and fixed *inside*
+it, this release's notes worried about losing the data, and `tools/export-custom-css.py` was
+written and tested to recover it. All of that was care spent on rules that had never applied.
+
+**A stored value is not an applied value, and the cheap check is to ask what the browser would
+do with it, not whether the string is non-empty.** The corpus already recorded that every
+*wrapper* rule had been dead since the switchover, found by comparing the converter against the
+renderer, which is the expensive way round. Worth carrying to any "N records carry X" claim: the
+sentence that sounds like a measurement is usually a count.
 
 ### The 26.8.22 ordering constraint, which pointed backwards
 
