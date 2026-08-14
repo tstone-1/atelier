@@ -23,6 +23,10 @@ index that is not checked is a list of claims.
   since 26.8.15 predicted `0 changed`; here it would have meant the upload never landed. The
   discriminating check is an **anonymous** `<style>`, since core and the theme emit six with
   ids. Settles the WP 7 textdomain question on production, and names two things it could not see.
+  - *The CSS this release removed had never applied to anything* — every declaration in all
+    twenty blocks was commented out, so the browser parsed an empty rule and the removal changed
+    no pixel. A count of non-empty strings had stood in for a measurement of effect for the life
+    of the project, and one `grep` would have settled it at any point.
   - *The 26.8.22 ordering constraint, which pointed backwards* — the first release to DELETE a
     method, so the CALLER uploads first; `plan` said "satisfied" over the order that would have
     been a fatal on the front page and fifty permalinks. `UPLOAD_ORDER` stale for the fourth
