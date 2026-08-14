@@ -1,0 +1,43 @@
+# Line endings are pinned to LF, everywhere, in the working tree as well as in the repository.
+#
+# This is not tidiness. Two things here read and write FILE BYTES rather than git objects, and
+# both are silently wrong on a CRLF checkout:
+#
+# - `tools/deploy.sh` uploads the working tree to the live site and verifies each file by
+#   comparing the server's copy against THAT SAME LOCAL FILE. A whole-tree CRLF conversion is
+#   therefore invisible to it: every file would be reported "uploaded and verified" while the
+#   site received bytes nobody intended to ship.
+#
+# - `tests/mutations.php` finds its target text by exact string match, and its targets are
+#   written with `\n`. On a CRLF checkout every MULTI-LINE mutation matches nothing. The harness
+#   is honest about it -- it reports BROKEN rather than SURVIVED, which is the whole reason that
+#   rule exists -- but the effect is that most of the suite's proof of falsifiability quietly
+#   stops running on that machine. Measured on the Windows desktop, 2026-08-14: single-line
+#   mutations killed their checks, multi-line ones all reported `target text occurs 0 times`.
+#
+# Git for Windows ships `core.autocrlf=true` in its system config, so a fresh clone there gets a
+# CRLF tree unless this file says otherwise. That is the default case, not the unusual one.
+
+* text=auto eol=lf
+
+# Vendored third-party source is exempt, and stays byte-for-byte as upstream shipped it.
+#
+# PhotoSwipe arrives with CRLF and with trailing whitespace on some lines. Normalising it would
+# rewrite ~4,700 lines of somebody else's code for no benefit -- nothing here reads those files
+# by line, and a vendored copy that no longer matches the release it was taken from cannot be
+# diffed against the next one. It also makes `git diff --check` report the upstream trailing
+# whitespace as newly introduced, which invites "fixing" a third-party file.
+assets/vendor/** -text
+
+# Anything whose bytes are the content. `text=auto` guesses well and does not need to guess.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.zip binary
+
+# A compiled gettext catalogue is a binary format with its own internal offsets; a line-ending
+# conversion does not merely reformat it, it corrupts it.
+*.mo binary
