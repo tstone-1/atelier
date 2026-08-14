@@ -661,6 +661,14 @@ on exit, so it never reaches an argument list, a log line, or a transcript.
   since 26.8.15 predicted `0 changed`; here it would have meant the upload never landed. The
   discriminating check is an **anonymous** `<style>`, since core and the theme emit six with
   ids. Settles the WP 7 textdomain question on production, and names two things it could not see.
+  - *The 26.8.22 ordering constraint, which pointed backwards* — the first release to DELETE a
+    method, so the CALLER uploads first; `plan` said "satisfied" over the order that would have
+    been a fatal on the front page and fifty permalinks. `UPLOAD_ORDER` stale for the fourth
+    time, re-derived by digest-auditing the server rather than diffing a tag — which found a
+    commit that edited five shipped files after the last deploy and never shipped.
+  - *The check that now enforces it, and the six cases that prove it can fail* — three outcomes
+    rather than two; `order-check` is a subcommand so it runs offline in CI; C and F are the
+    controls that make the other four mean anything, and one branch is honestly uncovered.
 - *The 26.8.21 deploy, whose release was found on an install that had never been done* — a
   deliberate no-op on the only site it reached, which is the recommended shape; `UPLOAD_ORDER`
   held the previous release's list **again**, after that was written down, because the note

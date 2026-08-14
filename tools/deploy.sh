@@ -50,12 +50,21 @@ USER_NAME="${ATELIER_DEPLOY_USER:-}"
 REMOTE_DIR="${ATELIER_DEPLOY_DIR:-/wp-content/plugins/atelier}"
 
 if [ -z "$HOST" ] || [ -z "$USER_NAME" ]; then
-	echo "[ERROR] set ATELIER_DEPLOY_HOST and ATELIER_DEPLOY_USER, or create tools/deploy.env:" >&2
-	echo "          ATELIER_DEPLOY_HOST=ftp.example.com" >&2
-	echo "          ATELIER_DEPLOY_USER=account" >&2
-	echo "        The password is read from the macOS login keychain for that host and account," >&2
-	echo "        never from a file: security add-internet-password -s <host> -a <account> -w" >&2
-	exit 2
+	case "${1:-}" in
+		# `order-check` compares two trees that are already on disk and never opens a connection,
+		# so it must not require a deployment target. That is not a convenience: it is what lets
+		# tests/deploy-order-test.sh run in CI, on a runner that has no credentials and no route
+		# to the host, and a check nothing exercises is a check nobody knows the state of.
+		order-check) : ;;
+		*)
+			echo "[ERROR] set ATELIER_DEPLOY_HOST and ATELIER_DEPLOY_USER, or create tools/deploy.env:" >&2
+			echo "          ATELIER_DEPLOY_HOST=ftp.example.com" >&2
+			echo "          ATELIER_DEPLOY_USER=account" >&2
+			echo "        The password is read from the macOS login keychain for that host and account," >&2
+			echo "        never from a file: security add-internet-password -s <host> -a <account> -w" >&2
+			exit 2
+			;;
+	esac
 fi
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 CHUNK=8192
@@ -65,26 +74,63 @@ CHUNK=8192
 # on trust. It is the set that changed since the deployed release; re-uploading a file that did
 # not change buys nothing and adds a transfer that can fail.
 #
-# 26.8.18 has ONE ordering constraint, and it is the same shape as the last three: a method
-# arriving on a class that already exists.
+# 26.8.22 has ONE cross-file constraint and it points the OTHER WAY from every previous release,
+# because this release REMOVES a method rather than adding one. The five releases before it all
+# had the shape "a definition arrives, land it before its caller"; invert the direction and the
+# familiar rule gives exactly the wrong answer.
 #
-#   1. `class-atelier-settings.php` gains `continues_envira()`, and
-#      `class-atelier-migration.php` calls it at the top of `rollback()`. Landing the caller
-#      first is a fatal on the migration screen -- admin-only, unlike 26.8.17's, but still a
-#      "Call to undefined method" for anyone who opens that page in the window between the two
-#      files. Settings first.
+#   1. `Atelier_Gallery::custom_css()` is DELETED, and `class-atelier-renderer.php` is the file
+#      that stops calling it. Land the definition's file first and the DEPLOYED renderer -- still
+#      on the server, still calling it -- hits "Call to undefined method" on every page that
+#      renders a gallery: the front page and 50-odd permalinks. So the CALLER goes first here.
+#      Renderer, then gallery.
+#
+#   2. Softer, same direction: the deployed `class-atelier-gallery.php` reads
+#      `$this->settings['custom_css']`, and `class-atelier-config.php` drops that key from
+#      `defaults()`. Config landing first is an "Undefined array key" warning rather than a
+#      fatal, but the ordering that avoids it is free. Gallery, then config.
+#
+# `plan` CANNOT SEE EITHER OF THESE. Its walk asks which requires are new and whether an asset
+# precedes the bootstrap; a method that has been deleted appears in neither question, and the
+# grep it runs looks for callers of a class name rather than of a method. It will print
+# "constraints: satisfied" over an order that takes the site down. The other four removed
+# functions this release are safe by construction and were checked rather than assumed:
+# `atelier_load_textdomain()` is defined and hooked in the same file, and `Atelier_Config::css()`,
+# `Atelier_Config::rewrite_css()` and `Atelier_Editor::row_css()` are all private.
 #
 # `atelier.php` is last for the usual reason: ATELIER_VERSION is the `?ver=` on the assets. No
 # asset changed this release, so the window is harmless either way; the position costs nothing
 # and stating a rule once per release is cheaper than deciding whether it applies.
 #
-# `readme.txt` changed (stable tag and changelog) and is inert to WordPress, so it can land
-# anywhere.
+# The set is derived from the SERVER, not from the release commit: every shipped file was
+# downloaded back and digest-compared, and the server proved to be exactly the 26.8.21 deploy
+# (03d9edc). That matters because a later commit, 9e3ab3c, edited five more shipped files after
+# that deploy and never shipped -- ajax, album-editor, migration, settings and uninstall are in
+# this list for that reason, not because 26.8.22 touched them.
+#
+# LICENSE, languages/atelier-de_DE.po and languages/atelier.pot are ABSENT from the server and
+# deliberately stay that way: none is read at runtime, none has ever been deployed, and each is
+# one more transfer that can fail for no behavioural gain. LICENSE ships in the wordpress.org
+# ZIP, which is a different artifact.
 UPLOAD_ORDER=(
+	"includes/class-atelier-renderer.php"
+	"includes/class-atelier-gallery.php"
+	"includes/class-atelier-config.php"
+	"includes/class-atelier-editor.php"
+	"includes/class-atelier-ajax.php"
+	"includes/class-atelier-album-editor.php"
+	"includes/class-atelier-migration.php"
 	"includes/class-atelier-settings.php"
+	"languages/atelier-de_DE.mo"
 	"readme.txt"
+	"uninstall.php"
 	"atelier.php"
 )
+
+# The order the checks below actually run against. It is UPLOAD_ORDER for every real invocation;
+# `order-check` replaces it so a test can hand in a deliberately wrong order and require the
+# check to go red. Without that seam the only way to exercise this is to break a live deploy.
+ORDER=( "${UPLOAD_ORDER[@]}" )
 
 WORK="$(mktemp -d)"
 chmod 700 "$WORK"
@@ -205,7 +251,193 @@ put_chunked() {
 	printf '  [OK]   %-42s %6s bytes, %d chunks, digest verified\n' "$rel" "$expected" "$n"
 }
 
+# ---------------------------------------------------------------------------------------------
+# The constraint that points BACKWARDS, and the reason this function exists at all.
+#
+# Every ordering rule above is about a definition ARRIVING: land it before its caller, or the
+# caller is a fatal in the window between the two files. 26.8.22 was the first release to DELETE
+# one -- `Atelier_Gallery::custom_css()`, with `Atelier_Renderer` as the file that stops calling
+# it -- and the familiar rule gives exactly the wrong answer there. The caller has to go FIRST,
+# because it is the DEPLOYED caller, still on the server, that would be left naming a method the
+# new file no longer defines.
+#
+# `cmd_plan` printed "constraints: satisfied" over that order and was right to by its own lights:
+# it asks which `require`s are new and whether an asset precedes the bootstrap, and a deleted
+# method is in neither question. Its class-level grep cannot see it either -- the class is still
+# required, still constructed, still there; it is one method that went away.
+#
+# The comparison is against the DEPLOYED tree, not against the previous release commit, for the
+# reason the whole script exists: the version of record is what the server serves. A commit that
+# edited a shipped file after the last deploy and never shipped is invisible to `git diff` against
+# a tag, and 26.8.22 met exactly that (9e3ab3c, five files).
+#
+# Three outcomes rather than two, because "I could not tell" must never be delivered as a pass:
+#
+#   ERROR      a call SURVIVES the release -- some local file still calls a method nothing
+#              defines any more. That is a broken release rather than an ordering problem, and
+#              it also covers every caller OUTSIDE this upload for free: a file that is not in
+#              the upload is byte-identical to the deployed one, so if its deployed copy calls
+#              the method, so does its local copy.
+#   ERROR      the deployed caller IS in this upload and is ordered at or after the file that
+#              drops the definition.
+#   AMBIGUOUS  another class still defines a method of that name, so `->name(` cannot say which
+#              object it belongs to. Reported for a human rather than guessed either way -- a
+#              grep that resolves this would be claiming a type checker it does not have.
+# ---------------------------------------------------------------------------------------------
+
+# Method and function DEFINITIONS in one PHP file, one name per line, sorted.
+#
+# Anchored at the start of the line so a CALL never matches: `public function custom_css(` is a
+# definition, `$gallery->custom_css(` is not, and the difference is entirely the anchor plus the
+# modifier prefix. A bare `function atelier_load_textdomain(` at column 0 is a definition too.
+php_defs() {
+	grep -oE '^[[:space:]]*((public|protected|private|static|abstract|final)[[:space:]]+)*function[[:space:]]+&?[A-Za-z_][A-Za-z0-9_]*' "$1" 2>/dev/null |
+		sed -E 's/.*function[[:space:]]+&?//' |
+		sort -u
+}
+
+# Does file $1 CALL method $2? Both spellings, and a space before the paren is legal PHP.
+calls_method() {
+	grep -qE "(->|::)[[:space:]]*$2[[:space:]]*\(" "$1" 2>/dev/null
+}
+
+order_position() {
+	local n=0 rel
+
+	for rel in "${ORDER[@]}"; do
+		n=$((n + 1))
+
+		if [ "$rel" = "$1" ]; then
+			printf '%s' "$n"
+
+			return
+		fi
+	done
+
+	printf '%s' "0"
+}
+
+# Every shipped PHP file in the local tree, which is where a surviving call would be.
+local_php() {
+	printf '%s\n' "$ROOT/atelier.php" "$ROOT/uninstall.php" "$ROOT"/includes/*.php
+}
+
+check_removed_methods() {
+	local ref="$1"
+	local ok=1 removed=0 pairs=0 ambiguous=0
+	local rel m f defining_pos caller caller_pos survivors elsewhere
+
+	for rel in "${ORDER[@]}"; do
+		case "$rel" in
+			*.php) ;;
+			*) continue ;;
+		esac
+
+		# Absent from the deployed tree means the file is new, and a new file cannot have
+		# removed anything. Absent locally would be a deletion, which this script does not do.
+		[ -f "$ref/$rel" ] || continue
+		[ -f "$ROOT/$rel" ] || continue
+
+		while IFS= read -r m; do
+			[ -z "$m" ] && continue
+
+			removed=$((removed + 1))
+			defining_pos="$(order_position "$rel")"
+
+			survivors=""
+			elsewhere=0
+
+			for f in $(local_php); do
+				[ -f "$f" ] || continue
+
+				if calls_method "$f" "$m"; then
+					survivors="$survivors ${f#"$ROOT"/}"
+				fi
+
+				if [ "$f" != "$ROOT/$rel" ] && php_defs "$f" | grep -qx "$m"; then
+					elsewhere=1
+				fi
+			done
+
+			if [ "$elsewhere" -eq 1 ]; then
+				echo "  AMBIGUOUS $rel drops $m(), but another class still defines that name;"
+				echo "            a grep cannot say which object a call names -- check by hand"
+				ambiguous=$((ambiguous + 1))
+
+				continue
+			fi
+
+			if [ -n "$survivors" ]; then
+				echo "[ERROR] $rel drops $m(), but$survivors still calls it -- no order fixes that" >&2
+				ok=0
+
+				continue
+			fi
+
+			for caller in "${ORDER[@]}"; do
+				[ "$caller" = "$rel" ] && continue
+				[ -f "$ref/$caller" ] || continue
+				calls_method "$ref/$caller" "$m" || continue
+
+				pairs=$((pairs + 1))
+				caller_pos="$(order_position "$caller")"
+
+				if [ "$caller_pos" -ge "$defining_pos" ]; then
+					echo "[ERROR] $rel drops $m() and the DEPLOYED $caller still calls it," >&2
+					echo "        but $caller is ordered after it -- every request that reaches" >&2
+					echo "        that call between the two uploads is a fatal" >&2
+					ok=0
+				else
+					echo "  REMOVED   $m(): $caller (deployed caller) precedes $rel (definition)"
+				fi
+			done
+		done < <(comm -23 <(php_defs "$ref/$rel") <(php_defs "$ROOT/$rel"))
+	done
+
+	if [ "$removed" -eq 0 ]; then
+		echo "  methods dropped this release:       none, so nothing to sequence backwards"
+	else
+		echo "  methods dropped this release:       $removed, ordering pairs checked: $pairs, ambiguous: $ambiguous"
+	fi
+
+	[ "$ok" -eq 1 ]
+}
+
+# Populate a local mirror of the DEPLOYED tree for the check above.
+#
+# A file that cannot be read is refused rather than skipped. Skipping is the failure this script
+# has already made twice in other places: an unreadable file and a file with nothing removed
+# produce the same silence, and the silent one reads as a pass.
+fetch_deployed() {
+	local dest="$1" rel size
+
+	mkdir -p "$dest/includes"
+
+	for rel in "${ORDER[@]}"; do
+		case "$rel" in
+			*.php) ;;
+			*) continue ;;
+		esac
+
+		if ftp -o "$dest/$rel" "ftp://$HOST$REMOTE_DIR/$rel" 2>/dev/null && [ -s "$dest/$rel" ]; then
+			continue
+		fi
+
+		rm -f "$dest/$rel"
+		size="$(remote_size "$rel")"
+
+		if [ "$size" != "-1" ]; then
+			echo "[ERROR] the deployed $rel is $size bytes but could not be read; the" >&2
+			echo "        removed-method check would silently cover nothing" >&2
+
+			return 1
+		fi
+	done
+}
+
 cmd_plan() {
+	ORDER=( "${UPLOAD_ORDER[@]}" )
+
 	echo "upload order, and why it is this order:"
 	echo
 
@@ -384,6 +616,13 @@ cmd_plan() {
 		echo "  versioned assets in this upload:    none, so no cache-buster to sequence"
 	else
 		echo "  versioned assets before the bootstrap: $assets_first of $assets_seen"
+	fi
+
+	# The third constraint, and the only one that runs backwards. See check_removed_methods().
+	if fetch_deployed "$WORK/deployed"; then
+		check_removed_methods "$WORK/deployed" || ok=0
+	else
+		ok=0
 	fi
 
 	echo
@@ -571,6 +810,22 @@ case "${1:-}" in
 	capture) cmd_capture "${2:?usage: capture <out> [urls]}" "${3:-}" ;;
 	fingerprint) cmd_fingerprint "${2:?usage: fingerprint <out> [urls]}" "${3:-}" ;;
 	compare) cmd_compare "${2:?usage: compare <before> <after>}" "${3:?}" ;;
+	# order-check <deployed-tree> [file ...] -- the removed-method constraint on its own, against
+	# a tree on disk instead of the server, with an order the caller chooses. Offline by design:
+	# it is how tests/deploy-order-test.sh proves the check can go red without breaking a deploy.
+	order-check)
+		shift
+		REF="${1:?usage: order-check <deployed-tree-dir> [file ...]}"
+		shift
+
+		[ -d "$REF" ] || {
+			echo "[ERROR] no such deployed tree: $REF" >&2
+			exit 2
+		}
+
+		[ "$#" -gt 0 ] && ORDER=( "$@" )
+		check_removed_methods "$REF"
+		;;
 	*)
 		sed -n '2,30p' "${BASH_SOURCE[0]}"
 		exit 1

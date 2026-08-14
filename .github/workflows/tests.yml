@@ -84,6 +84,15 @@ jobs:
         # about is simply not shown, and every rendering, PHP and live-URL check passes over it.
         run: node tests/frontend-js-test.js
 
+      - name: Check the deploy script's removed-method ordering rule
+        # The only test here that covers tooling rather than the plugin, and it earns the slot:
+        # the rule it guards is the one whose absence would have taken the live site down on
+        # 26.8.22, and `deploy.sh plan` reported "constraints: satisfied" over the order that
+        # would have done it. Six cases, two of which exist only to prove the other four can
+        # fail. It compares two trees on disk, so it needs no credentials and no network —
+        # which is the whole reason `order-check` is a subcommand instead of inline in `plan`.
+        run: bash tests/deploy-order-test.sh
+
   mutations:
     name: mutations (PHP 8.2)
     runs-on: ubuntu-latest

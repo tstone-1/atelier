@@ -22,9 +22,17 @@ photographs, and **not one page carries an anonymous `<style>` element**.
 at a glance.** Every release since 26.8.15 has predicted `0 changed` and then had to argue about
 what the comparison could actually see — `capture` strips `?ver=` before hashing, so a release
 touching only an asset or a nonce is invisible to it by construction. This one removes the inline
-`<style>` block from every page carrying one of the sixteen galleries that had custom CSS, so it
-moves rendered bytes on exactly those URLs and nowhere else. A `0 changed` here would have meant
-the upload never landed.
+`<style>` block from every page carrying one of the **twenty** galleries that had custom CSS, so
+it moves rendered bytes on exactly those URLs and nowhere else. A `0 changed` here would have
+meant the upload never landed.
+
+**Twenty, not the sixteen this record first said.** Sixteen is the count in the survey line in
+`AGENTS.md`, and that line counts galleries whose *Envira* record carries hand-written
+`custom_css`; what this release removes is driven by the *v2* records, of which twenty carry it.
+Measured three ways that agree: `tools/export-custom-css.py` reports `52 galleries examined
+(migrated site), 20 carry custom CSS`; the live site carried **50** blocks across **41** pages
+before the push; and 41 is 1 front page + 20 permalinks + 20 embedding posts. An inherited number
+is the easiest kind to carry into a record — it was right about a different question.
 
 **The check that matters is the absence of an ANONYMOUS style element, not of style elements.**
 The front page carries six — `classic-theme-styles-inline-css`, `global-styles-inline-css`,
@@ -52,9 +60,140 @@ gallery, so the control that it still serves its form with zero upload filenames
 here — nothing in this release touches that path, but the check that would have proved it was
 absent, not passing. And the Customizer had **no `wp-custom-css` block at the time of the sweep**,
 which means the exported CSS had not yet been pasted in: WordPress omits that block entirely when
-Additional CSS is empty, so its absence is evidence, not silence. Until it is pasted, those
-sixteen galleries render correctly but unstyled — which is the intended, recoverable state, not a
-regression.
+Additional CSS is empty, so its absence is evidence, not silence.
+
+**That last observation is sound and the conclusion first drawn from it was not: there is nothing
+to paste, and no gallery is waiting to be styled.** Every declaration in all twenty exported
+blocks is commented out — `/* margin-bottom: 20px; */`, `/* font-size: 18px; */`,
+`/* font-family: "roboto"; */` and nothing else — so what the old plugin emitted was
+`#atelier-2423 { }`, an empty rule. Grepping the export for a line that is not a comment, a
+selector or a brace returns **zero**. The galleries are not "unstyled until it is pasted"; they
+were never styled, the CSS has been inert for as long as it has existed, and pasting the export
+would add 145 lines of comments that do nothing.
+
+Two details make the point harder to doubt. Sixteen of the twenty blocks target `#atelier-2423`
+regardless of which gallery stores them — written once on Harburg and copied nineteen times — so
+even uncommented, most would style a gallery that is not theirs. And the offline render
+comparison below shows the whole markup delta is the `<style>` element itself, 510 bytes across
+four galleries, with nothing inside it that a browser acts on.
+
+The export is still worth keeping, for a different reason than restoration: it is the record that
+Envira's copy and Atelier's v2 copy agreed before any gallery gets saved under 26.8.22, which is
+the point at which the v2 copy is dropped.
+
+### The 26.8.22 ordering constraint, which pointed backwards
+
+The record above is the deploy; this is the thing that nearly went wrong in it. **12 files, 31
+chunks, every chunk first time, 0 non-200,** `ver=26.8.21` before and `26.8.22` after.
+Seventeenth deploy with no failed chunk.
+
+**This is the first release that DELETES a method, and the familiar rule gives exactly the wrong
+answer for one.** `Atelier_Gallery::custom_css()` is gone and `Atelier_Renderer` line 84 was the
+file that stops calling it. Every ordering rule in five previous releases is about a definition
+*arriving* — land it before its caller — so the reflex is to upload the class that owns the
+method first. Do that and the **deployed** renderer, still on the server, is left naming a method
+the new file no longer defines: `Call to undefined method` on the front page and fifty
+permalinks, for as long as the second upload takes. The caller goes first. Renderer, then
+gallery, then config — config third because the deployed gallery reads
+`$this->settings['custom_css']` and config drops that key, a warning rather than a fatal but free
+to avoid.
+
+**`plan` printed `constraints: satisfied` over either order, and was right by its own lights.**
+It asks which `require`s are new and whether an asset precedes the bootstrap; a deleted method is
+in neither question, and its class-level grep cannot see it either — the class is still required,
+still constructed, still there. One method went away. That gap is now a check with its own test;
+the entry below is about it.
+
+The other four functions this release removes are safe by construction and were checked rather
+than assumed: `atelier_load_textdomain()` is defined and hooked in the same file, and
+`Atelier_Config::css()`, `Atelier_Config::rewrite_css()` and `Atelier_Editor::row_css()` are all
+private, so no other file can have been calling them.
+
+**`UPLOAD_ORDER` was stale for the fourth time — four releases stale, under a comment still
+describing 26.8.18's constraint.** What mattered was not re-deriving it but *where from*. Instead
+of diffing against the release commit, every shipped file was downloaded back and digest-compared
+against the local copy. That put the server at exactly the 26.8.21 deploy (`03d9edc`) and
+surfaced something a `git diff` against a tag structurally cannot see: commit `9e3ab3c` edited
+five more shipped files *after* that deploy and never shipped. `ajax`, `album-editor`,
+`migration`, `settings` and `uninstall.php` are in this upload for that reason, not because
+26.8.22 touched them. **Ask the server what it has.** The audit is 43 downloads and answers the
+question the note has now failed to answer four times.
+
+**The changed set was compared in both directions, and the count alone would have been nearly
+worthless.** The pages carrying an inline `<style>` were measured on the live site *before* the
+push: 41 pages, 50 blocks. `compare` then reported 41 changed — a satisfying number that a
+coincidence could produce. Neither `comm` produced a row: nothing predicted stayed put, nothing
+unpredicted moved.
+
+**Even the matching set does not prove only the `<style>` moved, and that needed a different
+instrument.** Four affected galleries were rendered offline at `03d9edc` and at `HEAD` through
+the stub harness; strip the `<style>` elements from the old output and it is **byte-identical**
+to the new — 510 bytes, no other difference. The control is what makes it mean anything:
+unstripped the two differ, so the strip is doing the work rather than the comparison being
+vacuous. Same move the migration record describes for the tile count, and cheaper than it looks —
+the harness renders galleries already, and a worktree at the deployed SHA is one command.
+
+**Three files were deliberately left absent from the server:** `LICENSE`,
+`languages/atelier-de_DE.po` and `languages/atelier.pot`. None is read at runtime, none has ever
+been deployed, and each is one more transfer that can fail for no behavioural gain. `LICENSE`
+ships in the wordpress.org ZIP, a different artifact built by a different script.
+
+### The check that now enforces it, and the six cases that prove it can fail
+
+`check_removed_methods()` in `tools/deploy.sh`, run by `plan` and therefore by `push`. It compares
+the **deployed** tree against the local one, so a method present there and absent here is exactly
+a method this release deletes.
+
+**Three outcomes, not two, because "I could not tell" must never be delivered as a pass:**
+
+- A call that **survives** the release — some local file still calls a method nothing defines any
+  more — is refused outright. No upload order fixes it. This also covers every caller *outside*
+  the upload for free: a file not in the upload is byte-identical to the deployed one, so if its
+  deployed copy calls the method, its local copy does too.
+- The deployed caller **is** in the upload and is ordered at or after the file dropping the
+  definition. Refused, naming both files.
+- Another class still defines a method of that **name**, so `->name(` cannot say which object it
+  belongs to. Reported as `AMBIGUOUS` for a human rather than guessed either way — resolving it by
+  grep would be claiming a type checker the script does not have.
+
+**`order-check <deployed-tree> [file ...]` is a subcommand rather than inline code, and that is
+the load-bearing design decision.** It compares two directories on disk, takes its order from the
+caller, and never opens a connection — so the check can be exercised without breaking a live
+deploy, and it runs in CI on a runner with no credentials and no route to the host. A check
+nothing exercises is a check nobody knows the state of.
+
+`tests/deploy-order-test.sh` builds both trees from the **working** copy — not `HEAD`, because the
+check under test is usually uncommitted when this runs — and adds methods to the reference, which
+is the same thing as deleting them from the release without having to pick a real method whose
+disappearance would break the fixture's own PHP. Six cases, each with its outcome declared in
+advance:
+
+| | case | expected |
+|---|---|---|
+| A | caller before definition | pass, and it names the pair |
+| B | definition before caller | **fail**, naming the method |
+| C | nothing removed at all | pass, and it says "none" |
+| D | a call the release does not remove | **fail**, no order fixes it |
+| E | the name is defined on another class | pass, reported for a human |
+| F | case B with the caller-grep neutered | **pass** |
+
+**C and F are the two that make the other four mean anything.** C is the emptiness control: a
+check that walks an empty list passes exactly like one that walked a full list and found nothing
+wrong, and this repository has shipped that defect before. F mutates the harness rather than the
+code — if B still failed with the caller-grep returning false, B would be failing for some other
+reason and would be saying nothing about the check. The mutation asserts its own landing by
+digest, because a mutation that patched nothing reports the tests as fine.
+
+**Validated against the real case, not only the synthetic one.** With a worktree at `03d9edc` as
+the deployed tree, the order actually used passes and names the pair; the order `plan` would have
+accepted fails with the fatal spelled out. It finds three dropped methods and exactly one ordering
+pair, which is the right answer — the other two are private.
+
+**What is not covered, stated because a gap nobody names is a gap nobody fixes:**
+`fetch_deployed()`'s refusal branch — a file that exists on the server but cannot be read — needs
+a network to exercise and no test reaches it. It is written to refuse rather than skip, on the
+reasoning that an unreadable file and a file with nothing removed produce the same silence and the
+silent one reads as a pass. That reasoning has not been demonstrated.
 
 ### The 26.8.21 deploy, whose release was found on an install that had never been done
 
