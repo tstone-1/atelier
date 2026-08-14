@@ -249,10 +249,19 @@ Of the 18 active Envira plugins, about six carry real weight.
   `envira-tag` taxonomy on the attachment — the `_processed_tag_upgrade` meta on 51
   galleries records that having happened — and the item's own `tags` key is now empty
   everywhere. Read the taxonomy, not the item.
-- 16 galleries carry hand-written `custom_css` keyed on `#envira-gallery-<id>`. **Atelier no
-  longer reads it** — see *The wordpress.org review, and the feature it cost* below. It survives
-  in **two** records that can disagree — Envira's permanently, Atelier's own only until that
-  gallery is next saved — and `tools/export-custom-css.py` reads both.
+- **16 galleries carry hand-written `custom_css` in ENVIRA's record, keyed on
+  `#envira-gallery-<id>`; 20 carry it in Atelier's own.** Both numbers are right and they answer
+  different questions, so say which one you mean — the 16 is what the original survey counted and
+  it is the wrong figure for anything about what Atelier renders. The 26.8.22 record was written
+  with 16 and had to be corrected: the live site carried 50 inline blocks across 41 pages, which
+  is 1 front page + 20 permalinks + 20 embedding posts. `tools/export-custom-css.py` reports the
+  count it actually found, and is the thing to ask.
+  **Atelier no longer reads it** — see *The wordpress.org review, and the feature it cost* below.
+  It survives in **two** records that can disagree — Envira's permanently, Atelier's own only
+  until that gallery is next saved — and the exporter reads both.
+  **On this site every declaration in all 20 blocks is commented out**, so the element it emitted
+  was `#atelier-2423 { }` and removing it changed no pixel. Nothing is waiting to be pasted into
+  Additional CSS; a reader who assumes otherwise will restore styling that never existed.
 
 ## Security posture
 
@@ -654,108 +663,18 @@ on exit, so it never reaches an argument list, a log line, or a transcript.
   local copy.** Size is a cheap first gate; the digest is the only thing that establishes what
   is on the server.
 
-**The deploy records — one per release that reached the site, newest first. Full text in
-[`docs/deploys.md`](docs/deploys.md):**
+**The deploy records are one per release that reached the site, and their index moved with
+them.** Eighteen releases with thirty-two hooks is a corpus, not an index line, and it was a
+seventh of this file. The list now opens
+[`docs/deploys.md`](docs/deploys.md) as *The records at a glance*, which is where you already
+are when the question is "what happened last time"; `tests/docs-index-test.php` guards it there
+exactly as it guards this file.
 
-- *The 26.8.22 deploy, the first that was SUPPOSED to change rendered bytes* — every release
-  since 26.8.15 predicted `0 changed`; here it would have meant the upload never landed. The
-  discriminating check is an **anonymous** `<style>`, since core and the theme emit six with
-  ids. Settles the WP 7 textdomain question on production, and names two things it could not see.
-  - *The 26.8.22 ordering constraint, which pointed backwards* — the first release to DELETE a
-    method, so the CALLER uploads first; `plan` said "satisfied" over the order that would have
-    been a fatal on the front page and fifty permalinks. `UPLOAD_ORDER` stale for the fourth
-    time, re-derived by digest-auditing the server rather than diffing a tag — which found a
-    commit that edited five shipped files after the last deploy and never shipped.
-  - *The check that now enforces it, and the six cases that prove it can fail* — three outcomes
-    rather than two; `order-check` is a subcommand so it runs offline in CI; C and F are the
-    controls that make the other four mean anything, and one branch is honestly uncovered.
-- *The 26.8.21 deploy, whose release was found on an install that had never been done* — a
-  deliberate no-op on the only site it reached, which is the recommended shape; `UPLOAD_ORDER`
-  held the previous release's list **again**, after that was written down, because the note
-  says re-derive and the script says nothing; and a control that grepped a `.php` URL measured
-  the host's willingness to execute PHP, not the file.
-- *The 26.8.20 deploy, where "0 changed" was RIGHT and my reason for expecting otherwise was
-  wrong* — `capture` strips `?ver=` before hashing, so it is structurally blind to the only
-  page-level evidence a CSS-plus-version release produces; a prediction derived from an
-  assumption about your own instrument is the instrument agreeing with itself. What
-  established the release was a live contrast measurement, and the control that says the
-  probe can still see the defect.
-- *The 26.8.19 deploy, where "0 changed" was again the prediction and again proves nothing* —
-  neither change touches a rendered byte, so `capture` was going to say 160/160 whether the
-  upload landed or never happened. Four before-and-after behavioural controls instead, and the
-  `-1` in their "before" column is the bug reproduced from the command line.
-  - *The ordering constraint that is not about PHP, now a line of code rather than a note* — an
-    asset must precede `atelier.php`, which carries the `?ver=` it is cached under; no grep can
-    see that edge, and it bound twice in five releases. `plan` now refuses it.
-- *The 26.8.18 deploy, which fixed the install nobody here has ever done* — schema 1 means "still
-  on Envira's storage", not "new", so a fresh install registered post types NAMED `envira` and
-  refused to edit; 26.8.17 had fixed the paths and left the names.
-  - *Two answers derived separately were wrong; one observation fixed it* — the fix's own first
-    draft gave a brand-new install Envira's paths, because "migrated" had come to mean two things.
-  - *A fix that hands the user a new footgun* — a fresh site is now migrated, so it must be
-    refused the rollback it would otherwise be offered.
-- *The 26.8.17 deploy, whose riskiest line ran on the server and decided something* — the slug
-  scheme writes an option on first use and every gallery URL depends on the answer; it derived
-  `envira` unaided, and the control is that `/gallery/<slug>/` does **not** serve.
-  - *One ordering constraint, invisible to `plan` for the third release running* — a method
-    arriving on an existing class, called on every front-end request. Three releases in a row now,
-    which makes it the normal case rather than the exception.
-- *The 26.8.16 deploy, which was a first install, a data rename, and a plugin swap* — ordering is
-  moot when the directory is inactive, and `plan` says so instead of claiming satisfaction;
-  `uninstall.php` had shipped three releases earlier and never reached the server.
-  - *The sequence, and why it needed no new migration code* — a SQL rename would have corrupted
-    16 galleries, because the stored CSS selectors sit inside PHP-serialised data where a string
-    replace changes the length without the length prefix.
-  - *Every number that came back "changed" was an instrument, and one of them was mid-sequence* —
-    a tile counter keyed to a hardcoded class name, Yoast losing 58 canonicals to the rollback,
-    and a protected-gallery check that had picked the wrong gallery entirely.
-  - *The setting that does not travel with a rename* — a rename orphans every option keyed on the
-    old name, and a fallback chain hides it until the thing it falls back to is deleted.
-- *The 26.8.15 deploy, where "0 changed" was the prediction and proves nothing on its own* — a
-  deploy that never landed produces the same number, because `capture` throws away the one thing
-  this release changes. Four controls that answer what the comparison cannot.
-  - *The bug was found by a person looking at the site, for the third time* — the Envira control
-    that made it a regression rather than a preference, and the first time the local copy's
-    ability to run both plugins has been cashed in.
-  - *The control I nearly used instead would have said the opposite* — a Wayback snapshot whose
-    theme stylesheet had not truly applied; ask whether a stylesheet's **effects** are present,
-    not whether the stylesheet is.
-  - *One ordering constraint, and it is not about PHP* — the stylesheet before `atelier.php`, or
-    browsers cache the old file under the new `?ver=` and nothing corrects it until the next bump.
-- *The 26.8.14 deploy, and the URL that had never once been checked* — the front page renders
-  ten galleries and was in no deploy's verification surface; three checks failed and all three
-  were my own instrument.
-  - *The front page renders ten galleries and was in no deploy's verification surface* —
-    enumerate the URL *spaces* a plugin can appear in, not a sample of the ones that came to
-    mind.
-  - *Three checks that failed and were all my own instrument* — a glob counted as an image, a
-    "no-gallery" page with ten galleries, and a refusal that refused in German.
-- *The 26.8.11 deploy, the first with an ordering constraint `plan` cannot express* — the
-  constraint is on a returned array key, which no grep can see. Identical was the wrong
-  expectation, and the semantic instrument was not taken — decide which one the release needs
-  at `plan` time, not after the upload.
-- *The 26.8.10 deploy, where the stale thing was the deploy script itself* — `UPLOAD_ORDER`
-  still held the previous release's file list and `plan` cheerfully validated it. The version
-  of record is what the server serves, not what the last release commit says.
-- *The 26.8.8 deploy, which is what a boring one looks like when it is predicted* — no ordering
-  constraint, derived and not hoped; identical required in advance, `ver=` the one thing
-  required to differ.
-- *The 26.8.7 deploy, where `plan` passed an order that would have taken the site down* —
-  `abstract class` broke the name extraction and removed both spellings the consumer search
-  relied on; `continue` on "I could not determine that" is a silent pass.
-- *The 26.8.6 deploy, where the VERIFICATION TOOL was the thing that broke* — `live-urls.py`
-  returned 49 URLs instead of 159 after the migration, and every downstream step would still
-  have reported success.
-- *The 26.8.5 deploy, which had no ordering constraint at all — and how that was established* —
-  "no constraint" is a derived fact, and whether a require is new is a fact about the server
-  rather than about this checkout.
-- *The 26.8.4 deploy, and the constraint that inverted* — `atelier.php` went third rather than
-  last. Re-derive `UPLOAD_ORDER` every release; do not edit the last one.
-- *The 26.8.2 deploy, which was the first one that was boring* — identical was predicted from
-  two queries against production, which is what makes 159/159 a pass rather than an ambiguity.
-- *The 26.8.1 deploy, which took the site down for a few minutes* — whole-file upload failed 6
-  of 6 and left the file at 0 bytes, which is a fatal on every page. Chunk by default; it is
-  not the fallback.
+Three are worth naming here, because they change how you read `plan`'s output rather than
+recording one release: **26.8.7**, where `plan` passed an order that would have taken the site
+down; **26.8.10**, where the stale thing was the deploy script itself; and **26.8.22**, the
+first release to DELETE a method, where the ordering constraint runs backwards and `plan` said
+"satisfied" over the order that would have been a fatal.
 
 ## German, and why the catalogue needs a test of its own (26.8.13)
 

@@ -185,6 +185,81 @@ foreach ( $titles as $title ) {
 	}
 }
 
+// ---------------------------------------------------------------------------
+// 4. the corpus files' OWN index lists, in both directions
+//
+// The deploy records' index used to live in AGENTS.md and was a seventh of it — eighteen
+// releases with thirty-two hooks is a corpus, not an index line — so it moved into
+// docs/deploys.md and opens that file instead. Moving it out of AGENTS.md moved it out of
+// every check above with it, which would have left the largest index in the repository as the
+// only unguarded one. That is the failure this file exists to prevent, merely relocated.
+//
+// Both directions, because each catches something the other cannot:
+//
+//   forward   a hook naming a record that is gone. This is the one a hurried edit produces:
+//             deleting or retitling a section and not touching the list above it.
+//   reverse   a record with no hook. Invisible forever otherwise — the record is perfectly
+//             readable, it is simply unreachable from the list people actually scan.
+//
+// `####` headings are deliberately exempt from the reverse direction. They are structure
+// WITHIN a record (three exist today: "Cleanup", and two stages of one deploy), not entries in
+// their own right, and requiring a hook for each would push detail back into the index that the
+// split just took out of it. `###` is the record level and is required to be reachable.
+// ---------------------------------------------------------------------------
+$self_indexed = 0;
+
+foreach ( $bodies as $rel => $body ) {
+	$titles = atelier_index_titles( $body );
+
+	if ( empty( $titles ) ) {
+		continue;
+	}
+
+	++$self_indexed;
+
+	printf( "%s: %d hooks\n", $rel, count( $titles ) );
+
+	$heads = array();
+
+	foreach ( $titles as $title ) {
+		$found = 0;
+
+		foreach ( $bodies as $other ) {
+			$found += preg_match_all( '/^#{2,6} ' . preg_quote( $title, '/' ) . '\s*$/m', $other );
+		}
+
+		if ( 1 !== $found ) {
+			printf( "  [FAIL] %s hooks an entry that is in the corpus %d times (want 1): %s\n",
+				$rel, $found, $title );
+			$ok = false;
+		}
+
+		$heads[ $title ] = true;
+	}
+
+	preg_match_all( '/^### (.+?)\s*$/m', $body, $records );
+
+	foreach ( $records[1] as $record ) {
+		if ( ! isset( $heads[ $record ] ) ) {
+			printf( "  [FAIL] %s has a record no hook names, so nothing scanning the list\n"
+				. "         above will ever find it: %s\n", $rel, $record );
+			$ok = false;
+		}
+	}
+
+	printf( "  %d records, all reachable from the list\n", count( $records[1] ) );
+}
+
+// The emptiness control. Every loop above is over a set that can be empty, and an empty set
+// passes exactly like a full one that found nothing wrong — the defect this suite's own render
+// harness declares its checks up front to avoid. If no corpus file carries an index list, the
+// section covered nothing and must say so rather than falling silent.
+if ( 0 === $self_indexed ) {
+	printf( "  [FAIL] no corpus file carries an index list of its own, so section 4 examined\n"
+		. "         nothing; either the format changed or the list was folded back in\n" );
+	$ok = false;
+}
+
 printf( "\n%s\n", $ok ? 'docs index: intact' : 'docs index: BROKEN' );
 
 exit( $ok ? 0 : 1 );
