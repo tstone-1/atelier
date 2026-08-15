@@ -500,136 +500,47 @@ open http://127.0.0.1:8765/
 Images load from `timo-stein.com` itself (uploads are not hotlink-protected), so the preview
 needs a network connection and touches nothing on the server.
 
-## The live switchover, and the three bugs it found
+## What happened on 2026-08-07: switchover, migration, Envira gone
 
-Done 2026-08-07: Atelier uploaded, activated, and Envira's 18 addons deactivated.
-`timo-stein.com` now renders every gallery through Atelier. **At the time this was written the
-migration had not been run** — the site was still on v1, reading Envira's own rows in place. It
-was migrated later the same day, and Envira was uninstalled after that; see the two sections
-below.
+The day the site changed hands, in three acts, and they are worth reading in order: each was
+verified against the state the previous one left, and the second and third are the only evidence
+the project's central claim was ever tested. Full text in
+[`docs/lessons.md`](docs/lessons.md) — three sections that lived here until 26.8.23, when this
+file reached the ceiling its own test guards.
 
-The result is worth the trouble: gallery permalinks went from **395 KB to 60 KB**, and every
-one of the 57 gallery, album and tag URLs answers 200 with the same photographs as before.
-
-**Every one of the three bugs below was found by a control, not by a test.** Each had passed
-the whole suite, the mutation pass and the real-WordPress checks, because each needed a state
-the local environment had never been in — Atelier and Envira *both active*, and a page nobody
-had thought to capture.
-
-- **Both plugins active rendered every gallery permalink twice.** `Atelier_Standalone` appended
-  its gallery without consulting `should_take_over()`, so it ran alongside Envira's own
-  standalone filter. This is the state a fresh install is in, and the one the takeover setting
-  exists for. It was live for about a minute; the fix is in `applies()`.
-- **Album permalinks rendered an empty page.** `Atelier_Standalone` only ever handled galleries,
-  and an album keeps its galleries in post meta for the same reason a gallery keeps its images
-  there — so `/envira_album/<slug>/` answered **200** with nothing on it. Two published URLs,
-  and a regression rather than a missing extra, because Envira's albums addon does render them.
-- **A password-protected gallery would have been published in full.** WordPress enforces a post
-  password by replacing `post_content`, which reaches no part of a gallery, so
-  `Atelier_Standalone` would have appended every image directly beneath the password form — and
-  `Atelier_Ajax` would have served them to anyone with the gallery ID, because a protected post
-  is `publish` status and `read_post` does not consider the password either. Found by reading
-  the live database during the pre-flight: exactly one gallery on this site is protected, and
-  the post embedding it is protected too.
-
-Four things generalise past this deployment:
-
-- **Deploy in a state where the change should be nothing, and check that it is nothing.**
-  Activating Atelier with Envira still running and `takeover=auto` is meant to be a complete
-  no-op. It was not, and a byte comparison against the pre-deploy capture said so in seconds.
-  A rollout with no such step would have shipped the duplication.
-- **Capture the before-state of every URL *space*, not a sample of one.** Ten probe URLs were
-  captured and none of them was an album, which is exactly why the album regression reached
-  production. The list should come from the database — every post type and taxonomy the plugin
-  registers — rather than from what came to mind.
-- **A comparison needs the un-switched site to compare against, and after the switch it is
-  gone.** The album regression could only be measured by putting Envira back *locally* and
-  fetching the same URL. Keep the local copy able to run both plugins.
-- **The fingerprint has to be semantic, not byte-for-byte.** Atelier's markup is deliberately
-  different, so the comparison is the set of upload filenames with size suffixes stripped: the
-  same photographs, however they are wrapped.
-
-**Deeper entries — full text in [`docs/lessons.md`](docs/lessons.md):**
-
-- *Fixed since: the early enqueue now matches only the shortcodes we claim* — "it did not
-  enqueue" is also what a scan matching nothing produces, so both directions are asserted.
-- *Closed in 26.8.6: the shortcode was the fourth publishing path* — a product decision blocked
-  on an unknown cost is usually blocked on an unrun query.
-- *And the fifth publishing path, added 26.8.14, which arrived already asking* — `Atelier_Block`
-  renders nothing itself and hands to the shortcode, so the visibility rule has no second
-  implementation to drift from — and the coverage does **not** follow from the design, which
-  measurement said rather than reasoning.
-  - *The one real defect in this release, and no check would ever have found it* — the picker's
-    choices were built on `init` — 111 queries on every front-end request, changing no rendered
-    byte, so every instrument here was blind. The first measurement was a warm-cache artifact.
-  - *Three things the harness could not see until it was told to* — a stub that ignores an
-    argument models code that cannot get that argument wrong; and a `block.json` is a source
-    file for translation that no tokenizer can see.
-  - *`tests/blocks-js-test.js`, the only JavaScript this repo tests* — if `blocks.js` throws,
-    both blocks are absent from the inserter and every live check still passes. Restore by
-    copy, not `git checkout`.
-  - *What real WordPress said, and the artifact it produced first* — a migration performed
-    later in the same request leaves every object built earlier naming the rows they used to
-    name — the post-types trap, one layer further in.
-
-## The migration, run on the live site 2026-08-07
-
-`timo-stein.com` now runs on Atelier's own storage. 53 galleries, 3 albums and 58 image tags
-moved; 51 gallery records and 2 album records were converted. Envira's records are untouched —
-52 `_eg_gallery_data` and 3 `_eg_album_data` still there — which is what keeps rollback real.
-
-**159 of 159 URLs are semantically identical to the pre-migration capture, and all 159 answer
-200.** Both albums render every cover from their own v2 record; the protected gallery still
-serves its form with zero markup and zero upload filenames; the AJAX endpoint still refuses it
-with a valid nonce while a public gallery returns its items; all 104 tag-to-attachment
-relationships survived the taxonomy rename.
-
-**Verify a migration semantically, never byte for byte.** The post type is in WordPress's own
-body and post classes, so `single-envira` becomes `single-atelier_gallery` on every page and a
-byte hash reports 100% changed while telling you nothing. `tools/deploy.sh` now carries both:
-`capture` (whole-page hash, right for a deploy, where nothing should move) and `fingerprint`
-(the upload filenames with size suffixes stripped, the tile count, and the document title —
-right for a migration). Using the wrong one fails in whichever direction is least convenient.
-
-**The document title is in that fingerprint because the image set alone is blind on 60 of the
-159 URLs** — 58 tag archives render no thumbnails, plus the protected gallery. Without a title
-the strongest thing "unchanged" could mean for those is "still empty", which a page that *broke*
-into an empty one satisfies just as well. Adding it took the fingerprint from 52 distinct values
-to 114, largest group 2. It also turned out to be the only reason the one real regression was
-visible at all.
-
-**Deeper entries — full text in [`docs/lessons.md`](docs/lessons.md):**
-
-- *The regression was Yoast's, and the pre-flight should have found it* — Yoast keys its
-  settings on the registered name, so renaming the taxonomy dropped the canonical from 58
-  indexed URLs. Ask what **else** keys off the names you are renaming; print the plan, do not
-  apply it.
-
-## Envira is gone (2026-08-07)
-
-All twenty `envira-*` plugin directories were deleted from the server. The plugins directory now
-holds eleven plugins and Atelier; `active_plugins` names no Envira anything.
-
-**This is the moment the project's central claim was actually tested.** Nothing but Atelier
-registers `/envira/`, `/envira_album/` and `/envira-tag/` now, and all **159 URLs still answer
-200 with the same photographs as before the migration** — compared against a capture taken while
-Envira was still installed and rendering. The registrations were the whole argument; here is the
-evidence.
-
-**Rollback still works, and that was checked rather than assumed** — it is now the only recovery
-path, and the obvious worry is that it restores rows to post types nothing registers.
-`register_types()` stands aside only when `! $migrated && envira_is_active()`, so with Envira
-absent it registers whichever names the schema says: roll back and it registers `envira`,
-`envira_album` and `envira-tag` itself, which are exactly the names the restored rows are under.
-Confirmed against a real WordPress rather than read off the source.
-
-Uninstalling it leaves harmless debris behind — orphaned `wp_options` rows, a scheduled event
-with no handler, a taxonomy nothing registers. None of it is read by anything and none of it is
-worth a production write on its own. **The inventory of what one particular site still carries is
-in the gitignored `AGENTS.local.md`**, along with the one entry in it that is load-bearing.
-
-Envira's own gallery and album records are deliberately still there. They are what rollback
-restores authority to, and they cost nothing.
+- *The live switchover, and the three bugs it found* — every one found by a control rather than
+  by a test, because each needed a state the local environment had never been in: both plugins
+  active, and a URL space nobody had thought to capture. Holds the four things that generalise
+  past this deployment, deploying-as-a-no-op first among them.
+  - *Fixed since: the early enqueue now matches only the shortcodes we claim* — "it did not
+    enqueue" is also what a scan matching nothing produces, so both directions are asserted.
+  - *Closed in 26.8.6: the shortcode was the fourth publishing path* — a product decision blocked
+    on an unknown cost is usually blocked on an unrun query.
+  - *And the fifth publishing path, added 26.8.14, which arrived already asking* — `Atelier_Block`
+    renders nothing itself and hands to the shortcode, so the visibility rule has no second
+    implementation to drift from — and the coverage does **not** follow from the design, which
+    measurement said rather than reasoning.
+    - *The one real defect in this release, and no check would ever have found it* — the picker's
+      choices were built on `init` — 111 queries on every front-end request, changing no rendered
+      byte, so every instrument here was blind. The first measurement was a warm-cache artifact.
+    - *Three things the harness could not see until it was told to* — a stub that ignores an
+      argument models code that cannot get that argument wrong; and a `block.json` is a source
+      file for translation that no tokenizer can see.
+    - *`tests/blocks-js-test.js`, the only JavaScript this repo tests* — if `blocks.js` throws,
+      both blocks are absent from the inserter and every live check still passes. Restore by
+      copy, not `git checkout`.
+    - *What real WordPress said, and the artifact it produced first* — a migration performed
+      later in the same request leaves every object built earlier naming the rows they used to
+      name — the post-types trap, one layer further in.
+- *The migration, run on the live site 2026-08-07* — 159/159 semantically identical, and why a
+  migration must be verified semantically rather than byte for byte: the post type is in
+  WordPress's own body classes, so a byte hash reports 100% changed and tells you nothing.
+  - *The regression was Yoast's, and the pre-flight should have found it* — Yoast keys its
+    settings on the registered name, so renaming the taxonomy dropped the canonical from 58
+    indexed URLs. Ask what **else** keys off the names you are renaming; print the plan, do not
+    apply it.
+- *Envira is gone (2026-08-07)* — the twenty plugin directories deleted, the three URL spaces
+  still answering 200, and rollback checked rather than assumed against a real WordPress.
 
 ## Deploying to the live site
 
@@ -645,6 +556,8 @@ nodded at; the same rule written as a line of code gets followed.
 
 ```sh
 uv run --with pymysql python tools/live-urls.py > urls.txt   # from the database, not memory
+bash tools/deploy.sh audit                    # what the SERVER has -- run this BEFORE editing
+                                              # UPLOAD_ORDER, and paste from its answer
 bash tools/deploy.sh plan                     # order, and the greps that justify it
 bash tools/deploy.sh capture before.tsv urls.txt
 bash tools/deploy.sh push                     # chunked, every file digest-verified
@@ -652,7 +565,12 @@ bash tools/deploy.sh capture after.tsv urls.txt
 bash tools/deploy.sh compare before.tsv after.tsv
 ```
 
-Three properties are worth knowing before changing it. **The upload order is asserted, not
+Four properties are worth knowing before changing it. **`UPLOAD_ORDER` is answered by the server,
+not by a diff** — `audit` downloads every deployed file, digest-compares it, and reports what
+differs, what is absent and what it could not read, refusing rather than summarising when it
+cannot tell. It exists because that list was the previous release's five times running, and
+because a `git diff` against a tag structurally cannot see a commit that edited a shipped file
+after the last deploy and never shipped — which had happened. **The upload order is asserted, not
 trusted** — `plan` re-derives which file defines a method and which call it, and refuses to run
 if the list contradicts that; swapping two entries turns it red, which has been checked.
 **`compare` asserts the join's own sanity**, because a previous deploy's ad-hoc version compared

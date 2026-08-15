@@ -1010,6 +1010,53 @@ live site must not be able to write to that site's correspondents.
 
 ## The live switchover, and the three bugs it found
 
+Done 2026-08-07: Atelier uploaded, activated, and Envira's 18 addons deactivated.
+`timo-stein.com` now renders every gallery through Atelier. **At the time this was written the
+migration had not been run** — the site was still on v1, reading Envira's own rows in place. It
+was migrated later the same day, and Envira was uninstalled after that; see the two sections
+below.
+
+The result is worth the trouble: gallery permalinks went from **395 KB to 60 KB**, and every
+one of the 57 gallery, album and tag URLs answers 200 with the same photographs as before.
+
+**Every one of the three bugs below was found by a control, not by a test.** Each had passed
+the whole suite, the mutation pass and the real-WordPress checks, because each needed a state
+the local environment had never been in — Atelier and Envira *both active*, and a page nobody
+had thought to capture.
+
+- **Both plugins active rendered every gallery permalink twice.** `Atelier_Standalone` appended
+  its gallery without consulting `should_take_over()`, so it ran alongside Envira's own
+  standalone filter. This is the state a fresh install is in, and the one the takeover setting
+  exists for. It was live for about a minute; the fix is in `applies()`.
+- **Album permalinks rendered an empty page.** `Atelier_Standalone` only ever handled galleries,
+  and an album keeps its galleries in post meta for the same reason a gallery keeps its images
+  there — so `/envira_album/<slug>/` answered **200** with nothing on it. Two published URLs,
+  and a regression rather than a missing extra, because Envira's albums addon does render them.
+- **A password-protected gallery would have been published in full.** WordPress enforces a post
+  password by replacing `post_content`, which reaches no part of a gallery, so
+  `Atelier_Standalone` would have appended every image directly beneath the password form — and
+  `Atelier_Ajax` would have served them to anyone with the gallery ID, because a protected post
+  is `publish` status and `read_post` does not consider the password either. Found by reading
+  the live database during the pre-flight: exactly one gallery on this site is protected, and
+  the post embedding it is protected too.
+
+Four things generalise past this deployment:
+
+- **Deploy in a state where the change should be nothing, and check that it is nothing.**
+  Activating Atelier with Envira still running and `takeover=auto` is meant to be a complete
+  no-op. It was not, and a byte comparison against the pre-deploy capture said so in seconds.
+  A rollout with no such step would have shipped the duplication.
+- **Capture the before-state of every URL *space*, not a sample of one.** Ten probe URLs were
+  captured and none of them was an album, which is exactly why the album regression reached
+  production. The list should come from the database — every post type and taxonomy the plugin
+  registers — rather than from what came to mind.
+- **A comparison needs the un-switched site to compare against, and after the switch it is
+  gone.** The album regression could only be measured by putting Envira back *locally* and
+  fetching the same URL. Keep the local copy able to run both plugins.
+- **The fingerprint has to be semantic, not byte-for-byte.** Atelier's markup is deliberately
+  different, so the comparison is the set of upload filenames with size suffixes stripped: the
+  same photographs, however they are wrapped.
+
 ### Fixed since: the early enqueue now matches only the shortcodes we claim
 
 `Atelier_Assets::maybe_enqueue_early()` used to scan for `[envira-gallery]` unconditionally, so
@@ -1191,6 +1238,30 @@ that it would.
 
 ## The migration, run on the live site 2026-08-07
 
+`timo-stein.com` now runs on Atelier's own storage. 53 galleries, 3 albums and 58 image tags
+moved; 51 gallery records and 2 album records were converted. Envira's records are untouched —
+52 `_eg_gallery_data` and 3 `_eg_album_data` still there — which is what keeps rollback real.
+
+**159 of 159 URLs are semantically identical to the pre-migration capture, and all 159 answer
+200.** Both albums render every cover from their own v2 record; the protected gallery still
+serves its form with zero markup and zero upload filenames; the AJAX endpoint still refuses it
+with a valid nonce while a public gallery returns its items; all 104 tag-to-attachment
+relationships survived the taxonomy rename.
+
+**Verify a migration semantically, never byte for byte.** The post type is in WordPress's own
+body and post classes, so `single-envira` becomes `single-atelier_gallery` on every page and a
+byte hash reports 100% changed while telling you nothing. `tools/deploy.sh` now carries both:
+`capture` (whole-page hash, right for a deploy, where nothing should move) and `fingerprint`
+(the upload filenames with size suffixes stripped, the tile count, and the document title —
+right for a migration). Using the wrong one fails in whichever direction is least convenient.
+
+**The document title is in that fingerprint because the image set alone is blind on 60 of the
+159 URLs** — 58 tag archives render no thumbnails, plus the protected gallery. Without a title
+the strongest thing "unchanged" could mean for those is "still empty", which a page that *broke*
+into an empty one satisfies just as well. Adding it took the fingerprint from 52 distinct values
+to 114, largest group 2. It also turned out to be the only reason the one real regression was
+visible at all.
+
 ### The regression was Yoast's, and the pre-flight should have found it
 
 58 URLs changed: every tag archive, and only tag archives. **Yoast keys its per-type settings on
@@ -1234,6 +1305,32 @@ names, and the new ones go inert); and the suffix is matched exactly, never as a
 is the mistake that produced 25 keys describing archives that no longer exist. It is deliberately
 Yoast-only: a general "rewrite every option mentioning the old name" pass would be guesswork about
 key formats, and guesswork that writes.
+
+## Envira is gone (2026-08-07)
+
+All twenty `envira-*` plugin directories were deleted from the server. The plugins directory now
+holds eleven plugins and Atelier; `active_plugins` names no Envira anything.
+
+**This is the moment the project's central claim was actually tested.** Nothing but Atelier
+registers `/envira/`, `/envira_album/` and `/envira-tag/` now, and all **159 URLs still answer
+200 with the same photographs as before the migration** — compared against a capture taken while
+Envira was still installed and rendering. The registrations were the whole argument; here is the
+evidence.
+
+**Rollback still works, and that was checked rather than assumed** — it is now the only recovery
+path, and the obvious worry is that it restores rows to post types nothing registers.
+`register_types()` stands aside only when `! $migrated && envira_is_active()`, so with Envira
+absent it registers whichever names the schema says: roll back and it registers `envira`,
+`envira_album` and `envira-tag` itself, which are exactly the names the restored rows are under.
+Confirmed against a real WordPress rather than read off the source.
+
+Uninstalling it leaves harmless debris behind — orphaned `wp_options` rows, a scheduled event
+with no handler, a taxonomy nothing registers. None of it is read by anything and none of it is
+worth a production write on its own. **The inventory of what one particular site still carries is
+in the gitignored `AGENTS.local.md`**, along with the one entry in it that is load-bearing.
+
+Envira's own gallery and album records are deliberately still there. They are what rollback
+restores authority to, and they cost nothing.
 
 ## German, and why the catalogue needs a test of its own (26.8.13)
 
