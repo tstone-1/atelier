@@ -93,6 +93,15 @@ jobs:
         # which is the whole reason `order-check` is a subcommand instead of inline in `plan`.
         run: bash tests/deploy-order-test.sh
 
+      - name: Check the deploy script's server audit
+        # The second tooling test, and it guards the answer to "what does the server actually
+        # have" -- the question UPLOAD_ORDER got wrong five releases running. Three of the
+        # audit's verdicts fail silently if they blur together (absent read as same, unreadable
+        # read as absent, an empty file set read as nothing-differs), so the cases exist to keep
+        # them distinguishable. Like the ordering test it compares trees on disk: no credentials,
+        # no network, no deployment target.
+        run: bash tests/deploy-audit-test.sh
+
   mutations:
     name: mutations (PHP 8.2)
     runs-on: ubuntu-latest

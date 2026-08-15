@@ -18,7 +18,7 @@ landed before anything was deployed, so the two shipped together as 26.8.4.
 > at the time. Nothing else about those entries was altered: the dates, the counts, the measured
 > numbers and the reasoning are as they were written.
 
-## [26.8.23] - Unreleased
+## [26.8.23] - 2026-08-15
 
 Answers the second wordpress.org review round (`R atelier/tstone1/14Aug26/T2`, 2026-08-15).
 

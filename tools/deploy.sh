@@ -3,6 +3,7 @@
 # Uploads the plugin to the live site over FTPS and proves what landed.
 #
 # Usage:
+#   bash tools/deploy.sh audit         # ask the SERVER what it has: every shipped file, by digest
 #   bash tools/deploy.sh plan          # what would be uploaded, and in what order
 #   bash tools/deploy.sh urls          # enumerate every URL the plugin owns, from the database
 #   bash tools/deploy.sh capture <out> # fetch those URLs and record a normalised hash each
@@ -49,22 +50,28 @@ HOST="${ATELIER_DEPLOY_HOST:-}"
 USER_NAME="${ATELIER_DEPLOY_USER:-}"
 REMOTE_DIR="${ATELIER_DEPLOY_DIR:-/wp-content/plugins/atelier}"
 
-if [ -z "$HOST" ] || [ -z "$USER_NAME" ]; then
-	case "${1:-}" in
-		# `order-check` compares two trees that are already on disk and never opens a connection,
-		# so it must not require a deployment target. That is not a convenience: it is what lets
-		# tests/deploy-order-test.sh run in CI, on a runner that has no credentials and no route
-		# to the host, and a check nothing exercises is a check nobody knows the state of.
-		order-check) : ;;
-		*)
-			echo "[ERROR] set ATELIER_DEPLOY_HOST and ATELIER_DEPLOY_USER, or create tools/deploy.env:" >&2
-			echo "          ATELIER_DEPLOY_HOST=ftp.example.com" >&2
-			echo "          ATELIER_DEPLOY_USER=account" >&2
-			echo "        The password is read from the macOS login keychain for that host and account," >&2
-			echo "        never from a file: security add-internet-password -s <host> -a <account> -w" >&2
-			exit 2
-			;;
-	esac
+# Two subcommands never open a connection, and neither may require a deployment target -- that
+# is not a convenience, it is what lets tests/deploy-order-test.sh and tests/deploy-audit-test.sh
+# run in CI, on a runner with no credentials and no route to the host. A check nothing exercises
+# is a check nobody knows the state of.
+#
+#   order-check <dir>    compares two trees already on disk
+#   audit --against <dir>  the same seam: a directory stands in for the server, so every verdict
+#                          the classifier can reach is provable without a deploy
+NEEDS_TARGET=1
+
+case "${1:-}" in
+	order-check) NEEDS_TARGET=0 ;;
+	audit) [ "${2:-}" = "--against" ] && NEEDS_TARGET=0 ;;
+esac
+
+if [ "$NEEDS_TARGET" -eq 1 ] && { [ -z "$HOST" ] || [ -z "$USER_NAME" ]; }; then
+	echo "[ERROR] set ATELIER_DEPLOY_HOST and ATELIER_DEPLOY_USER, or create tools/deploy.env:" >&2
+	echo "          ATELIER_DEPLOY_HOST=ftp.example.com" >&2
+	echo "          ATELIER_DEPLOY_USER=account" >&2
+	echo "        The password is read from the macOS login keychain for that host and account," >&2
+	echo "        never from a file: security add-internet-password -s <host> -a <account> -w" >&2
+	exit 2
 fi
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 CHUNK=8192
@@ -74,56 +81,54 @@ CHUNK=8192
 # on trust. It is the set that changed since the deployed release; re-uploading a file that did
 # not change buys nothing and adds a transfer that can fail.
 #
-# 26.8.22 has ONE cross-file constraint and it points the OTHER WAY from every previous release,
-# because this release REMOVES a method rather than adding one. The five releases before it all
-# had the shape "a definition arrives, land it before its caller"; invert the direction and the
-# familiar rule gives exactly the wrong answer.
+# 26.8.23 has ONE cross-file constraint and it points the USUAL way, which is worth saying out
+# loud one release after the only one that inverted: this release ADDS a method, so the
+# definition lands before its callers.
 #
-#   1. `Atelier_Gallery::custom_css()` is DELETED, and `class-atelier-renderer.php` is the file
-#      that stops calling it. Land the definition's file first and the DEPLOYED renderer -- still
-#      on the server, still calling it -- hits "Call to undefined method" on every page that
-#      renders a gallery: the front page and 50-odd permalinks. So the CALLER goes first here.
-#      Renderer, then gallery.
+#   1. `Atelier_Settings::claims_envira_shortcodes()` is NEW, and BOTH
+#      `class-atelier-shortcode.php` and `class-atelier-assets.php` stop calling
+#      `should_take_over()` and call it instead. Land either caller before
+#      `class-atelier-settings.php` and every front-end request hits "Call to undefined method"
+#      until the definition arrives -- `register_shortcodes()` runs on `init` and
+#      `maybe_enqueue_early()` on `wp_enqueue_scripts`, so that is every page on the site, not
+#      only the ones with a gallery. Settings first, then shortcode, then assets.
 #
-#   2. Softer, same direction: the deployed `class-atelier-gallery.php` reads
-#      `$this->settings['custom_css']`, and `class-atelier-config.php` drops that key from
-#      `defaults()`. Config landing first is an "Undefined array key" warning rather than a
-#      fatal, but the ordering that avoids it is free. Gallery, then config.
+# `class-atelier-config.php` has no cross-file edge at all this release: it drops the second
+# argument it passes to the `atelier_config_sanitize` filter, and passing a hook fewer arguments
+# than a callback declared is not an error in PHP. There is no third-party callback on this site
+# in any case. `readme.txt` is inert.
 #
-# `plan` CANNOT SEE EITHER OF THESE. Its walk asks which requires are new and whether an asset
-# precedes the bootstrap; a method that has been deleted appears in neither question, and the
-# grep it runs looks for callers of a class name rather than of a method. It will print
-# "constraints: satisfied" over an order that takes the site down. The other four removed
-# functions this release are safe by construction and were checked rather than assumed:
-# `atelier_load_textdomain()` is defined and hooked in the same file, and `Atelier_Config::css()`,
-# `Atelier_Config::rewrite_css()` and `Atelier_Editor::row_css()` are all private.
+# NOTHING is removed this release, so the backwards constraint that 26.8.22 needed does not
+# apply -- and that is asserted rather than remembered: `check_removed_methods()` reports
+# "methods dropped this release: none", which is the emptiness case its own test covers (case C).
+#
+# `plan` CAN see none of this either way. Its walk asks which requires are new and whether an
+# asset precedes the bootstrap; a method added to an existing class appears in neither question,
+# and the grep it runs looks for callers of a CLASS name rather than of a method -- and
+# `Atelier_Settings` was already required, already constructed, already there. It will print
+# "constraints: satisfied" over an order that is a fatal on every page. The order above is
+# derived from the diff by hand and the reasoning is written down here for the next reader.
 #
 # `atelier.php` is last for the usual reason: ATELIER_VERSION is the `?ver=` on the assets. No
 # asset changed this release, so the window is harmless either way; the position costs nothing
 # and stating a rule once per release is cheaper than deciding whether it applies.
 #
-# The set is derived from the SERVER, not from the release commit: every shipped file was
-# downloaded back and digest-compared, and the server proved to be exactly the 26.8.21 deploy
-# (03d9edc). That matters because a later commit, 9e3ab3c, edited five more shipped files after
-# that deploy and never shipped -- ajax, album-editor, migration, settings and uninstall are in
-# this list for that reason, not because 26.8.22 touched them.
+# The set is derived from the SERVER, not from the release commit: all 40 shipped files were
+# downloaded back and digest-compared, and the server proved to be exactly the 26.8.22 deploy --
+# 34 identical, 6 changed, none absent, none unreadable. That audit is what this list is, and it
+# is run every release because the two times it was skipped the list was four releases stale.
+# Unlike 26.8.22, no unshipped commit turned up: the six are exactly what 26.8.23 touched.
 #
 # LICENSE, languages/atelier-de_DE.po and languages/atelier.pot are ABSENT from the server and
 # deliberately stay that way: none is read at runtime, none has ever been deployed, and each is
 # one more transfer that can fail for no behavioural gain. LICENSE ships in the wordpress.org
 # ZIP, which is a different artifact.
 UPLOAD_ORDER=(
-	"includes/class-atelier-renderer.php"
-	"includes/class-atelier-gallery.php"
-	"includes/class-atelier-config.php"
-	"includes/class-atelier-editor.php"
-	"includes/class-atelier-ajax.php"
-	"includes/class-atelier-album-editor.php"
-	"includes/class-atelier-migration.php"
 	"includes/class-atelier-settings.php"
-	"languages/atelier-de_DE.mo"
+	"includes/class-atelier-shortcode.php"
+	"includes/class-atelier-assets.php"
+	"includes/class-atelier-config.php"
 	"readme.txt"
-	"uninstall.php"
 	"atelier.php"
 )
 
@@ -433,6 +438,291 @@ fetch_deployed() {
 			return 1
 		fi
 	done
+}
+
+# ---------------------------------------------------------------------------------------------
+# `audit` -- ask the SERVER what it has.
+#
+# UPLOAD_ORDER above is a claim about what changed since the deployed release, and it has been
+# the PREVIOUS release's list five times in a row. Every deploy record since 26.8.21 ends by
+# saying the fix is to ask the server rather than to diff a tag, and every one of those audits ran
+# as a throwaway script outside the repository -- so the only durable artifact was a comment that
+# was stale again by the next release. This is that audit, kept.
+#
+# Why the server and not `git diff <last-release-tag>`: a diff can only see commits. On 26.8.22
+# the audit found five shipped files that a commit had edited AFTER the previous deploy and that
+# had never shipped; no diff against a tag can see those, because from the tag's point of view
+# they are simply part of the release. The server is the only thing that knows what the server has.
+#
+# Read-only. It opens no write connection and changes nothing.
+# ---------------------------------------------------------------------------------------------
+
+# Files that ship in the wordpress.org archive but are DELIBERATELY absent from the server: none
+# is read at runtime, none has ever been deployed, and each is one more transfer that can fail for
+# no behavioural gain. They stay in the audit's universe rather than being filtered out of it, so
+# that "absent" is a verdict the audit reaches and reports rather than a question it never asks --
+# a file quietly excluded from the set is a file nothing will ever notice missing.
+SERVER_ABSENT=(
+	"LICENSE"
+	"languages/atelier.pot"
+)
+
+# The other direction, and it is not symmetric: files that go to THIS SITE but not into the
+# wordpress.org archive. `.distignore` excludes the compiled German catalogue because a
+# directory-hosted plugin gets its translations from translate.wordpress.org, and shipping one
+# would override the community's -- but this site is not directory-hosted, the catalogue is what
+# renders 28 strings in German there, and it has been deployed since 26.8.13.
+#
+# So the deployed set is NOT the archive's set, and deriving the audit's universe from
+# `.distignore` alone would leave the one file whose absence is silent -- the strings quietly
+# revert to English -- as the one file the audit never asks about.
+SERVER_EXTRA=(
+	"languages/atelier-de_DE.mo"
+)
+
+# The distributed file set, derived the way tools/build-zip.sh derives it: the TRACKED tree minus
+# .distignore, root-anchored exactly as that script's `rm -rf $pat` is. Sharing the derivation is
+# the point -- an audit with its own hand-written list of shipped files would drift from the thing
+# it audits, which is the defect this whole subcommand exists to end.
+#
+# It FAILS CLOSED when `git ls-files` answers nothing. An empty list and a healthy tree with
+# nothing shippable produce the same silence, and a deploy tool that reports "0 differences" over
+# an empty universe is the exact shape of the bug that once reported 40 differing files and 201
+# phantom leftovers on a healthy site.
+shipped_files() {
+	local tracked path pat drop patterns=()
+
+	tracked="$(cd "$ROOT" && git ls-files 2>/dev/null)"
+
+	if [ -z "$tracked" ]; then
+		echo "[ERROR] git ls-files returned nothing, so the shipped set is unknown; refusing" >&2
+		echo "        rather than auditing an empty universe and calling it clean" >&2
+
+		return 1
+	fi
+
+	while IFS= read -r pat; do
+		case "$pat" in ''|'#'*) continue ;; esac
+		patterns+=( "$pat" )
+	done < "$ROOT/.distignore"
+
+	# Same reasoning one level down: no patterns means every development file is "shipped", and
+	# an audit that reports the test suite as missing from the server is worse than none.
+	if [ "${#patterns[@]}" -eq 0 ]; then
+		echo "[ERROR] .distignore is missing or empty, so the shipped set cannot be derived" >&2
+
+		return 1
+	fi
+
+	while IFS= read -r path; do
+		[ -z "$path" ] && continue
+		drop=0
+
+		for pat in "${patterns[@]}"; do
+			# Unquoted on purpose: these are globs, and `docs` must match `docs/lessons.md`
+			# the same way `rm -rf docs` does.
+			# shellcheck disable=SC2254
+			case "$path" in
+				$pat|$pat/*) drop=1; break ;;
+			esac
+		done
+
+		[ "$drop" -eq 0 ] && printf '%s\n' "$path"
+	done <<< "$tracked"
+
+	# Re-added after the exclusions, and only if the file is really in the tree: a name in
+	# SERVER_EXTRA that no longer exists would otherwise be audited forever as ABSENT, which is a
+	# false finding that never goes away and therefore stops being read.
+	for path in "${SERVER_EXTRA[@]}"; do
+		if [ -f "$ROOT/$path" ]; then
+			printf '%s\n' "$path"
+		else
+			echo "[ERROR] SERVER_EXTRA names $path, which is not in the tree" >&2
+
+			return 1
+		fi
+	done
+}
+
+# Is $1 one of the files deliberately never deployed?
+expected_absent() {
+	local rel
+
+	for rel in "${SERVER_ABSENT[@]}"; do
+		[ "$rel" = "$1" ] && return 0
+	done
+
+	return 1
+}
+
+# Is $1 in UPLOAD_ORDER?
+in_upload_order() {
+	local rel
+
+	for rel in "${UPLOAD_ORDER[@]}"; do
+		[ "$rel" = "$1" ] && return 0
+	done
+
+	return 1
+}
+
+cmd_audit() {
+	local against="" rel local_sum remote_sum src shipped
+	local same=0 changed=0 gone=0 expected=0 unreadable=0 surprising=0
+	local missing_from_order="" stale_in_order=""
+
+	# Newline-delimited AND newline-terminated, so the membership test below can anchor on both
+	# ends. Matching a bare substring would let `readme.txt` be answered by `docs/readme.txt`.
+	local needed_list=$'\n'
+
+	shipped="$(shipped_files)" || return 1
+
+	if [ "${1:-}" = "--against" ]; then
+		against="${2:?usage: audit --against <deployed-tree-dir> [file ...]}"
+
+		[ -d "$against" ] || {
+			echo "[ERROR] no such deployed tree: $against" >&2
+
+			return 2
+		}
+
+		shift 2
+
+		# Any files after the directory replace UPLOAD_ORDER for the cross-check below, the same
+		# seam `order-check` has and for the same reason: the list changes every release, so a
+		# test asserting against the real one would be asserting about this month's release
+		# rather than about the check. Only this subcommand runs, so nothing else sees it.
+		[ "$#" -gt 0 ] && UPLOAD_ORDER=( "$@" )
+
+		echo "auditing against a tree on disk: $against"
+	else
+		echo "auditing the deployed tree, file by file, by digest"
+	fi
+
+	echo
+
+	while IFS= read -r rel; do
+		[ -z "$rel" ] && continue
+		local_sum="$(shasum "$ROOT/$rel" | cut -d' ' -f1)"
+		src="$WORK/audit.bin"
+		rm -f "$src"
+
+		if [ -n "$against" ]; then
+			# The disk seam. `-r` before `-f` so a file that exists and cannot be read is
+			# UNREADABLE rather than absent: those two mean opposite things, and the silent
+			# one reads as a pass.
+			if [ -e "$against/$rel" ] && [ ! -r "$against/$rel" ]; then
+				printf '  UNREADABLE %s\n' "$rel"
+				unreadable=$((unreadable + 1))
+
+				continue
+			fi
+
+			[ -f "$against/$rel" ] && cp "$against/$rel" "$src" 2>/dev/null
+		else
+			ftp -o "$src" "ftp://$HOST$REMOTE_DIR/$rel" 2>/dev/null || rm -f "$src"
+
+			# A failed fetch has two causes that mean opposite things, and only SIZE separates
+			# them: -1 is genuinely absent, anything else is a file that is there and could not
+			# be read.
+			if [ ! -f "$src" ] && [ "$(remote_size "$rel")" != "-1" ]; then
+				printf '  UNREADABLE %s\n' "$rel"
+				unreadable=$((unreadable + 1))
+
+				continue
+			fi
+		fi
+
+		if [ ! -f "$src" ]; then
+			if expected_absent "$rel"; then
+				printf '  absent     %-46s (deliberately never deployed)\n' "$rel"
+				expected=$((expected + 1))
+			else
+				printf '  ABSENT     %-46s never deployed, and nothing says it should not be\n' "$rel"
+				gone=$((gone + 1))
+
+				# An absent file needs uploading exactly as much as a changed one -- more, since
+				# the plugin may be fatal without it -- so it belongs in the set UPLOAD_ORDER is
+				# checked against. Calling only the changed ones "needed" would report a missing
+				# class file as an UPLOAD_ORDER entry that is merely superfluous.
+				needed_list="$needed_list$rel"$'\n'
+
+				in_upload_order "$rel" || missing_from_order="$missing_from_order $rel"
+			fi
+
+			continue
+		fi
+
+		if expected_absent "$rel"; then
+			printf '  NOTE       %-46s is on the server though it is never deployed\n' "$rel"
+			surprising=$((surprising + 1))
+		fi
+
+		remote_sum="$(shasum "$src" | cut -d' ' -f1)"
+
+		if [ "$local_sum" = "$remote_sum" ]; then
+			same=$((same + 1))
+
+			continue
+		fi
+
+		printf '  CHANGED    %-46s local %s bytes, deployed %s\n' "$rel" \
+			"$(wc -c < "$ROOT/$rel" | tr -d ' ')" "$(wc -c < "$src" | tr -d ' ')"
+		changed=$((changed + 1))
+		needed_list="$needed_list$rel"$'\n'
+
+		in_upload_order "$rel" || missing_from_order="$missing_from_order $rel"
+	done <<< "$shipped"
+
+	# The audit is only worth running if it can also say the shipped set was non-empty. A run
+	# that walked nothing prints the same reassuring zeros as a clean one.
+	if [ "$((same + changed + gone + expected + unreadable))" -eq 0 ]; then
+		echo "[ERROR] the audit examined no files at all; the shipped set is empty" >&2
+
+		return 1
+	fi
+
+	for rel in "${UPLOAD_ORDER[@]}"; do
+		case "$needed_list" in
+			*$'\n'"$rel"$'\n'*) ;;
+			*) stale_in_order="$stale_in_order $rel" ;;
+		esac
+	done
+
+	printf '\nsame: %d  changed: %d  absent: %d (%d of them expected)  unreadable: %d\n' \
+		"$same" "$changed" "$((gone + expected))" "$expected" "$unreadable"
+
+	# BOTH directions, because one of them alone is the dangerous half missing: an UPLOAD_ORDER
+	# entry the server already matches costs one needless transfer, while a file that differs and
+	# is not listed is a file this release silently does not deploy. Set-versus-set, which is also
+	# the shape a previous both-directions check here got wrong by comparing counts.
+	echo
+	if [ -z "$missing_from_order" ] && [ -z "$stale_in_order" ]; then
+		echo "UPLOAD_ORDER: in sync with the server -- it names exactly the files that differ"
+	elif [ "$needed_list" = $'\n' ]; then
+		# The state immediately after a successful deploy, and it is worth naming rather than
+		# reporting as a discrepancy: the server matches this checkout everywhere, so UPLOAD_ORDER
+		# is simply the list the last push used. Nothing to do.
+		echo "UPLOAD_ORDER: nothing differs, so it is last release's list -- which is what a"
+		echo "              just-deployed site looks like:$stale_in_order"
+	else
+		[ -n "$missing_from_order" ] &&
+			echo "UPLOAD_ORDER: DIFFERS from the server but is not listed, so it would NOT be uploaded:$missing_from_order"
+		[ -n "$stale_in_order" ] &&
+			echo "UPLOAD_ORDER: listed though the server already matches it:$stale_in_order"
+		echo
+		echo "the files that need uploading, unordered -- SEQUENCE THEM BY HAND before pasting:"
+		printf '%s' "$needed_list" | sed '/^$/d; s/^/	"/; s/$/"/'
+	fi
+
+	[ "$unreadable" -eq 0 ] || {
+		echo >&2
+		echo "[ERROR] $unreadable file(s) could not be read; the audit covers less than it appears to" >&2
+
+		return 1
+	}
+
+	return 0
 }
 
 cmd_plan() {
@@ -805,6 +1095,13 @@ cmd_compare() {
 }
 
 case "${1:-}" in
+	# audit [--against <dir>] -- what does the server actually have? Read-only, and with
+	# `--against` it reads a directory instead, which is how tests/deploy-audit-test.sh proves
+	# every verdict without a deploy.
+	audit)
+		shift
+		cmd_audit "$@"
+		;;
 	plan) cmd_plan ;;
 	push) cmd_push ;;
 	capture) cmd_capture "${2:?usage: capture <out> [urls]}" "${3:-}" ;;

@@ -19,6 +19,15 @@ that file, which is the same argument that moved the records themselves: knowing
 directions — a hook naming a record that is gone fails, and so does a record with no hook. An
 index that is not checked is a list of claims.
 
+- *The 26.8.23 deploy, where "unchanged" was the whole point and was checked in the database
+  first* — the new predicate reads the site's recorded slug scheme, so `generic` would have
+  unrendered `[envira-gallery]` in 49 posts; the live option said `envira`, which made the
+  release a no-op. `0 changed` proves nothing here — the digest re-verification and `?ver=`
+  do. The order points the usual way and `plan` cannot see it either way.
+  - *`deploy.sh audit`, written after the fifth stale UPLOAD_ORDER rather than the sixth* — the
+    "ask the server" step every record since 26.8.21 recommends, kept this time. Its universe is
+    derived from `.distignore` the way the zip is, plus the one deployed file the archive
+    excludes; it fails closed in three places; and its test proves the verdicts apart offline.
 - *The 26.8.22 deploy, the first that was SUPPOSED to change rendered bytes* — every release
   since 26.8.15 predicted `0 changed`; here it would have meant the upload never landed. The
   discriminating check is an **anonymous** `<style>`, since core and the theme emit six with
@@ -124,6 +133,94 @@ index that is not checked is a list of claims.
   not the fallback.
 
 ## The records, newest first
+
+### The 26.8.23 deploy, where "unchanged" was the whole point and was checked in the database first
+
+Deployed 2026-08-15 from the MacBook. **6 files, 11 chunks, every chunk first time, 0
+mismatching**, `160/160` URLs semantically identical and `0` non-200, `ver=26.8.22` before and
+`26.8.23` after. Eighteenth deploy with no failed chunk.
+
+**This release decides, per site, whether Atelier answers to `[envira-gallery]` at all — so the
+question that had to be settled before the push was what THIS site's recorded slug scheme says.**
+`claims_envira_shortcodes()` is `should_take_over() && 'envira' === slug_scheme()`, and if the
+second half had been `generic` here, the shortcode would have stopped resolving in 49 published
+posts: not an error, not a 500, just the gallery quietly gone from every one of them. The answer
+came from the live `wp_options` rather than from reading the code — `atelier_slug_scheme =
+'envira'`, `atelier_schema_version = 2` — so the new predicate returns exactly what
+`should_take_over()` returned before it, and the release is a deliberate no-op on the only site it
+reaches. That is the shape this project keeps arriving at as the safest one, but it is worth
+noticing that here it was a *finding* rather than a design: the same code on a site recorded
+`generic` is a behavioural change, and nothing in the deploy would have said so.
+
+**`0 changed` therefore proves nothing on its own, again, and two other things do.** `capture`
+strips `?ver=` before hashing, so a release that moves no rendered byte is invisible to it whether
+it landed or never left the laptop. What establishes the upload is `push` re-downloading all six
+files and digest-comparing them **after the whole set had landed** — not only after each — and the
+front page serving `atelier.css?ver=26.8.23` where it served `26.8.22` an hour earlier.
+
+**The positive control is an embedding post, and it is the one that would have gone red.** A post
+carrying `[envira-gallery id="N"]` renders its tiles and contains no raw `[envira-gallery` text.
+The 160-URL comparison would also have caught the predicate answering `generic` — as 49 changed
+pages — but only as a hash difference; this names the mechanism, and it is the check to run first
+on any site where the scheme is not known to be `envira`.
+
+**The ordering constraint points the USUAL way, one release after the only one that inverted.**
+`Atelier_Settings::claims_envira_shortcodes()` is new, and both `class-atelier-shortcode.php` and
+`class-atelier-assets.php` stop calling `should_take_over()` and call it instead — so the
+definition lands first. Getting it backwards is not a gallery-page fatal but a **site-wide** one:
+`register_shortcodes()` runs on `init` and `maybe_enqueue_early()` on `wp_enqueue_scripts`, so
+every request on the site would hit "Call to undefined method" until the second upload finished.
+`plan` printed `constraints: satisfied`, correctly by its own lights and equally over the fatal
+order — `Atelier_Settings` was already required, already constructed, already there, and a method
+added to an existing class is in none of the three questions it asks. `check_removed_methods()`
+reported `none`, which is its emptiness case and is the right answer here rather than a silence.
+
+**`UPLOAD_ORDER` was the previous release's list for the fifth time — and this is the release
+where the audit that fixes it stopped being a throwaway script.** All 40 deployed files were
+downloaded back and digest-compared: 34 identical, 6 changed, 0 absent, 0 unreadable, putting the
+server exactly at the 26.8.22 deploy. Unlike last time no unshipped commit turned up — the six
+changed files are exactly what 26.8.23 touched — but that is a fact the audit established, not one
+a diff could have. The entry below is the subcommand it became.
+
+### `deploy.sh audit`, written after the fifth stale UPLOAD_ORDER rather than the sixth
+
+Every deploy record since 26.8.21 ends by saying the fix is to ask the server rather than to diff
+a tag, and every one of those audits ran as a script outside the repository and was then thrown
+away. The durable artifact was a comment that was stale again by the next release. `audit` is that
+audit, kept: it downloads every deployed file, digest-compares it, and prints one verdict per file.
+
+**Its universe is derived, not listed.** The set comes from `git ls-files` minus `.distignore` —
+the same derivation `tools/build-zip.sh` uses — because an audit with its own hand-written list of
+files would drift from the thing it audits, which is the defect it exists to end. Two named lists
+sit on top, in opposite directions, and the second is the one that would have been missed:
+`SERVER_ABSENT` (`LICENSE`, `languages/atelier.pot` — in the archive, never deployed) and
+`SERVER_EXTRA` (`languages/atelier-de_DE.mo` — deployed since 26.8.13, and deliberately *not* in
+the archive, because a directory-hosted plugin gets its translations from translate.wordpress.org).
+Derive the universe from `.distignore` alone and the audit never asks about the one file whose
+absence is silent: 28 strings quietly revert to English.
+
+**It fails closed in three places, because each of them otherwise reports a clean bill of health
+over nothing.** No `git ls-files` output, no `.distignore`, or a file that exists on the server and
+cannot be read — all refuse rather than summarise. The first is not hypothetical: a missing `git`
+once had a deploy script report 40 differing files and 201 phantom leftovers on a healthy site.
+
+**The UPLOAD_ORDER cross-check runs in both directions**, since one alone is the dangerous half
+missing: a file that differs and is not listed silently does not deploy, while a listed file the
+server already matches costs one needless transfer. A third state is named rather than flagged —
+nothing differs at all, which is what a just-deployed site looks like.
+
+`tests/deploy-audit-test.sh`, in CI, is 13 checks over seven cases, and two of them are what make
+the other five mean anything: **F** hands it a tree with no tracked files and requires a refusal
+rather than a clean report, and **G** neuters the digest comparison and requires case B to stop
+finding its change — if B still fired, B would be firing for some other reason. `audit --against
+<dir> [file ...]` is the seam that makes all of it offline: a directory stands in for the server,
+and the file list replaces `UPLOAD_ORDER`, so the cases assert about the check rather than about
+whichever release is in flight. Same shape as `order-check`, for the same reason.
+
+**One thing is deliberately not automated: `plan` does not run the audit.** It is 40 downloads,
+and making every `plan` wait on the network to answer a question `plan` does not ask would be
+paid on every invocation for a mistake that is made once per release. The audit is a step in the
+recipe, ahead of `plan`.
 
 ### The 26.8.22 deploy, the first that was SUPPOSED to change rendered bytes
 
