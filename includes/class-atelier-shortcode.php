@@ -89,7 +89,7 @@ class Atelier_Shortcode {
 		add_shortcode( 'atelier-gallery', array( $this, 'gallery' ) );
 		add_shortcode( 'atelier-album', array( $this, 'album' ) );
 
-		if ( $this->settings->should_take_over() ) {
+		if ( $this->settings->claims_envira_shortcodes() ) {
 			remove_shortcode( 'envira-gallery' );
 			remove_shortcode( 'envira-album' );
 

@@ -291,6 +291,30 @@ class Atelier_Settings {
 	}
 
 	/**
+	 * Reports whether Atelier should answer to Envira's shortcode names.
+	 *
+	 * Taking over `[envira-gallery]` is the whole point on a site continuing an Envira
+	 * installation, and it is meaningless on a site that never had one — there is no such
+	 * shortcode in any post, and registering the name anyway claims another plugin's tag on a
+	 * site with no reason to carry it. So the takeover mode decides *whether to stand aside for
+	 * a running Envira*, and the slug scheme decides *whether Envira is part of this site's
+	 * history at all*; both have to say yes.
+	 *
+	 * The scheme is the right second half rather than a fresh query, because it is the same
+	 * observation the URL paths are already pinned to: recorded once, and deliberately not
+	 * re-derived when Envira's records are deleted years later. A gallery's shortcode and its
+	 * permalink must not answer that question differently.
+	 *
+	 * The one case this gives up: Envira active but having never stored a gallery reads as
+	 * `generic`, so `[envira-gallery]` is left alone. It has no gallery to render either way.
+	 *
+	 * @return bool True when Envira's shortcode names should resolve to Atelier.
+	 */
+	public function claims_envira_shortcodes() {
+		return $this->should_take_over() && 'envira' === $this->slug_scheme();
+	}
+
+	/**
 	 * Reports whether Envira Gallery is active.
 	 *
 	 * @return bool True when the Envira plugin is running.

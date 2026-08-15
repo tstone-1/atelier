@@ -204,6 +204,26 @@ The takeover is a setting (Settings -> Atelier), defaulting to `auto`:
 
 `[atelier-gallery id="N"]` always renders through Atelier regardless of the setting.
 
+**Since 26.8.23 every row above is additionally conditional on the site having an Envira
+history**, so `always` does not mean always: on a site whose recorded slug scheme is `generic`,
+Atelier claims neither Envira tag under any mode. That reads like a setting quietly not working,
+and it is worth stating why it is not one — `always` exists to render `[envira-gallery]` while
+Envira is active, and a site where Envira is active with galleries *has* an Envira history by
+definition, so the case the setting was built for is untouched. What it can no longer do is claim
+the tag on a site that has no Envira records at all, where there is nothing for it to render and
+nothing to compare against. `Atelier_Settings::claims_envira_shortcodes()` is the predicate; the
+wordpress.org round that asked for it is recorded below.
+
+**The one state this gives up, stated because it is the only behavioural loss in the change:** a
+site recorded `generic` and *later* gaining Envira records keeps that answer forever, because
+`initialise()` returns immediately once a scheme is stored and never re-derives it. Install
+Atelier on a clean site, then adopt Envira, then deactivate it, and `[envira-gallery]` stops
+resolving where before 26.8.23 it would have. That permanence is the point of the scheme rather
+than an oversight — it is what stops a site's published URLs moving when Envira's rows are deleted
+years later — and re-deriving it here would couple the shortcode to a question the permalinks
+deliberately answer once. It reaches nobody who installs this plugin for what it is for, so it is
+recorded rather than fixed, and there is no `readme.txt` upgrade notice for it.
+
 Consequence worth stating: **on an un-migrated site the admin UI is still Envira's.** In v1
 Atelier had no editor at all, so editing a gallery meant keeping Envira installed — an
 accepted trade, since the site's galleries are years old and rarely edited. That is still
@@ -727,7 +747,7 @@ every uploaded file has to be verified by digest rather than by exit code or siz
 **If `deploy.sh` refuses with `set ATELIER_DEPLOY_HOST and ATELIER_DEPLOY_USER`, that is this
 change working, not a broken script.** Recreate `tools/deploy.env` with those two lines.
 
-## Submitting to wordpress.org — submitted 2026-08-09, **pended 2026-08-14**
+## Submitting to wordpress.org — submitted 2026-08-09, pended 2026-08-14, **round 2 on 2026-08-15**
 
 **26.8.21 was uploaded and the directory assigned the slug `atelier`**, confirming
 `https://wordpress.org/plugins/atelier/` as the eventual permalink. That URL is not live yet and
@@ -747,6 +767,16 @@ addressed in 26.8.22; the one with teeth cost a feature.
     running it, not part of the review: no `.gitattributes`, so every **multi-line** mutation
     matched nothing on Windows. The harness said `BROKEN`, which is the only reason it was
     visible.
+
+**Round 2 arrived on 2026-08-15** (`R atelier/tstone1/14Aug26/T2`), one day after 26.8.22 was
+uploaded. Three findings, none of them a security defect, and the useful thing about them is that
+**two were correct readings of code that is deliberately what it is** — which is a different
+review to answer than one that names a bug. Addressed in 26.8.23.
+
+- *Round 2 found two design decisions and one real one* — the raw `$_POST` handed to a filter was
+  a genuine hole and cost one argument; the Envira shortcode names and the Yoast option write are
+  the plugin's purpose, and the answer to one of them was still a code change, because "correct on
+  a migrating site" was being applied to every site.
 
 That earlier note saying no reply was needed described the **submission confirmation**, and it
 stopped being true the moment this arrived: silence on a pended submission is a rejection after

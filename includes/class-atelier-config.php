@@ -292,10 +292,14 @@ class Atelier_Config {
 		/**
 		 * Filters settings submitted through the gallery editor.
 		 *
-		 * @param array $out   Sanitised settings.
-		 * @param array $input The raw submission they came from.
+		 * The raw submission is deliberately NOT passed. It was, as context, and handing an
+		 * unsanitised `$_POST` array to an unknown callback is a sanitising function offering a
+		 * way around itself — the value a filter is least able to resist using is the one it is
+		 * given. Everything a callback legitimately needs is in `$out`, already typed.
+		 *
+		 * @param array $out Sanitised settings.
 		 */
-		return (array) apply_filters( 'atelier_config_sanitize', $out, $input );
+		return (array) apply_filters( 'atelier_config_sanitize', $out );
 	}
 
 	/**

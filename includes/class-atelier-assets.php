@@ -142,7 +142,7 @@ class Atelier_Assets {
 
 		$shortcodes = array( 'atelier-gallery', 'atelier-album' );
 
-		if ( $this->settings->should_take_over() ) {
+		if ( $this->settings->claims_envira_shortcodes() ) {
 			$shortcodes[] = 'envira-gallery';
 			$shortcodes[] = 'envira-album';
 		}

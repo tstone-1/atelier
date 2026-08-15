@@ -1073,7 +1073,13 @@ function date_i18n( $format, $stamp = 0 ) {
 }
 
 /**
- * Returns the value unchanged; filters are not exercised by these tests.
+ * Returns the value unchanged, and records what each filter was handed.
+ *
+ * No callback ever runs here, so the value is not the interesting part. The ARGUMENT COUNT is:
+ * a filter's extra arguments are its context, and what a plugin puts in that context is a
+ * public API decision no other instrument in this suite can see. `atelier_config_sanitize`
+ * passed the raw `$_POST` array as context until the wordpress.org review objected, and nothing
+ * would have noticed it coming back — the return value is identical either way.
  *
  * @param string $hook  Hook name.
  * @param mixed  $value Value being filtered.
@@ -1081,6 +1087,8 @@ function date_i18n( $format, $stamp = 0 ) {
  * @return mixed The value.
  */
 function apply_filters( $hook, $value ) {
+	$GLOBALS['atelier_test_filters'][ (string) $hook ] = func_num_args();
+
 	return $value;
 }
 

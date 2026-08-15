@@ -4,7 +4,7 @@ Tags: gallery, photo gallery, image gallery, lightbox, photography
 Requires at least: 6.0
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 26.8.22
+Stable tag: 26.8.23
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -97,6 +97,13 @@ than only in one gallery.
 4. The lightbox, showing the EXIF WordPress already parsed at upload.
 
 == Changelog ==
+
+= 26.8.23 =
+* Envira Gallery's `[envira-gallery]` and `[envira-album]` shortcodes are now taken over only on
+  a site that has Envira records. A site that never used Envira registers only Atelier's own two
+  shortcodes; a site continuing an Envira installation is unaffected.
+* The `atelier_config_sanitize` filter no longer receives the raw form submission as a second
+  argument. Callbacks get the sanitised settings only.
 
 = 26.8.22 =
 * Per-gallery Custom CSS has been removed, in line with the Plugin Directory guideline against

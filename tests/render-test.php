@@ -1832,6 +1832,18 @@ $checks->assert(
 
 // The submitted-form side of the same rule. `sanitize()` builds an allowlisted record, so this
 // asserts the allowlist has no entry rather than that some stripping ran.
+//
+// The recorder is cleared first, and the honest description of why is narrower than it looks.
+// `$GLOBALS['atelier_test_filters']` is written by whatever called the hook last, so a check
+// reading it afterwards cannot tell "this call passed two arguments" from "this call never
+// reached `apply_filters()` and I am reading an older call's value". Today no earlier call
+// writes this key, so the check already fails when the filter is deleted outright — mutation
+// `B99` is killed with this line and without it, measured both ways rather than reasoned about.
+// The line is here so that the property holds BY CONSTRUCTION rather than by the accident of
+// this being the first `Atelier_Config::sanitize()` call in the file, which the next check
+// inserted above it would quietly end.
+unset( $GLOBALS['atelier_test_filters']['atelier_config_sanitize'] );
+
 $css_in = Atelier_Config::sanitize(
 	array( 'custom_css' => '#atelier-1 > figure { color: red } </style><script>alert(1)</script>' )
 );
@@ -1840,6 +1852,23 @@ $checks->assert(
 	'a submitted custom css is not stored',
 	! array_key_exists( 'custom_css', $css_in ),
 	'sanitised keys: ' . implode( ', ', array_keys( $css_in ) )
+);
+
+// A sanitising function must not offer a way around itself. `atelier_config_sanitize` used to
+// receive the raw submission as a second argument, for context, which hands every callback on
+// the hook an unsanitised `$_POST` array and a reason to reach for it — the wordpress.org
+// review is what named it. Removing it changes no return value, so this is the only shape of
+// check that can see it come back: hook name plus value is two arguments, and a third is the
+// raw input by any other name.
+//
+// The count comes from the call `$css_in` just made, which is why this sits here rather than
+// with the other filter-adjacent checks.
+$sanitize_filter_args = $GLOBALS['atelier_test_filters']['atelier_config_sanitize'] ?? 0;
+
+$checks->assert(
+	'the config sanitize filter is handed no raw input',
+	2 === $sanitize_filter_args,
+	sprintf( 'apply_filters( "atelier_config_sanitize", ... ) received %d arguments', $sanitize_filter_args )
 );
 
 // The editor must no longer offer the field either; that check lives beside the schema/form
@@ -5255,12 +5284,24 @@ $checks->expect(
 /**
  * Registers the shortcodes under one takeover mode and reports which tags Atelier claimed.
  *
- * @param string $mode Takeover mode.
+ * The slug scheme is restored afterwards, and restoring it means *unsetting* it when it was
+ * unset: `slug_scheme()` records its answer on first read, so a call made to observe the site
+ * also changes it, and a later check reading the option would see this closure's work rather
+ * than the fixture's.
+ *
+ * @param string      $mode   Takeover mode.
+ * @param string|null $scheme Slug scheme to force, or null to leave the site's own.
  *
  * @return string[] Claimed tags, sorted.
  */
-$claimed_tags = function ( $mode ) use ( $renderer ) {
+$claimed_tags = function ( $mode, $scheme = null ) use ( $renderer ) {
 	$site = Atelier_Test_Site::$instance;
+
+	$before = $site->options[ Atelier_Settings::OPTION_SLUG_SCHEME ] ?? null;
+
+	if ( null !== $scheme ) {
+		$site->options[ Atelier_Settings::OPTION_SLUG_SCHEME ] = $scheme;
+	}
 
 	$site->options['atelier_takeover']   = $mode;
 	$GLOBALS['atelier_test_shortcodes'] = array();
@@ -5270,6 +5311,12 @@ $claimed_tags = function ( $mode ) use ( $renderer ) {
 
 	$tags = array_keys( $GLOBALS['atelier_test_shortcodes'] );
 	sort( $tags );
+
+	if ( null === $before ) {
+		unset( $site->options[ Atelier_Settings::OPTION_SLUG_SCHEME ] );
+	} else {
+		$site->options[ Atelier_Settings::OPTION_SLUG_SCHEME ] = $before;
+	}
 
 	return $tags;
 };
@@ -5300,6 +5347,30 @@ $checks->assert(
 	'the shortcode registry follows the takeover setting',
 	array( 'atelier-album', 'atelier-gallery', 'envira-album', 'envira-gallery' ) === $always,
 	'on "always" it claimed: ' . implode( ', ', $always )
+);
+
+// The takeover mode answers "is Envira running?", which on a site that never had Envira is a
+// question with a misleading answer: no, so take over — and the site gets another plugin's tag
+// registered for a shortcode that appears in none of its posts. The slug scheme is the second
+// half, and it is the same observation the URL paths are pinned to.
+//
+// `always` for both legs deliberately, because it is the mode most likely to claim the tags: a
+// generic site refusing under `always` cannot be a generic site refusing because it was not
+// asked. And the envira leg below is the control — "claimed no envira tags" is equally true of a
+// registry that claimed nothing at all, which is what a gutted register_shortcodes() produces.
+$generic_scheme = $claimed_tags( 'always', 'generic' );
+$envira_scheme  = $claimed_tags( 'always', 'envira' );
+
+$checks->assert(
+	'a site with no envira history claims no envira shortcodes',
+	array( 'atelier-album', 'atelier-gallery' ) === $generic_scheme,
+	'on a generic site with takeover "always" it claimed: ' . implode( ', ', $generic_scheme )
+);
+
+$checks->assert(
+	'a site with an envira history still claims them',
+	array( 'atelier-album', 'atelier-gallery', 'envira-album', 'envira-gallery' ) === $envira_scheme,
+	'on an envira site with takeover "always" it claimed: ' . implode( ', ', $envira_scheme )
 );
 
 $shortcode = new Atelier_Shortcode( new Atelier_Repository(), $renderer, new Atelier_Settings() );

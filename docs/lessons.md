@@ -1557,3 +1557,80 @@ rules, and the tree was normalised: 69 files converted, 2 already LF, 5 skipped 
 measurement that says it was worth doing is that `E1` went from `BROKEN` to `KILLED` with no
 change to `E1` — and the full pass then ran **206 mutations, 206 killed by the predicted check**,
 the first clean mutation run this box has ever produced.
+
+## Round 2 found two design decisions and one real one
+
+`R atelier/tstone1/14Aug26/T2`, 2026-08-15, one day after 26.8.22 was uploaded. Three findings.
+The distribution is the point: **one was a hole, and two were correct readings of code that is
+deliberately what it is.** A review that names a bug tells you what to change; a review that
+names a decision tells you to defend it — and getting that classification wrong in either
+direction is expensive. Defending a hole loses a round; changing a decision loses the feature.
+
+**The real one: `Atelier_Config::sanitize()` passed the raw submission to its filter.**
+
+```php
+return (array) apply_filters( 'atelier_config_sanitize', $out, $input );
+```
+
+`$out` is the allowlisted, typed record. `$input` was there as context, and it is an unsanitised
+`$_POST` array handed to every callback on a public hook — **a sanitising function offering a way
+around itself.** Nothing in this plugin used it and nothing outside it could have yet, which is
+exactly why it was cheap to remove and exactly why it would never have been noticed: the return
+value is byte-identical either way.
+
+That last property decides the shape of the check. No behavioural assertion can see this, so the
+stub `apply_filters()` now records `func_num_args()` per hook and one check reads it — hook name
+plus value is two, and a third argument is the raw input by any other name. Mutation `B98`
+re-adds `$input` and is killed by that check alone. **A public API decision that changes no
+output needs an instrument aimed at the API, not at the output.**
+
+**The two decisions: the Envira shortcode names, and the Yoast option write.**
+
+Flagged under "all plugins must have unique function names ... options must be prefixed":
+
+```php
+add_shortcode( 'envira-gallery', array( $this, 'gallery' ) );
+update_option( 'wpseo_titles', array_merge( $titles, $added ) );
+```
+
+Both are correct as findings and wrong as diagnoses. The rule is about *claiming a generic name
+for your own things*; these deliberately name **another plugin's** things, which is the entire
+job — keeping `[envira-gallery]` rendering on a site whose 49 published posts contain it, and
+keeping Yoast's canonical on 58 indexed URLs whose post type the migration renamed out from under
+it. Neither has a prefixed alternative that does anything.
+
+**But one of them still became a code change, and that is the lesson worth keeping.** The
+takeover guard was `should_take_over()`, which in `auto` means *Envira is not currently active* —
+and on a site that has never had Envira that is true, so Atelier registered `[envira-gallery]` on
+a site where no post contains it and no Envira has ever run. **The rule being enforced was
+correct for a site migrating from Envira and was being applied to every site**, which is the same
+defect 26.8.18 fixed for the post types and the URL slugs, one release earlier, in code the fix
+for this one now reuses:
+
+```php
+public function claims_envira_shortcodes() {
+    return $this->should_take_over() && 'envira' === $this->slug_scheme();
+}
+```
+
+The two halves answer different questions on purpose — the mode answers *is Envira running*, the
+scheme answers *was Envira ever here* — and reading the scheme rather than re-querying is what
+stops a gallery's shortcode and its permalink disagreeing about the site's history years later,
+after Envira's rows are deleted.
+
+Three details of the checking, none of which follow from the design:
+
+- **The new check runs under `always`, the mode most likely to claim the tags.** A generic site
+  refusing under `never` cannot be distinguished from a generic site that was never asked.
+- **Its control is the same call with `'envira'`.** "Claimed no Envira tags" is equally true of a
+  registry that claimed nothing, which is what a gutted `register_shortcodes()` produces — the
+  failure this suite has met more than once.
+- **Reading the scheme changes it.** `slug_scheme()` records its answer on first read, so the
+  test closure has to restore the option to *unset* when it was unset, or a later check reads the
+  closure's work instead of the fixture's.
+
+And the predicate exists as a method rather than as the same condition written twice because
+`Atelier_Assets::maybe_enqueue_early()` scans post content for the identical tag list. Two copies
+of "which shortcodes are ours" drift, and the direction they drift in is silent: `has_shortcode()`
+returns false for an unregistered tag, so the scan would simply stop matching and the assets would
+arrive late, with nothing red.

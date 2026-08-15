@@ -18,7 +18,28 @@ landed before anything was deployed, so the two shipped together as 26.8.4.
 > at the time. Nothing else about those entries was altered: the dates, the counts, the measured
 > numbers and the reasoning are as they were written.
 
-## [26.8.22] - Unreleased
+## [26.8.23] - Unreleased
+
+Answers the second wordpress.org review round (`R atelier/tstone1/14Aug26/T2`, 2026-08-15).
+
+### Changed
+- **Envira's shortcode names are claimed only on a site with an Envira history.** The takeover
+  mode answers "is Envira running?", and on a site that never had Envira the answer is "no, so
+  take over" — which registered `[envira-gallery]` and `[envira-album]` on a site where no post
+  contains either. `Atelier_Settings::claims_envira_shortcodes()` requires the takeover mode
+  *and* the recorded slug scheme, the same observation the URL paths are pinned to, so a site
+  continuing an Envira installation is unaffected and a fresh install registers only its own
+  two tags. `Atelier_Shortcode::register_shortcodes()` and
+  `Atelier_Assets::maybe_enqueue_early()` both read the new predicate, so the registry and the
+  early asset scan cannot drift apart.
+
+### Removed
+- **The raw submission is no longer passed to the `atelier_config_sanitize` filter.** It was
+  there as context, and it handed every callback on the hook an unsanitised `$_POST` array —
+  a sanitising function offering a way around itself. Everything a callback legitimately needs
+  is in the sanitised record it already receives. The filter now takes one argument.
+
+## [26.8.22] - 2026-08-14
 
 Answers the wordpress.org pre-review that pended the submission on 2026-08-14.
 
