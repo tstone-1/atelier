@@ -29,7 +29,6 @@ fails=0
 ok()   { printf '  [OK]   %s\n' "$*"; }
 bad()  { printf '  [FAIL] %s\n' "$*"; fails=$((fails + 1)); }
 
-command -v rsync >/dev/null || { echo "rsync is required" >&2; exit 1; }
 command -v zip   >/dev/null || { echo "zip is required" >&2; exit 1; }
 
 version="$(sed -n "s/.*define( 'LICHTBILD_VERSION', '\([^']*\)' ).*/\1/p" lichtbild-gallery.php | head -1)"

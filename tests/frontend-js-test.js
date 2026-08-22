@@ -173,6 +173,32 @@ check(
 	writesLegacy ? 'a legacy prefix is being produced, not just accepted' : 'read-only shim'
 );
 
-console.log( `\nchecks: ${ 8 }, failing: ${ failures }` );
+// The localized bag is named in TWO languages, and neither one errors when they disagree: PHP
+// hands the browser an object, JS reads a property that is simply `undefined`, and every lookup
+// falls through to ''. That is how `loadFailed` was localized, announced to a live region, and
+// empty, for as long as the message existed. So assert the two names against each other rather
+// than either one alone.
+//
+// The PHP side is located from `loadFailed` outwards -- find the string, then the nearest
+// enclosing `'<key>' => array(` -- so renaming the key on either side is what goes red, and a
+// reformatted PHP array does not quietly stop being found.
+const assets = fs.readFileSync(
+	path.join( __dirname, '..', 'includes', 'class-lichtbild-assets.php' ),
+	'utf8'
+);
+const loadFailedAt = assets.indexOf( "'loadFailed'" );
+const enclosing = loadFailedAt === -1
+	? null
+	: [ ...assets.slice( 0, loadFailedAt ).matchAll( /'([A-Za-z0-9_]+)'\s*=> array\(/g ) ].pop();
+const phpBag = enclosing ? enclosing[ 1 ] : null;
+const jsBag = ( source.match( /window\.LichtbildSettings\.([A-Za-z0-9_]+)/ ) || [] )[ 1 ] || null;
+
+check(
+	'the localized bag has the same name in PHP and JS',
+	phpBag !== null && jsBag !== null && phpBag === jsBag,
+	phpBag === jsBag ? `both '${ phpBag }'` : `PHP localizes '${ phpBag }', JS reads '${ jsBag }'`
+);
+
+console.log( `\nchecks: ${ 9 }, failing: ${ failures }` );
 
 process.exit( failures ? 1 : 0 );

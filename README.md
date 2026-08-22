@@ -89,11 +89,13 @@ php tests/mutations.php             # each check must be provably capable of fai
 php tests/i18n-test.php
 ```
 
-220 checks and 197 mutations, each check reported with the population it examined. A check that
+238 checks and 209 mutations, each check reported with the population it examined. A check that
 examined nothing is reported `[EMPTY]` and counts as failing, because a conditional check that
 stops running would otherwise vanish from the report and read as "not applicable".
 
-CI runs all of it across five PHP versions.
+CI runs the suite on five PHP versions, 8.1 through 8.5. The mutations run once, on 8.2 — the
+version the live site runs — because they ask whether the tests can fail, which is a question
+about the suite rather than about portability.
 
 ## Licence
 

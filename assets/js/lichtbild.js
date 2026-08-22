@@ -631,11 +631,6 @@
 	};
 
 	/**
-	 * Opens the lightbox when the page was loaded with a deep link.
-	 *
-	 * @return {void}
-	 */
-	/**
 	 * Reads one localized string, falling back to nothing rather than to `undefined`.
 	 *
 	 * @param {string} key Key in the localized strings object.
@@ -643,7 +638,12 @@
 	 * @return {string} The string, or an empty string.
 	 */
 	Gallery.prototype.strings = function ( key ) {
-		var bag = window.LichtbildSettings && window.LichtbildSettings.strings;
+		// `i18n`, not `strings`: that is the key `wp_localize_script()` is given in
+		// Lichtbild_Assets. Reading the wrong one is not an error in either language -- the
+		// property is simply undefined, every lookup falls through to '', and the pagination
+		// failure message was empty for as long as it existed. tests/frontend-js-test.js
+		// asserts the two names against each other for that reason.
+		var bag = window.LichtbildSettings && window.LichtbildSettings.i18n;
 
 		return bag && bag[ key ] ? bag[ key ] : '';
 	};
@@ -686,6 +686,11 @@
 		node.textContent = message;
 	};
 
+	/**
+	 * Opens the lightbox when the page was loaded with a deep link.
+	 *
+	 * @return {void}
+	 */
 	Gallery.prototype.restoreFromHash = function () {
 		var match = DEEP_LINK.exec( window.location.hash );
 

@@ -4,11 +4,19 @@ A WordPress gallery plugin that replaces Envira Gallery Pro on `timo-stein.com`,
 site stops depending on a ~100 EUR/year licence it no longer pays for and is running an old
 version of.
 
-**Prepared for public release, GPL-2.0-or-later**, with `LICENSE`, `README.md` and a
-wordpress.org-format `readme.txt`. **Still private as of 26.8.19** — the repository has not been
-made public and nothing has been submitted to wordpress.org; it passes that directory's official
-Plugin Check with zero errors, which is readiness rather than submission. The two rules below are
-what being publishable makes non-negotiable rather than tidy:
+**Public and GPL-2.0-or-later**, with `LICENSE`, `README.md` and a wordpress.org-format
+`readme.txt`. `github.com/tstone-1/lichtbild-gallery` has been public since 2026-08-09 and the
+plugin was submitted to wordpress.org the same day; it is in review, not approved — the dated
+history is under *Submitting to wordpress.org* below.
+
+> Until 2026-08-22 this paragraph said the repository was **still private and nothing had been
+> submitted**, five days after both stopped being true, while a later section in this same file
+> recorded the submission and two review rounds. That is not harmless stale prose: the
+> confidentiality and account rules branch on visibility, and this is the first thing anyone
+> reads. A status line carries a date because it expires — when this one and GitHub disagree,
+> `gh repo view tstone-1/lichtbild-gallery --json visibility` is the answer and this is the cache.
+
+The two rules below are what being public makes non-negotiable rather than tidy:
 
 - **Nothing that identifies the deployment target goes in a tracked file** — see *Site access*.
   The hostname, the FTP account and the table prefix live in gitignored files, and the reason is
@@ -410,7 +418,7 @@ php tests/make-fixture.php
 php tests/render-test.php tests/fixture-synthetic.json
 ```
 
-220 checks over 51 galleries and 529 rendered items. Each is reported with the **population
+238 checks over 51 galleries and 529 rendered items. Each is reported with the **population
 it examined**.
 
 That last property needs `Checks::expect()` to be true, and it is worth understanding why.

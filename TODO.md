@@ -57,7 +57,7 @@ the diagnostic cascade that inflated a dozen red sets.
   helper it reads from returns when it finds nothing, and whether the assertion can tell that
   from a pass. `lichtbild_render_found()` answers `''`, `lichtbild_album_found()` answers an empty
   album, and the stubs answer `false` for an unknown ID — three known sources of a
-  plausible-looking wrong answer. Doing that sweep properly means reading all 220 checks against
+  plausible-looking wrong answer. Doing that sweep properly means reading all 238 checks against
   those three, which is a session's work and worth more than it sounds.
 
 - **A stub that ignores an argument is the same defect one layer down, and one was found by
