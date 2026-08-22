@@ -24,7 +24,7 @@ $settings = new Lichtbild_Settings();
 // fails for a reason that has nothing to do with the code.
 if ( $settings->envira_is_active() ) {
 	echo "[ERROR] Envira Gallery is active, so the migration will refuse.\n";
-	echo "        bash tools/devenv.sh wp plugin deactivate --all --exclude=lichtbild\n";
+	echo "        bash tools/devenv.sh wp plugin deactivate --all --exclude=lichtbild-gallery\n";
 
 	exit( 1 );
 }

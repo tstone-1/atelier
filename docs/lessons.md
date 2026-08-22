@@ -849,10 +849,10 @@ and left 8.4 and 8.5 green, and the file restored byte-identical afterwards.
 
 ```sh
 bash tools/devenv.sh reset
-bash tools/devenv.sh wp plugin deactivate --all --exclude=lichtbild
+bash tools/devenv.sh wp plugin deactivate --all --exclude=lichtbild-gallery
 bash tools/devenv.sh wp eval-file "$PWD/tests/live-editor.php"        # 13 checks, galleries
 bash tools/devenv.sh reset
-bash tools/devenv.sh wp plugin deactivate --all --exclude=lichtbild
+bash tools/devenv.sh wp plugin deactivate --all --exclude=lichtbild-gallery
 bash tools/devenv.sh wp eval-file "$PWD/tests/live-album-editor.php"  # 13 checks, albums
 ```
 
