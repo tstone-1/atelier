@@ -19,6 +19,11 @@ that file, which is the same argument that moved the records themselves: knowing
 directions — a hook naming a record that is gone fails, and so does a record with no hook. An
 index that is not checked is a list of claims.
 
+- *The 26.8.24 deploy, which is a first install and is only half done* — the rename put every
+  file under a new name in a new directory, so `UPLOAD_ORDER` is the whole deployed set and no
+  audit of the old directory could have produced it. `plan` worked that out from the server by
+  itself. The upload is verified and inert; the swap needs wp-admin and had not been run when
+  this was written.
 - *The 26.8.23 deploy, where "unchanged" was the whole point and was checked in the database
   first* — the new predicate reads the site's recorded slug scheme, so `generic` would have
   unrendered `[envira-gallery]` in 49 posts; the live option said `envira`, which made the
@@ -133,6 +138,94 @@ index that is not checked is a list of claims.
   not the fallback.
 
 ## The records, newest first
+
+### The 26.8.24 deploy, which is a first install and is only half done
+
+**Written before it finished, deliberately.** Three of its steps happen in wp-admin and cannot be
+run from here, so the alternative to an incomplete record is no record of a half-changed
+production site — which is the worse artifact.
+
+**This is the one release where `UPLOAD_ORDER` is not the answer to "what changed".** The plugin
+was renamed, so all 40 deployed files have new names inside a directory the server did not have.
+`audit` could not produce the list, because not one of those paths exists in the old directory;
+the list is instead the complete deployed set, derived the way `build-zip.sh` derives the
+archive — shipped files, minus `SERVER_ABSENT`, plus the one file in `SERVER_EXTRA`.
+
+**`plan` reached that verdict on its own, from the server rather than from the list**, and this is
+the first release where its answer was *"constraints: none applicable"* rather than an ordering:
+
+```
+FIRST INSTALL: no lichtbild-gallery.php on the server, so this is a new plugin directory.
+Ordering is moot: the directory is not in active_plugins, so PHP opens none of it
+while it uploads. Activate only after every file is digest-verified.
+```
+
+That is the exact inverse of 26.8.7's hazard. There, a half-uploaded set was a half-executed
+plugin on a live site; here the directory is inert until somebody activates it, so the upload
+carries no risk at all and the risk moves entirely into the activation. The advice it prints is
+therefore the whole safety property, and it was followed: **40 files, 0 mismatching**, each
+downloaded back and digest-compared.
+
+**The no-op was verified before the change, which is what the inert upload is for.** 160 URLs
+captured before and after: `joined 160 of 160 rows, malformed 0, changed 0, status differences 0`.
+A plugin directory can sit on the server proving it transferred intact while changing nothing a
+visitor sees, and that separates "did the transport work" from "did the swap work" into two
+questions asked at two different times.
+
+**Two instruments had to be read from git rather than from the working tree**, and both would
+otherwise have answered zero:
+
+- `tools/live-urls.py` decides the post-type names from `lichtbild_schema_version`, which
+  production does not have — it is still on `atelier_schema_version`. The renamed script therefore
+  described a site that does not exist. **It refused rather than returning an empty list**:
+  *"enumerated 0 permalinks and 0 tag archives ... this means the type names are wrong for the
+  schema state, not that the site is empty."* That guard is the only reason this was a
+  two-minute detour. The 160 URLs came from `git show <pre-rename>:tools/live-urls.py`, which
+  still understands the names production actually uses — and it has to be run from **inside** the
+  tree, because it derives the credentials path from its own location.
+- `tools/deploy.env` is gitignored, so the rename never touched it: it still named
+  `ATELIER_DEPLOY_HOST` while the script had moved to `LICHTBILD_DEPLOY_HOST`. Every gitignored
+  file that carries a renamed identifier is invisible to a whole-tree substitution, and this is
+  the one that stops the deploy dead.
+
+**A near-miss worth more than the deploy.** Copying `deploy.env` to `deploy.env.bak-before-rename`
+produced an untracked file that `.gitignore` did **not** cover — the rule was the exact path, not a
+glob — in a public repository whose entire *Site access* section exists to keep the deployment host
+and account out of it. `git add -A` would have committed it. The rule is now `tools/deploy.env*`,
+with a control proving `tools/deploy.sh` is still not ignored, because a glob that swallows the
+script would be the other kind of mistake.
+
+**What is left.** Three steps need wp-admin:
+
+1. **Roll the migration back** from Settings → the old plugin, while it is still active.
+2. **Deactivate the old plugin, activate Lichtbild Gallery**, back to back.
+3. **Run the migration** from Settings → Lichtbild.
+
+**Step 1 must come before step 2, and the reason is not the one you would guess.** The worry was
+that activating first would make the new plugin record the wrong URL scheme permanently — a site
+recorded `generic` keeps that answer forever, and its galleries would move off `/envira/`. That
+does not happen: `has_envira_history()` counts `_eg_gallery_data` and `_eg_album_data` postmeta,
+which the migration never destroys, so it answers `envira` either way. The **real** hazard is
+duller and worse. Activated while the rows are still named `atelier_gallery`, the new plugin finds
+no `lichtbild_schema_version`, concludes the site is unmigrated, and registers Envira's type
+*names* — so nothing matches the rows and every gallery URL 404s until the migration runs.
+
+**The flush has to be a separate request from the migration, and the local rehearsal proved it by
+failing.** Running `migrate()` and `flush_rewrite_rules()` in one `wp eval-file` left every gallery
+permalink serving the **homepage**: the request had registered the types under their old names
+before the rename happened, so the rules regenerated from those. The tell was not the status code —
+all three URLs answered **200** — it was that a deliberately bogus slug answered 200 as well. A
+control is what turned "the migration broke the permalinks" into "the flush ran in the wrong
+request"; `wp rewrite flush` in a fresh process fixed it, and the bogus slug went back to 404. The
+migration screen's post/redirect/get does exactly this, which is why the production run through
+wp-admin is safe and the shortcut was not.
+
+The rest of the rehearsal, on a full copy of production: activation recorded
+`lichtbild_slug_scheme = envira`; the migration moved 52 galleries, 2 albums and 58 terms with 0
+errors; `/envira/<slug>/` and `/envira-tag/<slug>/` both resolved afterwards while a bogus slug
+404'd; Yoast's keys arrived on `title-lichtbild_gallery` and `title-tax-lichtbild_tag`; and the
+three live suites passed 37 checks between them, each migrating, verifying and rolling back.
+
 
 ### The 26.8.23 deploy, where "unchanged" was the whole point and was checked in the database first
 

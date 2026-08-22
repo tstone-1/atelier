@@ -760,11 +760,26 @@ kind of thing that gets assumed.
   squashed root commit; the full pre-squash history is private in `tstone-1/atelier-history`. The
   two decisions were separate — wordpress.org requires neither of the other — and this one was
   taken for its own reasons.
-- **Plugin Check reports 0 errors and 0 warnings on the submitted archive**, run through the
-  official plugin against the actual zip on a clean WordPress. The team's own email says automated
-  tools have false positives and miss things, so this is a floor rather than a prediction: the
-  41 warnings it used to report were all either analysis limits or deliberate decisions, and each
-  now carries the justification in the code where a reviewer meets it.
+- **Plugin Check reports 0 errors and 0 warnings on the 26.8.24 archive**, run through the
+  official plugin against the actual zip. The team's own email says automated tools have false
+  positives and miss things, so this is a floor rather than a prediction: the 41 warnings it used
+  to report were all either analysis limits or deliberate decisions, and each now carries the
+  justification in the code where a reviewer meets it.
+
+  **This line claimed 0/0 while 26.8.22 and 26.8.23 were each shipping one warning**, and it is
+  worth saying why rather than just correcting the number: `upgrade_notice_limit` fires on a
+  `readme.txt` upgrade notice over 300 characters, the 26.8.22 notice was 379, and that notice was
+  *added by* 26.8.22 — so the claim was written true and was falsified by the very release it was
+  written for. Fixed in 26.8.24 by trimming it to 284. **Run the check per release rather than
+  citing this line**, and check the whole set: measuring all four notices at once found only the
+  one over, which a spot check of the newest would have missed entirely.
+
+  Two traps in running it, both of which produce a confident wrong answer. Plugin Check derives
+  the expected text domain from the **directory name**, so checking an archive extracted to
+  `zzcheck-lichtbild-gallery/` reported 24 `TextDomainMismatch` ERRORs that say nothing about the
+  plugin. And the working tree is symlinked into the devenv under the real slug, so checking the
+  shipped bytes means parking that symlink and extracting the zip in its place — otherwise the
+  thing measured is the tree, not the release.
 
 Two guidelines are worth knowing before a reviewer raises them, and both are now satisfied.
 **Guideline 17** forbids a trademark as the "sole or initial term of a plugin slug" — and it is
