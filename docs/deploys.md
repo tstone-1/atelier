@@ -19,6 +19,11 @@ that file, which is the same argument that moved the records themselves: knowing
 directions — a hook naming a record that is gone fails, and so does a record with no hook. An
 index that is not checked is a list of claims.
 
+- *The 26.8.25 switchover, verified against the database rather than against itself* — `compare`
+  reported **160 of 160 changed**, which after a type rename is the expected artifact and worth
+  nothing; the check that answered the question compared each gallery's rendered images against
+  Envira's untouched record, an absolute source rather than a before/after guess. 50 of 50
+  correct. Holds why byte-modulo-substitution failed, and the one gallery that rendered nothing.
 - *The 26.8.24 deploy, which is a first install and is only half done* — the rename put every
   file under a new name in a new directory, so `UPLOAD_ORDER` is the whole deployed set and no
   audit of the old directory could have produced it. `plan` worked that out from the server by
@@ -138,6 +143,69 @@ index that is not checked is a list of claims.
   not the fallback.
 
 ## The records, newest first
+
+### The 26.8.25 switchover, verified against the database rather than against itself
+
+The day `atelier` became `lichtbild-gallery` on the live site. The upload had been done and
+proven inert a few hours earlier (26.8.24), so this record is about the three wp-admin steps and,
+mostly, about how they were checked.
+
+**`compare` reported 160 of 160 changed, 0 status differences, and that number is worthless.**
+The post type appears in WordPress's own body classes, so any rename reports 100% changed —
+recorded here since 26.8.07 and true again. What is new is that the command now *exits 1* on
+that, which is correct behaviour meeting a case where the difference is expected: the gate did
+its job and the human has to decide. Do not read a red `compare` after a rename as a regression,
+and do not weaken the gate to make it green.
+
+**The attempt to rescue the byte comparison failed, and is worth recording as a dead end.** The
+idea was byte-equality modulo a *named, enumerated* substitution — undo the rename, undo
+`aria-pressed`, undo the plugin directory move, and require the pre-switchover hash to come back.
+It got to **59 of 160**: the tag archives, which enqueue none of the plugin's assets. The 101
+gallery pages never reproduced, and three successive guesses at the residue (the plugin path, the
+JSON-escaped form of that path, the new attribute) each changed nothing. The lesson is not which
+substitution was missing. It is that **reconstructing bytes you did not capture is the wrong
+instrument**: `capture` stores hashes, so there was nothing to diff against, and every step was a
+guess with no way to see the answer. If a byte comparison across a rename is ever wanted, take a
+`fingerprint` *before* the change — that is what it is for.
+
+**What actually answered the question was the database, and it is a stronger check than the hash
+would have been.** Envira's `_eg_gallery_data` is untouched by the migration by design, so it is
+an absolute statement of what each gallery contains — no before/after capture involved. For every
+published gallery: fetch the permalink, extract the rendered `data-lichtbild-item` ids, compare
+against the active items in Envira's record, in order.
+
+**49 of 50 matched exactly.** The 50th rendered nothing, and that is the site's only
+password-protected gallery serving WordPress's password form instead of photographs — the
+visibility rule working, not a defect. Checked rather than assumed: `post_password <> ''` on that
+row, and exactly one such row on the site. So 50 of 50.
+
+Around that: both albums render their covers, a tag archive answers 200 while a deliberately
+bogus gallery slug answers **404** (so the URL probe discriminates), both AJAX endpoints answer
+200 with real payloads while refusing the protected gallery and a nonexistent id with 404, and no
+live page contains the string `atelier` anywhere while the same pages contain `lichtbild` 92
+times — a grep with its own control.
+
+**Two of the same day's fixes were confirmed live by accident, which is the nicest kind.** The
+localized bag arrives as `i18n` carrying `Schließen` and `Vergrößern`, so the W1 key fix and the
+German catalogue are both working; and a deliberately malformed AJAX request came back
+*"Galerie nicht gefunden."* rather than in English.
+
+**Three probe bugs on the way, all mine, all of the same family — an instrument that answers
+without measuring.** A one-off hash used `printf '%s' "$body"` where `capture` pipes through
+`sed '$d'`, so the trailing newline differed and **0 of 160** pages matched; proving the pipeline
+against a recorded value first would have caught it immediately, and that check is now the first
+thing the script does. The AJAX probe passed `id=` where the endpoint reads `gallery=`, so every
+call 404'd — *including the control*, which is the tell: when the thing that must fail and the
+thing that must pass agree, the probe is broken, not the site. And `GID=$(...)` aborted a whole
+block, because `GID` is read-only in zsh; the error names a group id and reads like a permissions
+problem.
+
+**Leftovers, deliberately.** The `_atelier_gallery` (51) and `_atelier_album` (2) meta rows stay:
+they are a complete second copy of the converted records, they cost nothing, and Envira's own
+records beside them are what make a rollback a restoration rather than a reconstruction. The old
+`wp-content/plugins/atelier/` directory and the three `atelier_*` options are dead and were
+scheduled for deletion; the plugin directory is recoverable in full from git at `8a1647a`, which
+is what makes deleting it uninteresting rather than risky.
 
 ### The 26.8.24 deploy, which is a first install and is only half done
 
