@@ -113,7 +113,14 @@ CHUNK=8192
 # asset changed this release, so the window is harmless either way; the position costs nothing
 # and stating a rule once per release is cheaper than deciding whether it applies.
 #
-# 26.8.24 is the one release where this list is NOT the answer to "what changed": the plugin was
+# 26.8.25 is the twelve files `audit` reported as differing from the server's inert copy, which
+# is what that subcommand is for. The plugin directory is on the server and still not in
+# `active_plugins`, so ordering remains moot for the same reason it was at 26.8.24 -- PHP opens
+# none of it while it uploads -- and the bootstrap is last anyway, because the day this list is
+# pasted into a live directory that habit is the only thing standing between a half-uploaded set
+# and a fatal.
+#
+# 26.8.24 was the one release where this list was NOT the answer to "what changed": the plugin was
 # renamed, so every file has a new name and the whole plugin goes into a NEW directory that the
 # server does not have. The set is therefore the complete deployed set -- the archive's files
 # minus SERVER_ABSENT, plus SERVER_EXTRA -- and an audit of the old directory could not have
@@ -130,41 +137,13 @@ CHUNK=8192
 # one more transfer that can fail for no behavioural gain. LICENSE ships in the wordpress.org
 # ZIP, which is a different artifact.
 UPLOAD_ORDER=(
-	"assets/css/blocks.css"
-	"assets/css/editor.css"
-	"assets/css/lichtbild.css"
-	"assets/js/album-editor.js"
-	"assets/js/blocks.js"
-	"assets/js/editor.js"
 	"assets/js/lichtbild.js"
-	"assets/vendor/photoswipe/LICENSE"
-	"assets/vendor/photoswipe/photoswipe-lightbox.esm.js"
-	"assets/vendor/photoswipe/photoswipe-lightbox.esm.min.js"
-	"assets/vendor/photoswipe/photoswipe.css"
-	"assets/vendor/photoswipe/photoswipe.esm.js"
-	"assets/vendor/photoswipe/photoswipe.esm.min.js"
-	"blocks/album/block.json"
-	"blocks/gallery/block.json"
-	"includes/class-lichtbild-ajax.php"
-	"includes/class-lichtbild-album-config.php"
 	"includes/class-lichtbild-album-editor.php"
-	"includes/class-lichtbild-album.php"
-	"includes/class-lichtbild-assets.php"
-	"includes/class-lichtbild-block.php"
-	"includes/class-lichtbild-config.php"
-	"includes/class-lichtbild-editor.php"
-	"includes/class-lichtbild-exif.php"
-	"includes/class-lichtbild-gallery.php"
-	"includes/class-lichtbild-item.php"
-	"includes/class-lichtbild-metabox-editor.php"
 	"includes/class-lichtbild-migration-screen.php"
 	"includes/class-lichtbild-migration.php"
-	"includes/class-lichtbild-post-types.php"
 	"includes/class-lichtbild-renderer.php"
 	"includes/class-lichtbild-repository.php"
 	"includes/class-lichtbild-settings.php"
-	"includes/class-lichtbild-shortcode.php"
-	"includes/class-lichtbild-standalone.php"
 	"includes/class-lichtbild.php"
 	"languages/lichtbild-gallery-de_DE.mo"
 	"readme.txt"
