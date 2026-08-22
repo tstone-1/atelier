@@ -24,7 +24,10 @@ docs/reviews/
 # Deploy target. The host and account are credentials-adjacent -- an FTP hostname plus its
 # username is two thirds of a login -- and this repository is public, so they live here and
 # never in tools/deploy.sh. The password is in the macOS login keychain, not in this file.
-tools/deploy.env
+tools/deploy.env*
+# The glob, not the exact path: a `deploy.env.bak-...` written before editing it is not
+# covered by the plain name, is untracked rather than ignored, and `git add -A` would put
+# the deployment host and account into a public repository. Nearly happened on 2026-08-22.
 
 # Machine-local notes about the deployment target -- the hosting shape, the stack versions, and
 # the inventory of Envira leftovers on the live site. Same reasoning as the line above: no single
