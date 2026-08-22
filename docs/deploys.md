@@ -1,4 +1,4 @@
-# Atelier — deploy records
+# Lichtbild — deploy records
 
 One entry per release that reached `timo-stein.com`, newest first, verbatim and in the
 order they were written. `AGENTS.md` holds the procedure and one line per entry; this is
@@ -60,7 +60,7 @@ index that is not checked is a list of claims.
   upload landed or never happened. Four before-and-after behavioural controls instead, and the
   `-1` in their "before" column is the bug reproduced from the command line.
   - *The ordering constraint that is not about PHP, now a line of code rather than a note* — an
-    asset must precede `atelier.php`, which carries the `?ver=` it is cached under; no grep can
+    asset must precede `lichtbild-gallery.php`, which carries the `?ver=` it is cached under; no grep can
     see that edge, and it bound twice in five releases. `plan` now refuses it.
 - *The 26.8.18 deploy, which fixed the install nobody here has ever done* — schema 1 means "still
   on Envira's storage", not "new", so a fresh install registered post types NAMED `envira` and
@@ -95,7 +95,7 @@ index that is not checked is a list of claims.
   - *The control I nearly used instead would have said the opposite* — a Wayback snapshot whose
     theme stylesheet had not truly applied; ask whether a stylesheet's **effects** are present,
     not whether the stylesheet is.
-  - *One ordering constraint, and it is not about PHP* — the stylesheet before `atelier.php`, or
+  - *One ordering constraint, and it is not about PHP* — the stylesheet before `lichtbild-gallery.php`, or
     browsers cache the old file under the new `?ver=` and nothing corrects it until the next bump.
 - *The 26.8.14 deploy, and the URL that had never once been checked* — the front page renders
   ten galleries and was in no deploy's verification surface; three checks failed and all three
@@ -124,7 +124,7 @@ index that is not checked is a list of claims.
 - *The 26.8.5 deploy, which had no ordering constraint at all — and how that was established* —
   "no constraint" is a derived fact, and whether a require is new is a fact about the server
   rather than about this checkout.
-- *The 26.8.4 deploy, and the constraint that inverted* — `atelier.php` went third rather than
+- *The 26.8.4 deploy, and the constraint that inverted* — `lichtbild-gallery.php` went third rather than
   last. Re-derive `UPLOAD_ORDER` every release; do not edit the last one.
 - *The 26.8.2 deploy, which was the first one that was boring* — identical was predicted from
   two queries against production, which is what makes 159/159 a pass rather than an ambiguity.
@@ -140,13 +140,13 @@ Deployed 2026-08-15 from the MacBook. **6 files, 11 chunks, every chunk first ti
 mismatching**, `160/160` URLs semantically identical and `0` non-200, `ver=26.8.22` before and
 `26.8.23` after. Eighteenth deploy with no failed chunk.
 
-**This release decides, per site, whether Atelier answers to `[envira-gallery]` at all — so the
+**This release decides, per site, whether Lichtbild answers to `[envira-gallery]` at all — so the
 question that had to be settled before the push was what THIS site's recorded slug scheme says.**
 `claims_envira_shortcodes()` is `should_take_over() && 'envira' === slug_scheme()`, and if the
 second half had been `generic` here, the shortcode would have stopped resolving in 49 published
 posts: not an error, not a 500, just the gallery quietly gone from every one of them. The answer
-came from the live `wp_options` rather than from reading the code — `atelier_slug_scheme =
-'envira'`, `atelier_schema_version = 2` — so the new predicate returns exactly what
+came from the live `wp_options` rather than from reading the code — `lichtbild_slug_scheme =
+'envira'`, `lichtbild_schema_version = 2` — so the new predicate returns exactly what
 `should_take_over()` returned before it, and the release is a deliberate no-op on the only site it
 reaches. That is the shape this project keeps arriving at as the safest one, but it is worth
 noticing that here it was a *finding* rather than a design: the same code on a site recorded
@@ -156,7 +156,7 @@ noticing that here it was a *finding* rather than a design: the same code on a s
 strips `?ver=` before hashing, so a release that moves no rendered byte is invisible to it whether
 it landed or never left the laptop. What establishes the upload is `push` re-downloading all six
 files and digest-comparing them **after the whole set had landed** — not only after each — and the
-front page serving `atelier.css?ver=26.8.23` where it served `26.8.22` an hour earlier.
+front page serving `lichtbild.css?ver=26.8.23` where it served `26.8.22` an hour earlier.
 
 **The positive control is an embedding post, and it is the one that would have gone red.** A post
 carrying `[envira-gallery id="N"]` renders its tiles and contains no raw `[envira-gallery` text.
@@ -165,13 +165,13 @@ pages — but only as a hash difference; this names the mechanism, and it is the
 on any site where the scheme is not known to be `envira`.
 
 **The ordering constraint points the USUAL way, one release after the only one that inverted.**
-`Atelier_Settings::claims_envira_shortcodes()` is new, and both `class-atelier-shortcode.php` and
-`class-atelier-assets.php` stop calling `should_take_over()` and call it instead — so the
+`Lichtbild_Settings::claims_envira_shortcodes()` is new, and both `class-lichtbild-shortcode.php` and
+`class-lichtbild-assets.php` stop calling `should_take_over()` and call it instead — so the
 definition lands first. Getting it backwards is not a gallery-page fatal but a **site-wide** one:
 `register_shortcodes()` runs on `init` and `maybe_enqueue_early()` on `wp_enqueue_scripts`, so
 every request on the site would hit "Call to undefined method" until the second upload finished.
 `plan` printed `constraints: satisfied`, correctly by its own lights and equally over the fatal
-order — `Atelier_Settings` was already required, already constructed, already there, and a method
+order — `Lichtbild_Settings` was already required, already constructed, already there, and a method
 added to an existing class is in none of the three questions it asks. `check_removed_methods()`
 reported `none`, which is its emptiness case and is the right answer here rather than a silence.
 
@@ -193,8 +193,8 @@ audit, kept: it downloads every deployed file, digest-compares it, and prints on
 the same derivation `tools/build-zip.sh` uses — because an audit with its own hand-written list of
 files would drift from the thing it audits, which is the defect it exists to end. Two named lists
 sit on top, in opposite directions, and the second is the one that would have been missed:
-`SERVER_ABSENT` (`LICENSE`, `languages/atelier.pot` — in the archive, never deployed) and
-`SERVER_EXTRA` (`languages/atelier-de_DE.mo` — deployed since 26.8.13, and deliberately *not* in
+`SERVER_ABSENT` (`LICENSE`, `languages/lichtbild-gallery.pot` — in the archive, never deployed) and
+`SERVER_EXTRA` (`languages/lichtbild-gallery-de_DE.mo` — deployed since 26.8.13, and deliberately *not* in
 the archive, because a directory-hosted plugin gets its translations from translate.wordpress.org).
 Derive the universe from `.distignore` alone and the audit never asks about the one file whose
 absence is silent: 28 strings quietly revert to English.
@@ -249,7 +249,7 @@ is the easiest kind to carry into a record — it was right about a different qu
 The front page carries six — `classic-theme-styles-inline-css`, `global-styles-inline-css`,
 `twentytwenty-style-inline-css`, `wp-block-library-inline-css`, `wp-emoji-styles-inline-css`,
 `wp-img-auto-sizes-contain-inline-css` — every one of them WordPress's or the theme's, and every
-one carrying an `id=`. Atelier's removed element had none. Counting `<style>` tags outright
+one carrying an `id=`. Lichtbild's removed element had none. Counting `<style>` tags outright
 reports six on every page whether the release worked or not; the discriminating property is the
 missing `id=`, and the sweep tests for that.
 
@@ -279,26 +279,26 @@ Additional CSS is empty, so its absence is evidence, not silence.
 to paste, and no gallery is waiting to be styled.** Every declaration in all twenty exported
 blocks is commented out — `/* margin-bottom: 20px; */`, `/* font-size: 18px; */`,
 `/* font-family: "roboto"; */` and nothing else — so what the old plugin emitted was
-`#atelier-2423 { }`, an empty rule. Grepping the export for a line that is not a comment, a
+`#lichtbild-2423 { }`, an empty rule. Grepping the export for a line that is not a comment, a
 selector or a brace returns **zero**. The galleries are not "unstyled until it is pasted"; they
 were never styled, the CSS has been inert for as long as it has existed, and pasting the export
 would add 145 lines of comments that do nothing.
 
-Two details make the point harder to doubt. Sixteen of the twenty blocks target `#atelier-2423`
+Two details make the point harder to doubt. Sixteen of the twenty blocks target `#lichtbild-2423`
 regardless of which gallery stores them — written once on Harburg and copied nineteen times — so
 even uncommented, most would style a gallery that is not theirs. And the offline render
 comparison below shows the whole markup delta is the `<style>` element itself, 510 bytes across
 four galleries, with nothing inside it that a browser acts on.
 
 The export is still worth keeping, for a different reason than restoration: it is the record that
-Envira's copy and Atelier's v2 copy agreed before any gallery gets saved under 26.8.22, which is
+Envira's copy and Lichtbild's v2 copy agreed before any gallery gets saved under 26.8.22, which is
 the point at which the v2 copy is dropped.
 
 **`AGENTS.md` had asserted "16 galleries carry hand-written `custom_css`" for the life of the
 project, and it was true at the byte level and false in every way that mattered.** That
 measurement counted non-empty strings. It never asked whether any of them produced a
 declaration, and nothing downstream asked either: `rewrite_css()` existed to keep this CSS
-working, the `#atelier-wrap-N` versus `#atelier-N-wrap` defect was diagnosed and fixed *inside*
+working, the `#lichtbild-wrap-N` versus `#lichtbild-N-wrap` defect was diagnosed and fixed *inside*
 it, this release's notes worried about losing the data, and `tools/export-custom-css.py` was
 written and tested to recover it. All of that was care spent on rules that had never applied.
 
@@ -315,7 +315,7 @@ chunks, every chunk first time, 0 non-200,** `ver=26.8.21` before and `26.8.22` 
 Seventeenth deploy with no failed chunk.
 
 **This is the first release that DELETES a method, and the familiar rule gives exactly the wrong
-answer for one.** `Atelier_Gallery::custom_css()` is gone and `Atelier_Renderer` line 84 was the
+answer for one.** `Lichtbild_Gallery::custom_css()` is gone and `Lichtbild_Renderer` line 84 was the
 file that stops calling it. Every ordering rule in five previous releases is about a definition
 *arriving* — land it before its caller — so the reflex is to upload the class that owns the
 method first. Do that and the **deployed** renderer, still on the server, is left naming a method
@@ -332,8 +332,8 @@ still constructed, still there. One method went away. That gap is now a check wi
 the entry below is about it.
 
 The other four functions this release removes are safe by construction and were checked rather
-than assumed: `atelier_load_textdomain()` is defined and hooked in the same file, and
-`Atelier_Config::css()`, `Atelier_Config::rewrite_css()` and `Atelier_Editor::row_css()` are all
+than assumed: `lichtbild_load_textdomain()` is defined and hooked in the same file, and
+`Lichtbild_Config::css()`, `Lichtbild_Config::rewrite_css()` and `Lichtbild_Editor::row_css()` are all
 private, so no other file can have been calling them.
 
 **`UPLOAD_ORDER` was stale for the fourth time — four releases stale, under a comment still
@@ -361,7 +361,7 @@ vacuous. Same move the migration record describes for the tile count, and cheape
 the harness renders galleries already, and a worktree at the deployed SHA is one command.
 
 **Three files were deliberately left absent from the server:** `LICENSE`,
-`languages/atelier-de_DE.po` and `languages/atelier.pot`. None is read at runtime, none has ever
+`languages/lichtbild-gallery-de_DE.po` and `languages/lichtbild-gallery.pot`. None is read at runtime, none has ever
 been deployed, and each is one more transfer that can fail for no behavioural gain. `LICENSE`
 ships in the wordpress.org ZIP, a different artifact built by a different script.
 
@@ -446,7 +446,7 @@ assets in this upload: none, so no cache-buster to sequence`** rather than asser
 constraint it could not have satisfied.
 
 **One control was invalid and said so loudly, which is the only reason it was not believed.**
-Fetching `includes/class-atelier-settings.php` over HTTP and grepping it for the new branch
+Fetching `includes/class-lichtbild-settings.php` over HTTP and grepping it for the new branch
 returned zero --- because the host executes PHP, so the file exits at its `ABSPATH` guard and the
 response is 200 with a **zero-byte body**. The instrument was measuring the web server's
 willingness to run PHP, not the content of the file. The evidence that stands is the push's own
@@ -454,7 +454,7 @@ two-stage digest verification, which pulls each file back over FTPS and compares
 per file, and again for the whole set after everything had landed.
 
 The controls that did hold: `ver=26.8.21` in the served HTML, which can only come from
-`ATELIER_VERSION` in the `atelier.php` now executing; a gallery permalink still rendering ten
+`LICHTBILD_VERSION` in the `lichtbild-gallery.php` now executing; a gallery permalink still rendering ten
 tiles; and 0 non-200 across all 160 URLs, which is what a fatal in a freshly uploaded class
 would have shown up as immediately.
 
@@ -482,7 +482,7 @@ What actually established the release, none of which is a page hash:
 
 - The served stylesheet's SHA-256 equals the local file's, which `push` verified per chunk and
   then again for the whole set after everything had landed.
-- The served CSS contains **one** `.atelier-tag.is-current` block where it had two, and zero
+- The served CSS contains **one** `.lichtbild-tag.is-current` block where it had two, and zero
   occurrences of either old rule.
 - A headless browser loaded a **live** gallery permalink, built the button the stylesheet is
   meant to style, and let the engine resolve it: white on `#1a1a1a`, **17.4:1**.
@@ -492,7 +492,7 @@ What actually established the release, none of which is a page hash:
 
 One thing worked that has failed three releases running: `plan` printed **`versioned assets
 before the bootstrap: 1 of 1`** and derived it. The constraint --- an asset must precede
-`atelier.php`, which carries the `ATELIER_VERSION` that is the `?ver=` the asset is cached under
+`lichtbild-gallery.php`, which carries the `LICHTBILD_VERSION` that is the `?ver=` the asset is cached under
 --- was a prose note that bound twice in five releases before 26.8.19 turned it into code. This
 is the first release where it had a file to order, and it ordered it without being told.
 
@@ -514,9 +514,9 @@ from a thing that was always true:
 
 | control | before | after |
 |---|---|---|
-| `atelier_items` with a wrong nonce, public gallery | `-1` | items, HTTP 200 |
-| `atelier_page` with a wrong nonce, public gallery | `-1` | HTTP 200 |
-| `atelier_items` with a wrong nonce, **protected** gallery | `-1` | `Galerie nicht gefunden.`, HTTP 404 |
+| `lichtbild_items` with a wrong nonce, public gallery | `-1` | items, HTTP 200 |
+| `lichtbild_page` with a wrong nonce, public gallery | `-1` | HTTP 200 |
+| `lichtbild_items` with a wrong nonce, **protected** gallery | `-1` | `Galerie nicht gefunden.`, HTTP 404 |
 | the served script's deep-link pattern | current prefix only | both prefixes |
 
 The third row is the one that matters most and is the reason the first two are safe. A nonce
@@ -535,14 +535,14 @@ site, which is a category this project now has to care about.
 **One control was a bad probe, and it read as a failed deploy.** The `?ver=` check came back
 empty, which for a moment looked like the bootstrap not having landed; the URL it fetched
 (`/envira/moose/`) simply does not exist on the site. Re-run against a URL taken from
-`urls.txt` it returns `atelier.css?ver=26.8.19` and `atelier.js?ver=26.8.19`. **Take probe URLs
+`urls.txt` it returns `lichtbild.css?ver=26.8.19` and `lichtbild.js?ver=26.8.19`. **Take probe URLs
 from the enumerator, never from memory** — this is the fourth time an empty answer here has
 turned out to be the instrument rather than the finding.
 
 #### The ordering constraint that is not about PHP, now a line of code rather than a note
 
-`assets/js/atelier.js` had to land **before** `atelier.php`, for the reason recorded at 26.8.15
-for the stylesheet: assets are cache-busted by `ATELIER_VERSION`, that constant lives in the
+`assets/js/lichtbild.js` had to land **before** `lichtbild-gallery.php`, for the reason recorded at 26.8.15
+for the stylesheet: assets are cache-busted by `LICHTBILD_VERSION`, that constant lives in the
 bootstrap, and landing the bootstrap first means a browser asking for `?ver=26.8.19` is served
 the **old** file and caches it under the new name — where nothing corrects it until the next
 version bump, because the URL never changes again.
@@ -553,12 +553,12 @@ dependency runs entirely through a query argument. So it was carried by a paragr
 record, and it bound twice in five releases.
 
 It is now derived: any file under `assets/` in `UPLOAD_ORDER` must be positioned before
-`atelier.php`, and `plan` refuses otherwise. Verified by swapping the two entries — `[ERROR]
-assets/js/atelier.js is ordered at or after atelier.php`, exit 1 — and by restoring the file
+`lichtbild-gallery.php`, and `plan` refuses otherwise. Verified by swapping the two entries — `[ERROR]
+assets/js/lichtbild.js is ordered at or after lichtbild-gallery.php`, exit 1 — and by restoring the file
 byte-for-byte afterwards.
 
 The first version of that check had the defect this script has already fixed once elsewhere: it
-counted only the assets that *passed*, so with `atelier.php` ordered first it printed `versioned
+counted only the assets that *passed*, so with `lichtbild-gallery.php` ordered first it printed `versioned
 assets in this upload: none, so no cache-buster to sequence` directly beneath the error saying
 otherwise. **A tally of the good cases cannot report the bad one**; it now prints `0 of 1`.
 
@@ -575,8 +575,8 @@ the URL *paths* and left the *type names*, which is half a fix and the more visi
 the names show up in admin URLs, body classes and sitemap filenames.
 
 The control that matters here is not the 160 URLs — nothing could have moved them — but that the
-live site's two options read exactly as before, `atelier_schema_version 2` and
-`atelier_slug_scheme envira`. The whole change is gated on those being unset, so a site that has
+live site's two options read exactly as before, `lichtbild_schema_version 2` and
+`lichtbild_slug_scheme envira`. The whole change is gated on those being unset, so a site that has
 already decided is unreachable by it, and that is checked rather than reasoned about.
 
 #### Two answers derived separately were wrong; one observation fixed it
@@ -606,7 +606,7 @@ deliberate.**
 
 Post type registration and permalink generation happen in WordPress, not in the harness. On a
 real install stripped of every Envira record and option: `has_migrated` true, scheme `generic`,
-**`atelier_gallery` registered at `/gallery/` and `envira` not registered at all**, and rollback
+**`lichtbild_gallery` registered at `/gallery/` and `envira` not registered at all**, and rollback
 refused. The refusal came back in German, which incidentally proves 26.8.17's
 `load_plugin_textdomain()` fix works — a control nobody set out to run.
 
@@ -625,17 +625,17 @@ hope nothing changed" but a claim about which of the changes could reach a page.
 
 Four controls, because 0 changed is also what a deploy that never landed produces: `ver=26.8.17`
 on both assets, `Gallery.prototype.announce` present in the served JavaScript, the new
-`.atelier-message` rule present in the served stylesheet, and `readme.txt` answering 200 where it
+`.lichtbild-message` rule present in the served stylesheet, and `readme.txt` answering 200 where it
 had never existed.
 
 #### The line that decides something, running for the first time on real data
 
-This release's genuinely risky change is that `Atelier_Settings::slug_scheme()` **writes an
+This release's genuinely risky change is that `Lichtbild_Settings::slug_scheme()` **writes an
 option the first time anything asks it**, and every gallery URL on the site depends on the answer.
 A wrong answer would have moved 57 indexed URLs on the first page view after the upload.
 
 It derived `envira` and pinned it, which is right, and it did so without any manual database
-write — the site's own `atelier_schema_version` of 2 settles it, because a migrated site was
+write — the site's own `lichtbild_schema_version` of 2 settles it, because a migrated site was
 serving Envira's paths by definition. That property is what made the deploy safe to run in the
 normal way rather than needing a prepared row, and it was established by reading the derivation
 before uploading rather than by watching what happened afterwards.
@@ -646,7 +646,7 @@ the control that stops "the URLs still work" from being satisfied by a site that
 
 #### One ordering constraint, invisible to `plan` for the third release running
 
-`class-atelier-settings.php` gains `slug_scheme_paths()` and `class-atelier-post-types.php` calls
+`class-lichtbild-settings.php` gains `slug_scheme_paths()` and `class-lichtbild-post-types.php` calls
 it on **every front-end request**. Landing the caller first is a fatal "Call to undefined method"
 on every page of the site, not an admin-only inconvenience — the worst version of this hazard so
 far, since the previous two were confined to editor screens.
@@ -666,14 +666,14 @@ deploy whose data step was performed by hand in `wp-admin` rather than from here
 
 `plan` reported **FIRST INSTALL** and declined to check ordering, which is new and is the honest
 answer: every previous release uploaded into a directory WordPress was actively executing, so a
-half-uploaded set was a half-executed plugin. This one uploaded into `/plugins/atelier/`, which
+half-uploaded set was a half-executed plugin. This one uploaded into `/plugins/lichtbild-gallery/`, which
 nothing had been told about — not in `active_plugins`, nothing requiring it, PHP never opening a
 file in it. **An inactive plugin directory executes nothing, so the intermediate states that
 ordering exists to protect against are not reachable.** Saying "constraints: satisfied" there
 would have been true and would have meant something different from what a reader would take it
 to mean.
 
-That distinction needed care in the code, because "the server's `atelier.php` came back empty"
+That distinction needed care in the code, because "the server's `lichtbild-gallery.php` came back empty"
 has two causes meaning opposite things. It is resolved by size: `-1` from `remote_size` is
 genuinely absent and means first install; any other value means the file is there and could not
 be read, which is a transport failure and still refuses. An empty answer read as a fact is the
@@ -692,7 +692,7 @@ PHP-serialised data**, where a string replace changes the length without the len
 the rename was done with code that was already proven on this exact data: **roll back to Envira's
 types with the existing rollback, swap the plugin, re-run the existing migration against the new
 names.** The selectors are regenerated from Envira's originals and are right by construction —
-verified afterwards as 0 stale `#tivira-` against 20 correct `#atelier-`, and 51 of 51 records
+verified afterwards as 0 stale `#tivira-` against 20 correct `#lichtbild-`, and 51 of 51 records
 unserialising cleanly.
 
 The precondition that makes rollback lossless — that no gallery has been edited since the
@@ -720,7 +720,7 @@ actually running in production. 52/2/58 moved, 111 of 111 URLs identical.
   never replacing, which is why the rollback needed no inverse pass. Confirmed restored after the
   migration: canonical back, and the title reads `Archive - ` again.
 - **And one that was purely my own guess.** A closing check said the protected gallery was leaking
-  40 images. It was the wrong gallery: `atelier-protected` is *right-click* protection, which 47
+  40 images. It was the wrong gallery: `lichtbild-protected` is *right-click* protection, which 47
   of 52 galleries carry, and has nothing to do with a post password. The real one is id 1646,
   which serves its form with 0 upload references, 0 tiles, and `-1` from the AJAX endpoint.
   **Ask the database which row has the property, rather than picking the page whose name sounds
@@ -728,7 +728,7 @@ actually running in production. 52/2/58 moved, 111 of 111 URLs identical.
 
 #### The setting that does not travel with a rename
 
-`atelier_standalone` is unset the moment the name changes, and `standalone()` then falls back to
+`lichtbild_standalone` is unset the moment the name changes, and `standalone()` then falls back to
 `envira_gallery_standalone_enabled` — an Envira leftover that `TODO.md` already lists for
 deletion. So gallery permalinks were one unrelated tidy-up away from rendering nothing, with no
 error anywhere. Found by reading the fallback rather than by any check, and the general form is
@@ -739,7 +739,7 @@ that until the thing it falls back to is removed.**
 
 53 orphaned meta rows (`_tivira_gallery` 51, `_tivira_album` 2) and 2 stale options deleted in one
 transaction, gated on controls read before and after — `_eg_gallery_data` 52, `_eg_album_data` 3,
-`_atelier_gallery` 51, `_atelier_album` 2 — with the delete rolled back if any of them moved. The
+`_lichtbild_gallery` 51, `_lichtbild_album` 2 — with the delete rolled back if any of them moved. The
 rollback deliberately does not delete its own record, which is right for a rollback and wrong to
 leave once the name no longer exists in any code.
 
@@ -748,7 +748,7 @@ and 10 directories. Envira's own records stay exactly where they are.
 
 **Final state: 160/160 identical, 0 non-200**, against a baseline captured before the upload — so
 across the whole operation, not merely across its last step. The control that stops that being
-vacuous: `envira` went to **0** rows while `atelier_gallery` went to **53**.
+vacuous: `envira` went to **0** rows while `lichtbild_gallery` went to **53**.
 
 ### The 26.8.15 deploy, where "0 changed" was the prediction and proves nothing on its own
 
@@ -769,14 +769,14 @@ an ambiguity only when it is predicted; this one adds the other half: **predicti
 the number worthless as a positive.** So four controls were run, and each answers a question the
 comparison cannot:
 
-1. **The stylesheet, over HTTP, by digest** — `98dbb45f…` from `https://timo-stein.com/…/atelier.css`
+1. **The stylesheet, over HTTP, by digest** — `98dbb45f…` from `https://timo-stein.com/…/lichtbild.css`
    against the same digest locally. `push` verifies over FTP, which proves the bytes reached the
    filesystem; this proves the web server serves them.
-2. **`ver=26.8.15` in the rendered page**, which is the only thing that proves `atelier.php` landed
+2. **`ver=26.8.15` in the rendered page**, which is the only thing that proves `lichtbild-gallery.php` landed
    *and* is executing — a stale opcache would leave the constant at 26.8.14 with the file already
    correct on disk.
 3. **`grep -c 'margin: 0 auto 1.5em'` on the live stylesheet → 2**, both rules, not one.
-4. **A browser, on the live URL.** `getBoundingClientRect()` on `.atelier-wrap` reports
+4. **A browser, on the live URL.** `getBoundingClientRect()` on `.lichtbild-wrap` reports
    `gapL=306 gapR=306` where it reported `gapL=0 gapR=612` before, on all three page types:
    gallery permalink, album permalink, and the front page's ten galleries.
 
@@ -787,7 +787,7 @@ been inferred from the other three.
 
 26.8.11 is the entry recording that two live defects were invisible to 207 checks because the
 markup was right and the rendering was not. This is the same shape again, and it had been live
-since the switchover: `.atelier-wrap` and `.atelier-album` set `margin: 0 0 1.5em`, which collides
+since the switchover: `.lichtbild-wrap` and `.lichtbild-album` set `margin: 0 0 1.5em`, which collides
 with the theme rule that centres content blocks — Twenty Twenty's `margin-left/right: auto` on
 `.entry-content > *` — at *equal specificity*, and a plugin stylesheet is always the later one. So
 the declaration did not leave the theme's centring alone; it silently replaced it.
@@ -800,8 +800,8 @@ same viewport:
 | | left gap | right gap |
 |---|---|---|
 | Envira (local, real plugin) | 306px | 306px |
-| Atelier, before | **0px** | **612px** |
-| Atelier, after | 306px | 306px |
+| Lichtbild, before | **0px** | **612px** |
+| Lichtbild, after | 306px | 306px |
 
 The width — 580px — was identical in all three. It was never the difference, which matters because
 "the galleries look too narrow" is the obvious wrong diagnosis and would have led to overriding the
@@ -823,8 +823,8 @@ nobody controls, and it fails by degrading quietly rather than by erroring.
 #### One ordering constraint, and it is not about PHP
 
 `plan` correctly reports "no new requires, nothing to sequence" — and this release still has a
-constraint, the same class as 26.8.14's third and 26.8.11's: **`atelier.css` before `atelier.php`.**
-`ATELIER_VERSION` is the `?ver=` on the stylesheet, so `atelier.php` is what announces the asset's new
+constraint, the same class as 26.8.14's third and 26.8.11's: **`lichtbild.css` before `lichtbild-gallery.php`.**
+`LICHTBILD_VERSION` is the `?ver=` on the stylesheet, so `lichtbild-gallery.php` is what announces the asset's new
 identity. Land it first and the site advertises `?ver=26.8.15` while the server still holds the old
 file — visitors then fetch the **old** stylesheet and cache it under the **new** version string,
 which is persistent, because the entire point of a version query is that it is trusted. The reverse
@@ -849,15 +849,15 @@ the header block. So the prediction held, and `ver=` moving is what separates it
 that never landed.
 
 `plan` derived the new require by itself and was **proved capable of refusing** first: ordering
-`class-atelier.php` before `atelier.php` produces
-`[ERROR] includes/class-atelier.php names Atelier_Block but is ordered before the file that requires it`
+`class-lichtbild.php` before `lichtbild-gallery.php` produces
+`[ERROR] includes/class-lichtbild.php names Lichtbild_Block but is ordered before the file that requires it`
 and a non-zero exit, with `deploy.sh` restored byte-identically. The third constraint is the one
 it structurally cannot see — the album editor now calls a method arriving on an existing class —
 and that is written into `UPLOAD_ORDER`'s comment for the same reason 26.8.7's arity was.
 
 #### The front page renders ten galleries and was in no deploy's verification surface
 
-Found by running a check *after* the deploy — does a page with no gallery load no Atelier assets?
+Found by running a check *after* the deploy — does a page with no gallery load no Lichtbild assets?
 — picking `https://timo-stein.com/` as the obvious example, and getting the opposite answer. It
 is `class="home blog"`, the blog index, rendering the latest posts' content in full: **10
 galleries and 132 figures, more gallery markup than any single permalink on the site, on its
@@ -884,7 +884,7 @@ Worth recording together, because the pattern is the point: **not one of them wa
 - **"the protected gallery leaks 1 upload reference."** The match was the literal string
   `/wp-content/uploads/*` — a glob in a header, not an image. Counting `wp-content/uploads/<year>/`
   gives 0, alongside 0 figures and 1 password form.
-- **"a page with no gallery loads Atelier's assets."** The page had ten galleries. The property is
+- **"a page with no gallery loads Lichtbild's assets."** The page had ten galleries. The property is
   real and holds: `/category/temporaer/`, found from the site's own sitemap rather than guessed,
   loads **0 css, 0 js, 0 editor assets**. That is the property this release most risked, since
   registration moved to `init`.
@@ -904,15 +904,15 @@ read -r` over a here-string, always.
 after. Eighth deploy with no failed chunk.
 
 **The constraint is on a returned array key, and no grep can see it.**
-`Atelier_Item::lightbox_source()` gained a `srcset` key that `class-atelier-renderer.php` and
-`class-atelier-ajax.php` both read. A consumer landing first reads a key that is not there — in
+`Lichtbild_Item::lightbox_source()` gained a `srcset` key that `class-lichtbild-renderer.php` and
+`class-lichtbild-ajax.php` both read. A consumer landing first reads a key that is not there — in
 PHP 8 a warning and a null rather than a fatal, so it would not take the site down; it would log
 an *Undefined array key* per image per page view, which is the kind of thing nobody notices for
 a month. `plan` reasons about `require_once` and class names, exactly as it could not see
 26.8.7's constructor arity. Stated in `UPLOAD_ORDER`'s comment because the checker cannot state
 it, and the live check afterwards was **zero PHP diagnostics on a rendered gallery page**.
 
-**`atelier.php` last is not convention here either.** `ATELIER_VERSION` is the `?ver=` on the
+**`lichtbild-gallery.php` last is not convention here either.** `LICHTBILD_VERSION` is the `?ver=` on the
 stylesheet and the script, so bumping it is what makes browsers refetch them. Land it before the
 assets and a visitor in the gap fetches the *old* css/js under the *new* query string and caches
 it for as long as the far-future expiry says.
@@ -962,7 +962,7 @@ Two things were wrong before a byte moved, and both were the *tooling* rather th
   had been in for four commits.
 
 A third defect was in the report rather than the logic: `plan` printed *"new classes required by
-atelier.php"* above a list of **all nineteen**, which reads precisely like the server fetch having
+lichtbild-gallery.php"* above a list of **all nineteen**, which reads precisely like the server fetch having
 failed and every require having defaulted to new. It cost a detour through the fetch code to
 establish nothing was wrong. It prints a count under an accurate label now, and states
 `new requires this release: none, so nothing to sequence` when the derived set is empty — the
@@ -976,7 +976,7 @@ errors, exit 1, and no `constraints: satisfied`**; the script restored byte-iden
 by digest.
 
 The release itself was predicted to be invisible and was. The only substantive production change
-is a **removal** — `Atelier_Album::cover_id()`, `::caption()` and the private `item()` — whose
+is a **removal** — `Lichtbild_Album::cover_id()`, `::caption()` and the private `item()` — whose
 callers were counted at zero before deletion; the second file is a docblock rewrite asserted
 comment-only by diffing its non-comment lines to zero; the third is the version constant. So
 `159/159 identical` is a pass rather than an ambiguity, and `ver=` moving is what separates it
@@ -987,7 +987,7 @@ from a deploy that never landed.
 **3 files, 7 chunks, every chunk first time, 159/159 URLs identical, 0 non-200,** `ver=26.8.7`
 before and `ver=26.8.8` after. Sixth deploy with no failed chunk.
 
-No ordering constraint, derived and not hoped: `atelier.php` gains no `require_once`, the only
+No ordering constraint, derived and not hoped: `lichtbild-gallery.php` gains no `require_once`, the only
 addition is an `error_log()` call inside `move()`, no signature changed, and the two keys the
 screen newly reads are both taken through `isset()` — so the screen landing before the migration
 is a zero rather than a warning.
@@ -1010,12 +1010,12 @@ fatal on every admin page**, and it was caught only because the mutation was run
 The release has two constraints pointing opposite ways, and **the second is one `plan` cannot
 model at all**:
 
-- **Inheritance.** Both editors become `extends Atelier_Metabox_Editor`, so the base file lands
-  first (inert — nothing requires it yet), then `atelier.php` makes it loadable, then the two
+- **Inheritance.** Both editors become `extends Lichtbild_Metabox_Editor`, so the base file lands
+  first (inert — nothing requires it yet), then `lichtbild-gallery.php` makes it loadable, then the two
   subclasses.
-- **Arity, and the constraint is on the CALLER.** `Atelier_Editor` gained a required second
+- **Arity, and the constraint is on the CALLER.** `Lichtbild_Editor` gained a required second
   constructor argument, so the *old* wiring's one-argument call is an `ArgumentCountError`:
-  `class-atelier.php` must land **before** the editors. The reverse direction is safe only
+  `class-lichtbild.php` must land **before** the editors. The reverse direction is safe only
   because PHP passes extra arguments to a userland constructor without complaint, and that
   asymmetry is the entire reason an order exists that has no fatal window. `plan` reasons about
   requires, not signatures — it cannot see this, and a comment now says so.
@@ -1045,7 +1045,7 @@ Three things generalise, and the last is the one that cost the least and found t
   exactly when it matters.
 
 Verification, and this deploy is the first where **byte-identical was the wrong expectation** and
-that had to be predicted rather than discovered: `data-atelier-tags` was deliberately dropped from
+that had to be predicted rather than discovered: `data-lichtbild-tags` was deliberately dropped from
 the anchor copy, so the whole-page hash *must* move on any page rendering a tagged item. It moved
 on exactly **2 of 159** URLs — one gallery, in its permalink and its embedding post — and the
 delta was then checked rather than assumed: 0 occurrences on `<a>`, 10 on `<figure>`, one per
@@ -1064,13 +1064,13 @@ filenames and **zero** gallery items; both AJAX endpoints answer `Gallery not fo
 Two zsh traps already in the shared notes bit again during the verification, both producing
 confident wrong output first: `GAL=$(...)` had been written `GID=`, which is **read-only in zsh**
 and aborts the block with *"failed to change group ID"* — a privilege error, in a script talking
-to a remote server; and `"$c:atelier.php"` in a history loop had `:t` parsed as a **history
+to a remote server; and `"$c:lichtbild-gallery.php"` in a history loop had `:t` parsed as a **history
 modifier through the double quotes**, so every version read back empty. Write `${c}:path`.
 
 **And the first attempt at the AJAX check proved nothing.** The gallery ID was scraped with the
 wrong attribute name, came back empty, and both the test request and its control answered
 `Gallery not found.` — which reads exactly like a working refusal. The control is what exposed
-it: a check whose control also "passes" has not run. The real attribute is `data-atelier-id`.
+it: a check whose control also "passes" has not run. The real attribute is `data-lichtbild-id`.
 
 ### The 26.8.6 deploy, where the VERIFICATION TOOL was the thing that broke
 
@@ -1096,10 +1096,10 @@ query is asking for the wrong names rather than that the site is empty.
 
 **A second bug sat in the same function and would have survived the first fix.** The URL was
 built as `f"{site}/{post_type}/{slug}/"` — using the post type as the path segment. That is
-correct only before the migration. Atelier pins `rewrite['slug']` to Envira's names in *both*
+correct only before the migration. Lichtbild pins `rewrite['slug']` to Envira's names in *both*
 directions precisely so the indexed URLs never move, so the type name and the path segment are
 two different things that happen to coincide on an un-migrated site. After the migration it would
-have produced `/atelier_gallery/<slug>/`, which 404s. The two are now separate constants written
+have produced `/lichtbild_gallery/<slug>/`, which 404s. The two are now separate constants written
 next to each other.
 
 The general shape, and it is worth more than the bug: **a verification tool is code, it has the
@@ -1116,15 +1116,15 @@ error, never just the exit code.
 
 ### The 26.8.5 deploy, which had no ordering constraint at all — and how that was established
 
-**"No constraint" is a derived fact, not an absence of evidence.** `atelier.php` gains no
-`require_once` this release, and the only new method — `Atelier_Migration::set_schema()` — is
+**"No constraint" is a derived fact, not an absence of evidence.** `lichtbild-gallery.php` gains no
+`require_once` this release, and the only new method — `Lichtbild_Migration::set_schema()` — is
 private and called from its own file. Both checked by `git diff` against the deployed commit
 rather than by reading the diff and forming an impression.
 
 So `plan`'s check was rewritten from *this release's instance of the rule* to *the rule*: a file
 that names a class must not land before the file that requires it — **and that only binds when
 the require is new, which is a fact about the server rather than about this checkout.** `plan`
-now fetches the deployed `atelier.php` and reads it. That is what made 26.8.4's new class files
+now fetches the deployed `lichtbild-gallery.php` and reads it. That is what made 26.8.4's new class files
 legitimately precede the gate, and what makes 26.8.5 unconstrained; the same code answers both
 without being edited between them.
 
@@ -1139,30 +1139,30 @@ The renderer changed this release, so the album pages were checked directly rath
 alone: both render every cover with its title and count. The protected gallery still serves its
 form with zero gallery markup and zero upload filenames; the AJAX endpoint still answers
 `Gallery not found.` for its ID **with a valid nonce**, against a control returning 7 items for
-a public gallery; and `atelier_album_covers` is unreachable logged-out, since it is registered
+a public gallery; and `lichtbild_album_covers` is unreachable logged-out, since it is registered
 on `wp_ajax_` only.
 
 ### The 26.8.4 deploy, and the constraint that inverted
 
 **Re-derive `UPLOAD_ORDER` every release; do not edit the last one.** 26.8.2's central constraint
-was that `atelier.php` goes **last**. 26.8.4's is that it goes **third**, because it is the file
-that `require_once`s the two new classes — so it is the moment `Atelier_Album_Config` and
-`Atelier_Album_Editor` become loadable, and every consumer below it would be a fatal "class not
+was that `lichtbild-gallery.php` goes **last**. 26.8.4's is that it goes **third**, because it is the file
+that `require_once`s the two new classes — so it is the moment `Lichtbild_Album_Config` and
+`Lichtbild_Album_Editor` become loadable, and every consumer below it would be a fatal "class not
 found" if it arrived first. Keeping the old order would have taken the site down on four files.
 
-`plan` catches that, and it was checked rather than assumed: moving `atelier.php` back to the end
+`plan` catches that, and it was checked rather than assumed: moving `lichtbild-gallery.php` back to the end
 turns it red with four errors and `push` refuses. The constraints are `grep`-derived — who names
-`Atelier_Album_Config::`, who constructs `Atelier_Album_Editor`, who calls `has_titles()`.
+`Lichtbild_Album_Config::`, who constructs `Lichtbild_Album_Editor`, who calls `has_titles()`.
 
 **One exemption has to be derived from the server, not listed.** The new class files *do* name
-`Atelier_Album_Config` and *do* precede the gate, legitimately: a file that does not yet exist on
+`Lichtbild_Album_Config` and *do* precede the gate, legitimately: a file that does not yet exist on
 the server is inert whatever it names, because nothing requires it, so nothing loads it. `plan`
 therefore asks the server which files are absent (`remote_size` returning `-1`) and exempts
 those. A hardcoded exemption list would be a claim about the server made without looking at it —
 and it is the same list that changes every release.
 
 **One window is unavoidable and was accepted rather than engineered away.** Between
-`class-atelier-album.php` and `class-atelier-repository.php` the two disagree about the item
+`class-lichtbild-album.php` and `class-lichtbild-repository.php` the two disagree about the item
 shape, so an album cover falls back to its gallery's first image. Two pages, a few seconds, no
 error — and uploading them the other way round produces the same window pointing the other way.
 Files that change together cannot both be first; the thing to check is that the window is
@@ -1172,8 +1172,8 @@ The result: **10 files, 17 chunks, every chunk first time, 159/159 URLs identica
 `ver=26.8.2` before and `ver=26.8.4` after. Third deploy running with no failed chunk.
 
 **The pre-flight predicted that, which is what makes "identical" a pass.** Two queries against
-production established the site is still unmigrated (no schema option, zero `_atelier_gallery` and
-zero `_atelier_album` records), so **both editors refuse to run and the album editor is dead code
+production established the site is still unmigrated (no schema option, zero `_lichtbild_gallery` and
+zero `_lichtbild_album` records), so **both editors refuse to run and the album editor is dead code
 on this site until the migration runs**. And every rendering input was checked rather than
 assumed: both published albums carry `display_titles='below'` and `display_image_count=1`, so
 honouring those settings reproduces the old unconditional output exactly; every album member sets
@@ -1231,8 +1231,8 @@ Worth recording in full, because the procedure in `AGENTS.md` was followed and w
 
 - **Whole-file upload failed 6 of 6 attempts on a 19 KB file, leaving it at 0 bytes — and the
   live site returned HTTP 500 site-wide.** The previous entry called a 0-byte file "invisible
-  until someone activates the plugin"; it is worse than that. `class-atelier-config.php` is
-  `require_once`d by `atelier.php`, so a truncated copy is an instant fatal on every page,
+  until someone activates the plugin"; it is worse than that. `class-lichtbild-config.php` is
+  `require_once`d by `lichtbild-gallery.php`, so a truncated copy is an instant fatal on every page,
   including the homepage. One of the failed attempts landed at exactly **16,384** bytes again.
 - **Chunked upload then landed every chunk of every remaining file on the first attempt** —
   4 chunks of a 32 KB file, 3 of the 19 KB one, 2 and 1 for the rest. Nothing failed once.
@@ -1242,14 +1242,14 @@ Worth recording in full, because the procedure in `AGENTS.md` was followed and w
   the cumulative remote length after each piece and re-truncating to the last known-good
   length before retrying — a partial append otherwise corrupts every later offset.
 - **Upload order is load-bearing when one file gains a method another calls.** 26.8.1 added
-  `Atelier_Gallery::prime()` and called it from `Atelier_Ajax` and `Atelier_Renderer`. Uploading
+  `Lichtbild_Gallery::prime()` and called it from `Lichtbild_Ajax` and `Lichtbild_Renderer`. Uploading
   a caller first leaves a window in which any visitor gets `Call to undefined method`. Derive
   the order mechanically (`grep -l 'function prime('` against `grep -l -- '->prime('`), do not
   eyeball it.
 - **Prove the deploy is a no-op when it is supposed to be one.** Every URL the plugin owns was
   fetched before and after — 116 of them, enumerated from the database rather than from memory
   (50 galleries, both albums, all 58 tag archives, the protected gallery as a control, and the
-  posts that embed a shortcode). `ATELIER_VERSION` reaches the asset query strings, so `ver=`
+  posts that embed a shortcode). `LICHTBILD_VERSION` reaches the asset query strings, so `ver=`
   is normalised out and **everything else must hash identically**; the bump proves the new
   code is live and the identical remainder proves nothing regressed. 116/116 identical.
 - **Read the live database in the pre-flight, and it can tell you the fix changes nothing.**

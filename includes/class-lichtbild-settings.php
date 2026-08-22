@@ -2,41 +2,41 @@
 /**
  * Plugin options and the settings screen.
  *
- * @package Atelier
+ * @package Lichtbild
  */
 
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Stores and presents the one decision Atelier needs from the site owner.
+ * Stores and presents the one decision Lichtbild needs from the site owner.
  *
  * That decision is when to take the `[envira-gallery]` shortcode over. Both plugins can be
  * installed at once — they read the same rows and neither writes to the other's — so the
  * useful default is to defer to Envira while it is active and step in the moment it is
  * switched off. That makes the comparison a single toggle in the plugins screen, and makes
- * backing out of Atelier exactly as cheap.
+ * backing out of Lichtbild exactly as cheap.
  */
-class Atelier_Settings {
+class Lichtbild_Settings {
 
 	/**
 	 * Option name holding the takeover mode.
 	 */
-	const OPTION_TAKEOVER = 'atelier_takeover';
+	const OPTION_TAKEOVER = 'lichtbild_takeover';
 
 	/**
 	 * Option recording which storage schema the site's galleries are on.
 	 */
-	const OPTION_SCHEMA = 'atelier_schema_version';
+	const OPTION_SCHEMA = 'lichtbild_schema_version';
 
 	/**
-	 * Schema version written by the migration to Atelier's own post types.
+	 * Schema version written by the migration to Lichtbild's own post types.
 	 */
 	const SCHEMA_MIGRATED = 2;
 
 	/**
 	 * Option recording whether a gallery renders on its own permalink.
 	 */
-	const OPTION_STANDALONE = 'atelier_standalone';
+	const OPTION_STANDALONE = 'lichtbild_standalone';
 
 	/**
 	 * Envira's equivalent option, read until the migration copies it across.
@@ -46,15 +46,15 @@ class Atelier_Settings {
 	/**
 	 * Option recording which set of URL paths this site serves its galleries from.
 	 *
-	 * Note this is an OPTION and `atelier_url_slugs` is a FILTER; they are deliberately not
+	 * Note this is an OPTION and `lichtbild_url_slugs` is a FILTER; they are deliberately not
 	 * named the same thing. The option records what the site decided, the filter overrides it.
 	 */
-	const OPTION_SLUG_SCHEME = 'atelier_slug_scheme';
+	const OPTION_SLUG_SCHEME = 'lichtbild_slug_scheme';
 
 	/**
 	 * The migration section rendered below the settings form.
 	 *
-	 * @var Atelier_Migration_Screen|null
+	 * @var Lichtbild_Migration_Screen|null
 	 */
 	private $migration_screen = null;
 
@@ -76,8 +76,8 @@ class Atelier_Settings {
 	 */
 	public function slug_scheme_paths() {
 		return 'envira' === $this->slug_scheme()
-			? Atelier_Post_Types::SLUGS_ENVIRA
-			: Atelier_Post_Types::SLUGS_GENERIC;
+			? Lichtbild_Post_Types::SLUGS_ENVIRA
+			: Lichtbild_Post_Types::SLUGS_GENERIC;
 	}
 
 	/**
@@ -178,7 +178,7 @@ class Atelier_Settings {
 	/**
 	 * Reports whether a gallery renders on its own permalink.
 	 *
-	 * Atelier's own option wins; Envira's is the fallback, because before the migration this
+	 * Lichtbild's own option wins; Envira's is the fallback, because before the migration this
 	 * has to behave exactly as the site already does — the switch is meant to be invisible,
 	 * and `/envira/<slug>/` is indexed. Once migrated the value has been copied across, so
 	 * uninstalling Envira cannot take the setting with it and blank every gallery page.
@@ -199,7 +199,7 @@ class Atelier_Settings {
 		 * answered 200 with the title and no photographs on it. Nothing had copied a value
 		 * across, because there had been no migration to copy one.
 		 *
-		 * So the fallback is asked only where it means something. A site on Atelier's own
+		 * So the fallback is asked only where it means something. A site on Lichtbild's own
 		 * storage from the start renders a gallery on its own permalink, which is the only
 		 * defensible answer for a public post type that WordPress offers a "View" link for.
 		 */
@@ -217,16 +217,16 @@ class Atelier_Settings {
 	 * which needs these settings — building it inside would be a cycle. It is optional, so
 	 * this class stays usable on its own.
 	 *
-	 * @param Atelier_Migration_Screen $screen The migration section.
+	 * @param Lichtbild_Migration_Screen $screen The migration section.
 	 *
 	 * @return void
 	 */
-	public function set_migration_screen( Atelier_Migration_Screen $screen ) {
+	public function set_migration_screen( Lichtbild_Migration_Screen $screen ) {
 		$this->migration_screen = $screen;
 	}
 
 	/**
-	 * Reports whether the data has been migrated onto Atelier's own post types.
+	 * Reports whether the data has been migrated onto Lichtbild's own post types.
 	 *
 	 * Everything that names a post type has to agree with this, so it is a single stored
 	 * answer rather than something inferred by looking for rows — a site mid-migration, or
@@ -248,7 +248,7 @@ class Atelier_Settings {
 	public function register() {
 		add_action( 'admin_init', array( $this, 'register_settings' ) );
 		add_action( 'admin_menu', array( $this, 'register_page' ) );
-		add_filter( 'plugin_action_links_' . plugin_basename( ATELIER_FILE ), array( $this, 'action_links' ) );
+		add_filter( 'plugin_action_links_' . plugin_basename( LICHTBILD_FILE ), array( $this, 'action_links' ) );
 	}
 
 	/**
@@ -263,14 +263,14 @@ class Atelier_Settings {
 	}
 
 	/**
-	 * Reports whether Atelier should handle the Envira shortcodes on this request.
+	 * Reports whether Lichtbild should handle the Envira shortcodes on this request.
 	 *
 	 * The setting stops applying once the data has moved, and that is not a convenience —
-	 * after migration the rows say `atelier_gallery`, so Envira cannot find them whatever the
+	 * after migration the rows say `lichtbild_gallery`, so Envira cannot find them whatever the
 	 * setting says. Deferring to it would render nothing at all. The choice of who handles
 	 * the shortcode is only a real choice while both plugins can still read the same rows.
 	 *
-	 * @return bool True when Atelier owns `[envira-gallery]` and `[envira-album]`.
+	 * @return bool True when Lichtbild owns `[envira-gallery]` and `[envira-album]`.
 	 */
 	public function should_take_over() {
 		if ( $this->has_migrated() ) {
@@ -291,7 +291,7 @@ class Atelier_Settings {
 	}
 
 	/**
-	 * Reports whether Atelier should answer to Envira's shortcode names.
+	 * Reports whether Lichtbild should answer to Envira's shortcode names.
 	 *
 	 * Taking over `[envira-gallery]` is the whole point on a site continuing an Envira
 	 * installation, and it is meaningless on a site that never had one — there is no such
@@ -308,7 +308,7 @@ class Atelier_Settings {
 	 * The one case this gives up: Envira active but having never stored a gallery reads as
 	 * `generic`, so `[envira-gallery]` is left alone. It has no gallery to render either way.
 	 *
-	 * @return bool True when Envira's shortcode names should resolve to Atelier.
+	 * @return bool True when Envira's shortcode names should resolve to Lichtbild.
 	 */
 	public function claims_envira_shortcodes() {
 		return $this->should_take_over() && 'envira' === $this->slug_scheme();
@@ -330,7 +330,7 @@ class Atelier_Settings {
 	 */
 	public function register_settings() {
 		register_setting(
-			'atelier',
+			'lichtbild',
 			self::OPTION_TAKEOVER,
 			array(
 				'type'              => 'string',
@@ -358,10 +358,10 @@ class Atelier_Settings {
 	 */
 	public function register_page() {
 		add_options_page(
-			__( 'Atelier', 'atelier' ),
-			__( 'Atelier', 'atelier' ),
+			__( 'Lichtbild', 'lichtbild-gallery' ),
+			__( 'Lichtbild', 'lichtbild-gallery' ),
 			'manage_options',
-			'atelier',
+			'lichtbild',
 			array( $this, 'render_page' )
 		);
 	}
@@ -374,11 +374,11 @@ class Atelier_Settings {
 	 * @return string[] Action links with the settings link prepended.
 	 */
 	public function action_links( $links ) {
-		$url = admin_url( 'options-general.php?page=atelier' );
+		$url = admin_url( 'options-general.php?page=lichtbild' );
 
 		array_unshift(
 			$links,
-			'<a href="' . esc_url( $url ) . '">' . esc_html__( 'Settings', 'atelier' ) . '</a>'
+			'<a href="' . esc_url( $url ) . '">' . esc_html__( 'Settings', 'lichtbild-gallery' ) . '</a>'
 		);
 
 		return $links;
@@ -397,7 +397,7 @@ class Atelier_Settings {
 		$mode     = $this->takeover();
 		$active   = $this->envira_is_active();
 		$migrated = $this->has_migrated();
-		$counts   = wp_count_posts( Atelier_Post_Types::gallery_type( $this ) );
+		$counts   = wp_count_posts( Lichtbild_Post_Types::gallery_type( $this ) );
 		$total    = 0;
 
 		if ( is_object( $counts ) ) {
@@ -408,52 +408,52 @@ class Atelier_Settings {
 
 		?>
 		<div class="wrap">
-			<h1><?php esc_html_e( 'Atelier', 'atelier' ); ?></h1>
+			<h1><?php esc_html_e( 'Lichtbild', 'lichtbild-gallery' ); ?></h1>
 
 			<p>
 				<?php
 				printf(
 					/* translators: %d: number of galleries found. */
-					esc_html( _n( 'Reading %d gallery.', 'Reading %d galleries.', $total, 'atelier' ) ),
+					esc_html( _n( 'Reading %d gallery.', 'Reading %d galleries.', $total, 'lichtbild-gallery' ) ),
 					(int) $total
 				);
 				?>
 				<?php if ( $active ) : ?>
-					<strong><?php esc_html_e( 'Envira Gallery is currently active.', 'atelier' ); ?></strong>
+					<strong><?php esc_html_e( 'Envira Gallery is currently active.', 'lichtbild-gallery' ); ?></strong>
 				<?php else : ?>
-					<strong><?php esc_html_e( 'Envira Gallery is not active.', 'atelier' ); ?></strong>
+					<strong><?php esc_html_e( 'Envira Gallery is not active.', 'lichtbild-gallery' ); ?></strong>
 				<?php endif; ?>
 			</p>
 
 			<form action="options.php" method="post">
-				<?php settings_fields( 'atelier' ); ?>
+				<?php settings_fields( 'lichtbild' ); ?>
 
 				<table class="form-table" role="presentation">
 					<tr>
-						<th scope="row"><?php esc_html_e( 'Handle Envira shortcodes', 'atelier' ); ?></th>
+						<th scope="row"><?php esc_html_e( 'Handle Envira shortcodes', 'lichtbild-gallery' ); ?></th>
 						<td>
 							<fieldset>
 								<label>
 									<input type="radio" name="<?php echo esc_attr( self::OPTION_TAKEOVER ); ?>"
 										value="auto" <?php checked( $mode, 'auto' ); ?> />
-									<?php esc_html_e( 'Automatically — only when Envira Gallery is deactivated', 'atelier' ); ?>
+									<?php esc_html_e( 'Automatically — only when Envira Gallery is deactivated', 'lichtbild-gallery' ); ?>
 								</label><br />
 								<label>
 									<input type="radio" name="<?php echo esc_attr( self::OPTION_TAKEOVER ); ?>"
 										value="always" <?php checked( $mode, 'always' ); ?> />
-									<?php esc_html_e( 'Always — render every gallery with Atelier, even if Envira is active', 'atelier' ); ?>
+									<?php esc_html_e( 'Always — render every gallery with Lichtbild, even if Envira is active', 'lichtbild-gallery' ); ?>
 								</label><br />
 								<label>
 									<input type="radio" name="<?php echo esc_attr( self::OPTION_TAKEOVER ); ?>"
 										value="never" <?php checked( $mode, 'never' ); ?> />
-									<?php esc_html_e( 'Never — only the [atelier-gallery] shortcode uses Atelier', 'atelier' ); ?>
+									<?php esc_html_e( 'Never — only the [lichtbild-gallery] shortcode uses Lichtbild', 'lichtbild-gallery' ); ?>
 								</label>
 							</fieldset>
 							<p class="description">
 								<?php if ( $migrated ) : ?>
-									<?php esc_html_e( 'This setting no longer applies. The galleries have been migrated to Atelier\'s own storage, so Envira cannot read them whatever it is set to, and Atelier handles both shortcodes.', 'atelier' ); ?>
+									<?php esc_html_e( 'This setting no longer applies. The galleries have been migrated to Lichtbild\'s own storage, so Envira cannot read them whatever it is set to, and Lichtbild handles both shortcodes.', 'lichtbild-gallery' ); ?>
 								<?php else : ?>
-									<?php esc_html_e( 'Atelier reads the same gallery records Envira wrote and never modifies them, so switching between the two is lossless in both directions.', 'atelier' ); ?>
+									<?php esc_html_e( 'Lichtbild reads the same gallery records Envira wrote and never modifies them, so switching between the two is lossless in both directions.', 'lichtbild-gallery' ); ?>
 								<?php endif; ?>
 							</p>
 						</td>
@@ -469,14 +469,14 @@ class Atelier_Settings {
 			}
 			?>
 
-			<h2><?php esc_html_e( 'Shortcodes', 'atelier' ); ?></h2>
+			<h2><?php esc_html_e( 'Shortcodes', 'lichtbild-gallery' ); ?></h2>
 			<p>
-				<code>[atelier-gallery id="123"]</code>
-				<?php esc_html_e( 'renders a gallery, and always uses Atelier regardless of the setting above.', 'atelier' ); ?>
+				<code>[lichtbild-gallery id="123"]</code>
+				<?php esc_html_e( 'renders a gallery, and always uses Lichtbild regardless of the setting above.', 'lichtbild-gallery' ); ?>
 			</p>
 			<p>
-				<code>[atelier-album id="123"]</code>
-				<?php esc_html_e( 'renders an album as a grid of gallery covers.', 'atelier' ); ?>
+				<code>[lichtbild-album id="123"]</code>
+				<?php esc_html_e( 'renders an album as a grid of gallery covers.', 'lichtbild-gallery' ); ?>
 			</p>
 		</div>
 		<?php

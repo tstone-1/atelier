@@ -2,7 +2,7 @@
 /**
  * The normalised album settings schema, and the translation into it from Envira's.
  *
- * @package Atelier
+ * @package Lichtbild
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -10,13 +10,13 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Defines what an album's settings are, and converts Envira's version of them.
  *
- * The gallery twin of this class, `Atelier_Config`, exists because Envira writes ~281 keys per
+ * The gallery twin of this class, `Lichtbild_Config`, exists because Envira writes ~281 keys per
  * gallery and twenty-six of them matter. Albums are the same story at a smaller scale: 170 keys
  * on each of this site's two real albums, of which **twelve vary at all** and three decide what a
  * visitor sees.
  *
  * Albums went without this for a whole release, and the gap was not obvious from either side.
- * The migration renamed album *rows* while `Atelier_Repository::build_album()` went on reading
+ * The migration renamed album *rows* while `Lichtbild_Repository::build_album()` went on reading
  * `_eg_album_data` whatever the schema said — so a "migrated" site still had its albums in
  * Envira's format, and an album editor written against that would have written Envira's format
  * back. Galleries own their data after the migration; albums did not, and nothing said so.
@@ -34,7 +34,7 @@ defined( 'ABSPATH' ) || exit;
  *   of each member gallery's title inside the album, and stores the album's title in its config
  *   as well. In both cases the copy is frozen at the moment it was written, and in both cases
  *   WordPress already holds the live value in `wp_posts`. The renderer has always used the
- *   member gallery's own title; `Atelier_Album::title()` now uses the album post's own for the
+ *   member gallery's own title; `Lichtbild_Album::title()` now uses the album post's own for the
  *   same reason.
  *
  *   The album's own title is the one that was nearly kept, because unlike the members' it was
@@ -45,7 +45,7 @@ defined( 'ABSPATH' ) || exit;
  *   would read it prefers it to the truth. The album editor is what forced the question: a
  *   title field there would have been a second place to edit one title.
  */
-class Atelier_Album_Config {
+class Lichtbild_Album_Config {
 
 	/**
 	 * Schema version written into converted records.
@@ -84,7 +84,7 @@ class Atelier_Album_Config {
 		$settings['columns'] = $columns > 0 ? $columns : 3;
 
 		// `display_titles` is a *position* in Envira — `below`, `above`, or `0` for off — and
-		// Atelier renders the title in one place, so only on-or-off survives the conversion.
+		// Lichtbild renders the title in one place, so only on-or-off survives the conversion.
 		// Anything non-empty and not the string "0" means on.
 		$position                = isset( $envira['display_titles'] ) ? (string) $envira['display_titles'] : 'below';
 		$settings['show_titles'] = ( '' !== $position && '0' !== $position );
@@ -167,7 +167,7 @@ class Atelier_Album_Config {
 	 * Reads a boolean out of Envira's config, whatever it decided to serialise it as.
 	 *
 	 * Envira spells true as `1`, `'1'`, `true` and `'True'` in different places and different
-	 * versions, so a direct comparison is wrong somewhere. Kept separate from `Atelier_Config`'s
+	 * versions, so a direct comparison is wrong somewhere. Kept separate from `Lichtbild_Config`'s
 	 * copy rather than shared: they read different records, and coupling the album schema to the
 	 * gallery one for four lines would mean a change for galleries could not be made without
 	 * reasoning about albums.

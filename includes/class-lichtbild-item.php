@@ -2,7 +2,7 @@
 /**
  * A single image inside a gallery.
  *
- * @package Atelier
+ * @package Lichtbild
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -20,7 +20,7 @@ defined( 'ABSPATH' ) || exit;
  * disappearing. Such an item has no known dimensions, which is why it is kept out of the
  * lightbox rather than handed to it as a zero-sized slide.
  */
-class Atelier_Item {
+class Lichtbild_Item {
 
 	/**
 	 * Attachment ID, or 0 when the item is not backed by an attachment.
@@ -109,7 +109,7 @@ class Atelier_Item {
 	/**
 	 * Reads one submitted field as text, treating anything else as unsubmitted.
 	 *
-	 * A form field is a string or it is absent — except that `atelier_items[i0][title][]` is an
+	 * A form field is a string or it is absent — except that `lichtbild_items[i0][title][]` is an
 	 * array, and nothing stops a request carrying one. Cast, that becomes the literal word
 	 * "Array" stored as the image's title, with a PHP warning on the way; the array-aware
 	 * sanitisers downstream never get the chance to help, because the cast happens first.
@@ -158,7 +158,7 @@ class Atelier_Item {
 	 * Reports whether Envira marked this item as active.
 	 *
 	 * Envira uses a `pending` status for items queued by its own import routines; those
-	 * are not shown on the front end and Atelier matches that.
+	 * are not shown on the front end and Lichtbild matches that.
 	 *
 	 * @return bool True when the item should be displayed.
 	 */
@@ -352,7 +352,7 @@ class Atelier_Item {
 	/**
 	 * Returns a URL only if it uses a scheme safe to put in front of a visitor.
 	 *
-	 * Envira froze the URL of every item at the time it was added, and Atelier falls back to
+	 * Envira froze the URL of every item at the time it was added, and Lichtbild falls back to
 	 * that frozen value whenever the attachment is gone. That value is whatever was in the
 	 * database, so it is validated rather than trusted — otherwise a stored `javascript:`
 	 * URL reaches an anchor's href, and the JSON endpoint hands it out unescaped besides.

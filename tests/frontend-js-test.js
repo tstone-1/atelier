@@ -6,7 +6,7 @@
  * WHAT THIS CAN AND CANNOT SEE, STATED FIRST BECAUSE IT DECIDES WHAT THE RESULT MEANS
  * ===================================================================================
  *
- * `atelier.js` is a closed IIFE — nothing it defines is reachable from outside, and driving
+ * `lichtbild.js` is a closed IIFE — nothing it defines is reachable from outside, and driving
  * `restoreFromHash()` for real would mean standing up a DOM, a gallery, a history object and a
  * PhotoSwipe import for the sake of one regular expression. So this does two different things,
  * and only one of them is a behavioural test:
@@ -54,7 +54,7 @@ function check( label, ok, detail ) {
 	}
 }
 
-const file = path.join( __dirname, '..', 'assets', 'js', 'atelier.js' );
+const file = path.join( __dirname, '..', 'assets', 'js', 'lichtbild.js' );
 const source = fs.readFileSync( file, 'utf8' );
 
 // Extracting by pattern means a reformatted declaration stops being found, and that has to be a
@@ -67,7 +67,7 @@ if ( ! declarations ) {
 	check(
 		'the deep-link pattern can be found in the source',
 		false,
-		'no `var DEEP_LINK = /.../;` line in assets/js/atelier.js'
+		'no `var DEEP_LINK = /.../;` line in assets/js/lichtbild.js'
 	);
 
 	process.exit( 1 );
@@ -91,7 +91,7 @@ function resolve( hash ) {
 		: null;
 }
 
-const current = resolve( '#atelier-1234-i5678' );
+const current = resolve( '#lichtbild-1234-i5678' );
 
 check(
 	'a current deep link resolves to its gallery and image',
@@ -116,7 +116,7 @@ check(
 	'a fragment belonging to something else is not claimed',
 	null === resolve( '#gallery-1234-i5678' )
 		&& null === resolve( '#envira-1234-i5678' )
-		&& null === resolve( '#atelier' )
+		&& null === resolve( '#lichtbild' )
 		&& null === resolve( '#comment-1234' ),
 	'four foreign fragments, none matched'
 );
@@ -126,14 +126,14 @@ check(
 // must therefore not resolve, or a link built by hand would open a different photograph.
 check(
 	'a position-shaped fragment is not accepted as an image',
-	null === resolve( '#atelier-1234-5678' ) && null === resolve( '#atelier-1234' ),
+	null === resolve( '#lichtbild-1234-5678' ) && null === resolve( '#lichtbild-1234' ),
 	'neither `-N` nor a bare gallery id matched'
 );
 
 // Anchored at both ends, so a fragment that merely starts or ends with one is not one.
 check(
 	'the pattern is anchored at both ends',
-	null === resolve( '#atelier-12-i34-extra' ) && null === resolve( 'x#atelier-12-i34' ),
+	null === resolve( '#lichtbild-12-i34-extra' ) && null === resolve( 'x#lichtbild-12-i34' ),
 	'a suffix and a prefix, neither matched'
 );
 
@@ -141,7 +141,7 @@ check(
 //
 // Two methods read `location.hash`: one opens the lightbox from a link that was followed, the
 // other clears the hash when it closes. Both have to use the same pattern, and the second is
-// the one that quietly gets left behind, because it was a `indexOf( '#atelier-' )` string test
+// the one that quietly gets left behind, because it was a `indexOf( '#lichtbild-' )` string test
 // where the first was already a regular expression -- two spellings of one rule is how half a
 // rename survives review.
 const usesPattern = ( source.match( /DEEP_LINK\.exec\(/g ) || [] ).length;

@@ -1,10 +1,10 @@
-=== Atelier ===
+=== Lichtbild Gallery ===
 Contributors: tstone1
 Tags: gallery, photo gallery, image gallery, lightbox, photography
 Requires at least: 6.0
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 26.8.23
+Stable tag: 26.8.24
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -12,7 +12,7 @@ Fast, responsive photo galleries with a pure-CSS justified grid, a lazy-loaded l
 
 == Description ==
 
-Atelier renders photo galleries as a justified grid whose geometry is settled in CSS before the
+Lichtbild renders photo galleries as a justified grid whose geometry is settled in CSS before the
 images arrive, so nothing reflows as the page loads. The lightbox is imported on first click,
 which means a page full of galleries costs no JavaScript until somebody opens an image.
 
@@ -36,29 +36,29 @@ which means a page full of galleries costs no JavaScript until somebody opens an
 
 = Migrating from Envira Gallery =
 
-Atelier can read Envira Gallery's records where they lie, without copying or converting
+Lichtbild can read Envira Gallery's records where they lie, without copying or converting
 anything, so you can compare the two by toggling a plugin. When you are ready, a migration on
-the settings screen moves the galleries onto Atelier's own storage in place: post IDs never
+the settings screen moves the galleries onto Lichtbild's own storage in place: post IDs never
 change, so existing shortcodes keep working, and existing permalinks keep resolving. Envira's
 original records are left untouched, and the migration can be rolled back from the same screen.
 
-Atelier is **not affiliated with, endorsed by, or connected to Envira Gallery or Awesome
-Motive**. "Envira Gallery" is their product and their trademark. Atelier contains no Envira
+Lichtbild is **not affiliated with, endorsed by, or connected to Envira Gallery or Awesome
+Motive**. "Envira Gallery" is their product and their trademark. Lichtbild contains no Envira
 code; it names Envira only to describe what it can read and what it replaces.
 
-On a site with no Envira history, Atelier serves its galleries from `/gallery/`, `/album/` and
+On a site with no Envira history, Lichtbild serves its galleries from `/gallery/`, `/album/` and
 `/gallery-tag/`. A site migrating from Envira keeps Envira's existing paths, so no indexed URL
-moves. Both are overridable through the `atelier_url_slugs` filter.
+moves. Both are overridable through the `lichtbild_url_slugs` filter.
 
 == Installation ==
 
-1. Upload the plugin to `wp-content/plugins/atelier` and activate it.
-2. Galleries appear under **Atelier** in the admin menu. Create one, add images, and drag to
+1. Upload the plugin to `wp-content/plugins/lichtbild-gallery` and activate it.
+2. Galleries appear under **Lichtbild** in the admin menu. Create one, add images, and drag to
    order them.
-3. Embed it with the **Atelier Gallery** block, or with `[atelier-gallery id="123"]`.
+3. Embed it with the **Lichtbild Gallery** block, or with `[lichtbild-gallery id="123"]`.
 
-If Envira Gallery is installed, Atelier stays out of its way: the takeover setting under
-**Settings → Atelier** defaults to handling `[envira-gallery]` only while Envira is inactive.
+If Envira Gallery is installed, Lichtbild stays out of its way: the takeover setting under
+**Settings → Lichtbild** defaults to handling `[envira-gallery]` only while Envira is inactive.
 
 == Frequently Asked Questions ==
 
@@ -98,18 +98,24 @@ than only in one gallery.
 
 == Changelog ==
 
+= 26.8.24 =
+* Renamed to Lichtbild Gallery. The former name was too close to plugins already in this
+  directory. Nothing a visitor sees changed: gallery, album and tag URLs stay where they are and
+  the `[envira-gallery]` shortcode keeps working.
+* Galleries, albums and image tags now live under Lichtbild's own post types and meta keys.
+
 = 26.8.23 =
 * Envira Gallery's `[envira-gallery]` and `[envira-album]` shortcodes are now taken over only on
-  a site that has Envira records. A site that never used Envira registers only Atelier's own two
+  a site that has Envira records. A site that never used Envira registers only Lichtbild's own two
   shortcodes; a site continuing an Envira installation is unaffected.
-* The `atelier_config_sanitize` filter no longer receives the raw form submission as a second
+* The `lichtbild_config_sanitize` filter no longer receives the raw form submission as a second
   argument. Callbacks get the sanitised settings only.
 
 = 26.8.22 =
 * Per-gallery Custom CSS has been removed, in line with the Plugin Directory guideline against
   storing and printing arbitrary CSS entered through a plugin's own interface. Style your
-  galleries in Appearance > Customize > Additional CSS instead: a gallery is `#atelier-<id>` and
-  its wrapper `#atelier-<id>-wrap`, so existing rules keep working once moved.
+  galleries in Appearance > Customize > Additional CSS instead: a gallery is `#lichtbild-<id>` and
+  its wrapper `#lichtbild-<id>-wrap`, so existing rules keep working once moved.
 * The upgrade itself deletes no CSS, and `tools/export-custom-css.py` in the source repository
   prints what is still stored, ready to paste. Move it before you next save an affected gallery:
   saving rewrites that gallery's settings record, which is where the most recent version of the
@@ -125,7 +131,7 @@ than only in one gallery.
 = 26.8.20 =
 * The currently selected button in the tag filter is legible again. It had been painted in the
   same colour as its own background, so the applied tag could not be read. Themes can now set
-  the pair through the `--atelier-tag-fill` and `--atelier-tag-label` custom properties.
+  the pair through the `--lichtbild-tag-fill` and `--lichtbild-tag-label` custom properties.
 
 = 26.8.19 =
 * Pagination, tag filtering and the lightbox no longer stop working on sites that use full-page

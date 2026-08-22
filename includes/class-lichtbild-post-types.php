@@ -2,7 +2,7 @@
 /**
  * Registers the post types and taxonomy galleries live in.
  *
- * @package Atelier
+ * @package Lichtbild
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -20,28 +20,28 @@ defined( 'ABSPATH' ) || exit;
  *
  * - **The names change at migration, the URLs never do.** Before migration the rows say
  *   `post_type = 'envira'`, so that is what gets registered. Afterwards they say
- *   `atelier_gallery`, and that is registered instead — but with `rewrite['slug']` pinned to
+ *   `lichtbild_gallery`, and that is registered instead — but with `rewrite['slug']` pinned to
  *   the original path either way, so no URL moves in either direction.
  * - **Never register on top of Envira.** While Envira is active it registers these itself,
- *   and registering the same name twice means the last call silently wins. Atelier stays out
+ *   and registering the same name twice means the last call silently wins. Lichtbild stays out
  *   of the way until Envira is gone.
  */
-class Atelier_Post_Types {
+class Lichtbild_Post_Types {
 
 	/**
-	 * Post type holding galleries once Atelier owns the data.
+	 * Post type holding galleries once Lichtbild owns the data.
 	 */
-	const GALLERY = 'atelier_gallery';
+	const GALLERY = 'lichtbild_gallery';
 
 	/**
-	 * Post type holding albums once Atelier owns the data.
+	 * Post type holding albums once Lichtbild owns the data.
 	 */
-	const ALBUM = 'atelier_album';
+	const ALBUM = 'lichtbild_album';
 
 	/**
-	 * Taxonomy holding per-image tags once Atelier owns the data.
+	 * Taxonomy holding per-image tags once Lichtbild owns the data.
 	 */
-	const TAG = 'atelier_tag';
+	const TAG = 'lichtbild_tag';
 
 	/**
 	 * URL paths for a site that is continuing Envira's, keyed as the filter is.
@@ -76,16 +76,16 @@ class Atelier_Post_Types {
 	/**
 	 * Plugin settings, consulted for whether Envira is active and whether data has moved.
 	 *
-	 * @var Atelier_Settings
+	 * @var Lichtbild_Settings
 	 */
 	private $settings;
 
 	/**
 	 * Builds the registrar.
 	 *
-	 * @param Atelier_Settings $settings Plugin settings.
+	 * @param Lichtbild_Settings $settings Plugin settings.
 	 */
-	public function __construct( Atelier_Settings $settings ) {
+	public function __construct( Lichtbild_Settings $settings ) {
 		$this->settings = $settings;
 	}
 
@@ -110,7 +110,7 @@ class Atelier_Post_Types {
 		$migrated = $this->settings->has_migrated();
 
 		// Standing aside for Envira is only correct while the rows are still Envira's. Once
-		// they say `atelier_gallery`, nobody else registers that name — so deferring here
+		// they say `lichtbild_gallery`, nobody else registers that name — so deferring here
 		// because Envira happens to be active again would leave the type unregistered and
 		// take every gallery, album and tag URL off the site. Envira registering `envira`
 		// alongside is harmless at that point: no row is stored under it any more.
@@ -119,17 +119,17 @@ class Atelier_Post_Types {
 		}
 
 		register_post_type(
-			$migrated ? self::GALLERY : Atelier_Repository::GALLERY_POST_TYPE,
+			$migrated ? self::GALLERY : Lichtbild_Repository::GALLERY_POST_TYPE,
 			$this->gallery_args()
 		);
 
 		register_post_type(
-			$migrated ? self::ALBUM : Atelier_Repository::ALBUM_POST_TYPE,
+			$migrated ? self::ALBUM : Lichtbild_Repository::ALBUM_POST_TYPE,
 			$this->album_args()
 		);
 
 		register_taxonomy(
-			$migrated ? self::TAG : Atelier_Repository::TAG_TAXONOMY,
+			$migrated ? self::TAG : Lichtbild_Repository::TAG_TAXONOMY,
 			'attachment',
 			$this->tag_args()
 		);
@@ -140,12 +140,12 @@ class Atelier_Post_Types {
 	}
 
 	/**
-	 * Warns that Envira is registering the same URL paths Atelier now owns.
+	 * Warns that Envira is registering the same URL paths Lichtbild now owns.
 	 *
 	 * Once migrated, both plugins register types whose rewrite slug is `envira`, and one rule
 	 * key cannot route to two query variables — so registration order decides which wins, and
 	 * if Envira's does, its rule queries a post type that no longer holds a single row and the
-	 * URL 404s. Atelier cannot fix that from its own side; the only reliable answer is that
+	 * URL 404s. Lichtbild cannot fix that from its own side; the only reliable answer is that
 	 * Envira should be gone by this point, which is what this says.
 	 *
 	 * @return void
@@ -156,8 +156,8 @@ class Atelier_Post_Types {
 		}
 
 		echo '<div class="notice notice-warning"><p><strong>' .
-			esc_html__( 'Envira Gallery is active on a migrated site.', 'atelier' ) . '</strong> ' .
-			esc_html__( 'Both plugins are claiming the same gallery, album and tag URLs, and whichever registers last wins — which can make those URLs return 404. Deactivate Envira Gallery, or roll the migration back from Settings > Atelier.', 'atelier' ) .
+			esc_html__( 'Envira Gallery is active on a migrated site.', 'lichtbild-gallery' ) . '</strong> ' .
+			esc_html__( 'Both plugins are claiming the same gallery, album and tag URLs, and whichever registers last wins — which can make those URLs return 404. Deactivate Envira Gallery, or roll the migration back from Settings > Lichtbild.', 'lichtbild-gallery' ) .
 			'</p></div>';
 	}
 
@@ -186,7 +186,7 @@ class Atelier_Post_Types {
 		 *
 		 * @param array $slugs Paths keyed by `gallery`, `album` and `tag`.
 		 */
-		$slugs = (array) apply_filters( 'atelier_url_slugs', $scheme );
+		$slugs = (array) apply_filters( 'lichtbild_url_slugs', $scheme );
 
 		$slug = isset( $slugs[ $key ] ) ? trim( (string) $slugs[ $key ], '/' ) : '';
 
@@ -205,15 +205,15 @@ class Atelier_Post_Types {
 	private function gallery_args() {
 		return array(
 			'labels'             => array(
-				'name'          => __( 'Galleries', 'atelier' ),
-				'singular_name' => __( 'Gallery', 'atelier' ),
-				'add_new_item'  => __( 'Add New Gallery', 'atelier' ),
-				'edit_item'     => __( 'Edit Gallery', 'atelier' ),
-				'new_item'      => __( 'New Gallery', 'atelier' ),
-				'view_item'     => __( 'View Gallery', 'atelier' ),
-				'search_items'  => __( 'Search Galleries', 'atelier' ),
-				'not_found'     => __( 'No galleries found.', 'atelier' ),
-				'menu_name'     => __( 'Atelier', 'atelier' ),
+				'name'          => __( 'Galleries', 'lichtbild-gallery' ),
+				'singular_name' => __( 'Gallery', 'lichtbild-gallery' ),
+				'add_new_item'  => __( 'Add New Gallery', 'lichtbild-gallery' ),
+				'edit_item'     => __( 'Edit Gallery', 'lichtbild-gallery' ),
+				'new_item'      => __( 'New Gallery', 'lichtbild-gallery' ),
+				'view_item'     => __( 'View Gallery', 'lichtbild-gallery' ),
+				'search_items'  => __( 'Search Galleries', 'lichtbild-gallery' ),
+				'not_found'     => __( 'No galleries found.', 'lichtbild-gallery' ),
+				'menu_name'     => __( 'Lichtbild', 'lichtbild-gallery' ),
 			),
 			'public'             => true,
 			'publicly_queryable' => true,
@@ -245,15 +245,15 @@ class Atelier_Post_Types {
 		// The parent has to be the gallery type registered on *this* request. Naming the
 		// post-migration type unconditionally puts the submenu under a type that does not
 		// exist yet, and WordPress then drops it.
-		$parent = $this->settings->has_migrated() ? self::GALLERY : Atelier_Repository::GALLERY_POST_TYPE;
+		$parent = $this->settings->has_migrated() ? self::GALLERY : Lichtbild_Repository::GALLERY_POST_TYPE;
 
 		return array(
 			'labels'             => array(
-				'name'          => __( 'Albums', 'atelier' ),
-				'singular_name' => __( 'Album', 'atelier' ),
-				'add_new_item'  => __( 'Add New Album', 'atelier' ),
-				'edit_item'     => __( 'Edit Album', 'atelier' ),
-				'menu_name'     => __( 'Albums', 'atelier' ),
+				'name'          => __( 'Albums', 'lichtbild-gallery' ),
+				'singular_name' => __( 'Album', 'lichtbild-gallery' ),
+				'add_new_item'  => __( 'Add New Album', 'lichtbild-gallery' ),
+				'edit_item'     => __( 'Edit Album', 'lichtbild-gallery' ),
+				'menu_name'     => __( 'Albums', 'lichtbild-gallery' ),
 			),
 			'public'             => true,
 			'publicly_queryable' => true,
@@ -280,12 +280,12 @@ class Atelier_Post_Types {
 	private function tag_args() {
 		return array(
 			'labels'            => array(
-				'name'          => __( 'Image Tags', 'atelier' ),
-				'singular_name' => __( 'Image Tag', 'atelier' ),
-				'search_items'  => __( 'Search Image Tags', 'atelier' ),
-				'all_items'     => __( 'All Image Tags', 'atelier' ),
-				'edit_item'     => __( 'Edit Image Tag', 'atelier' ),
-				'menu_name'     => __( 'Image Tags', 'atelier' ),
+				'name'          => __( 'Image Tags', 'lichtbild-gallery' ),
+				'singular_name' => __( 'Image Tag', 'lichtbild-gallery' ),
+				'search_items'  => __( 'Search Image Tags', 'lichtbild-gallery' ),
+				'all_items'     => __( 'All Image Tags', 'lichtbild-gallery' ),
+				'edit_item'     => __( 'Edit Image Tag', 'lichtbild-gallery' ),
+				'menu_name'     => __( 'Image Tags', 'lichtbild-gallery' ),
 			),
 			'public'            => true,
 			'show_ui'           => true,
@@ -303,33 +303,33 @@ class Atelier_Post_Types {
 	/**
 	 * Returns the post type galleries are stored under right now.
 	 *
-	 * @param Atelier_Settings $settings Plugin settings.
+	 * @param Lichtbild_Settings $settings Plugin settings.
 	 *
 	 * @return string Post type name.
 	 */
-	public static function gallery_type( Atelier_Settings $settings ) {
-		return $settings->has_migrated() ? self::GALLERY : Atelier_Repository::GALLERY_POST_TYPE;
+	public static function gallery_type( Lichtbild_Settings $settings ) {
+		return $settings->has_migrated() ? self::GALLERY : Lichtbild_Repository::GALLERY_POST_TYPE;
 	}
 
 	/**
 	 * Returns the post type albums are stored under right now.
 	 *
-	 * @param Atelier_Settings $settings Plugin settings.
+	 * @param Lichtbild_Settings $settings Plugin settings.
 	 *
 	 * @return string Post type name.
 	 */
-	public static function album_type( Atelier_Settings $settings ) {
-		return $settings->has_migrated() ? self::ALBUM : Atelier_Repository::ALBUM_POST_TYPE;
+	public static function album_type( Lichtbild_Settings $settings ) {
+		return $settings->has_migrated() ? self::ALBUM : Lichtbild_Repository::ALBUM_POST_TYPE;
 	}
 
 	/**
 	 * Returns the taxonomy image tags are stored under right now.
 	 *
-	 * @param Atelier_Settings $settings Plugin settings.
+	 * @param Lichtbild_Settings $settings Plugin settings.
 	 *
 	 * @return string Taxonomy name.
 	 */
-	public static function tag_taxonomy( Atelier_Settings $settings ) {
-		return $settings->has_migrated() ? self::TAG : Atelier_Repository::TAG_TAXONOMY;
+	public static function tag_taxonomy( Lichtbild_Settings $settings ) {
+		return $settings->has_migrated() ? self::TAG : Lichtbild_Repository::TAG_TAXONOMY;
 	}
 }

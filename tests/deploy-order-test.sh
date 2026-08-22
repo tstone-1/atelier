@@ -5,7 +5,7 @@
 #   bash tests/deploy-order-test.sh
 #
 # The check it exercises is the one that did not exist when 26.8.22 shipped. That release
-# deleted `Atelier_Gallery::custom_css()` while the deployed `Atelier_Renderer` was still
+# deleted `Lichtbild_Gallery::custom_css()` while the deployed `Lichtbild_Renderer` was still
 # calling it, so the caller had to be uploaded FIRST -- the opposite of every ordering rule
 # before it -- and `deploy.sh plan` printed "constraints: satisfied" over either order. The
 # right upload order was worked out by hand and the wrong one would have been a fatal on the
@@ -32,7 +32,7 @@
 # Everything runs against two trees on disk -- no network, no credentials, no deployment
 # target -- which is why it can run in CI. `deploy.sh order-check` exists for that.
 #
-# @package Atelier\Tests
+# @package Lichtbild\Tests
 
 set -uo pipefail
 
@@ -40,9 +40,9 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 
-GALLERY="includes/class-atelier-gallery.php"
-RENDERER="includes/class-atelier-renderer.php"
-ALBUM="includes/class-atelier-album.php"
+GALLERY="includes/class-lichtbild-gallery.php"
+RENDERER="includes/class-lichtbild-renderer.php"
+ALBUM="includes/class-lichtbild-album.php"
 
 pass=0
 fail=0

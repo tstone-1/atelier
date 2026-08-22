@@ -3,7 +3,7 @@
 # Builds the distributable plugin archive -- what goes to wordpress.org, and what would go into
 # SVN trunk/.
 #
-#   bash tools/build-zip.sh            # writes build/atelier-<version>.zip
+#   bash tools/build-zip.sh            # writes build/lichtbild-gallery-<version>.zip
 #   bash tools/build-zip.sh --keep     # ...and leaves the staged directory for inspection
 #
 # The archive is the tracked tree minus .distignore. That direction matters: an exclusion list
@@ -11,7 +11,7 @@
 # dangerous (a new class is silently left out and the plugin is fatal on activation).
 #
 # Excluding by name is not evidence that the result is complete, so the build ASSERTS what it
-# produced: every file atelier.php requires, every asset the enqueue code names, the version
+# produced: every file lichtbild-gallery.php requires, every asset the enqueue code names, the version
 # agreeing in all three places, and none of the development apparatus present. A zip is a valid
 # zip whether or not it holds a working plugin.
 
@@ -19,7 +19,7 @@ set -euo pipefail
 
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
 ROOT="$PWD"
-SLUG=atelier
+SLUG=lichtbild-gallery
 OUT="$ROOT/build"
 STAGE="$OUT/$SLUG"
 KEEP=0
@@ -32,8 +32,8 @@ bad()  { printf '  [FAIL] %s\n' "$*"; fails=$((fails + 1)); }
 command -v rsync >/dev/null || { echo "rsync is required" >&2; exit 1; }
 command -v zip   >/dev/null || { echo "zip is required" >&2; exit 1; }
 
-version="$(sed -n "s/.*define( 'ATELIER_VERSION', '\([^']*\)' ).*/\1/p" atelier.php | head -1)"
-[ -n "$version" ] || { echo "could not read ATELIER_VERSION from atelier.php" >&2; exit 1; }
+version="$(sed -n "s/.*define( 'LICHTBILD_VERSION', '\([^']*\)' ).*/\1/p" lichtbild-gallery.php | head -1)"
+[ -n "$version" ] || { echo "could not read LICHTBILD_VERSION from lichtbild-gallery.php" >&2; exit 1; }
 
 echo "building ${SLUG} ${version}"
 echo
@@ -66,10 +66,10 @@ echo "verifying what was produced, rather than trusting what was excluded:"
 missing_php=0
 while IFS= read -r rel; do
 	[ -z "$rel" ] && continue
-	if [ ! -f "$STAGE/$rel" ]; then bad "required by atelier.php but absent: $rel"; missing_php=$((missing_php + 1)); fi
-done < <(grep -oE "ATELIER_DIR \. '[^']+\.php'" atelier.php | sed "s/ATELIER_DIR \. '//; s/'$//")
-required_count="$(grep -cE "ATELIER_DIR \. '[^']+\.php'" atelier.php || true)"
-[ "$required_count" -gt 0 ] || bad "CONTROL: found no requires in atelier.php at all -- the check above examined nothing"
+	if [ ! -f "$STAGE/$rel" ]; then bad "required by lichtbild-gallery.php but absent: $rel"; missing_php=$((missing_php + 1)); fi
+done < <(grep -oE "LICHTBILD_DIR \. '[^']+\.php'" lichtbild-gallery.php | sed "s/LICHTBILD_DIR \. '//; s/'$//")
+required_count="$(grep -cE "LICHTBILD_DIR \. '[^']+\.php'" lichtbild-gallery.php || true)"
+[ "$required_count" -gt 0 ] || bad "CONTROL: found no requires in lichtbild-gallery.php at all -- the check above examined nothing"
 [ "$missing_php" -eq 0 ] && ok "$required_count required PHP files, all present"
 
 # 2. Every asset named by the enqueue code must be in the archive.
@@ -79,7 +79,7 @@ while IFS= read -r rel; do
 	[ -z "$rel" ] && continue
 	assets_checked=$((assets_checked + 1))
 	[ -f "$STAGE/$rel" ] || { bad "enqueued but absent: $rel"; missing_asset=$((missing_asset + 1)); }
-done < <(grep -rhoE "assets/[A-Za-z0-9_./-]+\.(css|js)" includes/ atelier.php | sort -u)
+done < <(grep -rhoE "assets/[A-Za-z0-9_./-]+\.(css|js)" includes/ lichtbild-gallery.php | sort -u)
 [ "$assets_checked" -gt 0 ] || bad "CONTROL: found no asset references -- the check above examined nothing"
 [ "$missing_asset" -eq 0 ] && ok "$assets_checked referenced assets, all present"
 
@@ -95,7 +95,7 @@ done
 
 # 5. The three version strings must agree, because WordPress reads the header, the code reads
 #    the constant, and wordpress.org reads the stable tag.
-hdr="$(sed -n 's/^ \* Version: *//p' "$STAGE/atelier.php" | head -1 | tr -d '[:space:]')"
+hdr="$(sed -n 's/^ \* Version: *//p' "$STAGE/lichtbild-gallery.php" | head -1 | tr -d '[:space:]')"
 tag="$(sed -n 's/^Stable tag: *//p' "$STAGE/readme.txt" | head -1 | tr -d '[:space:]')"
 if [ "$hdr" = "$version" ] && [ "$tag" = "$version" ]; then
 	ok "version agrees in all three places: $version"

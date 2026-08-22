@@ -1,4 +1,4 @@
-# Atelier
+# Lichtbild Gallery
 
 A WordPress gallery plugin that reads Envira Gallery's data in place, and can take it over.
 
@@ -7,17 +7,17 @@ anything, and without moving a single indexed URL. It does that, and it has been
 production since August 2026.
 
 > **Not affiliated with, endorsed by, or connected to Envira Gallery or Awesome Motive.**
-> "Envira Gallery" is their product and their trademark. Atelier is an independent plugin that
+> "Envira Gallery" is their product and their trademark. Lichtbild is an independent plugin that
 > names Envira only to say what it reads and what it replaces. It contains no Envira code — the
-> two share no source, which was checked rather than assumed: every Atelier source file was
+> two share no source, which was checked rather than assumed: every Lichtbild source file was
 > compared against all 481 Envira PHP, JavaScript and CSS files, and the two have not one pair of
 > lines in common.
 
 ## What it does
 
 **It reads Envira's own records where they lie.** Galleries stay in the `envira` post type under
-the `_eg_gallery_data` post meta, and Atelier renders from that. Nothing is copied, nothing is
-written back, and no gallery is edited to make the switch — so deactivating Atelier and
+the `_eg_gallery_data` post meta, and Lichtbild renders from that. Nothing is copied, nothing is
+written back, and no gallery is edited to make the switch — so deactivating Lichtbild and
 reactivating Envira is lossless in both directions, and comparing the two is a page refresh.
 
 **It can then take ownership.** A migration renames the post types in place and converts each
@@ -28,10 +28,10 @@ rollback restores what was there rather than reconstructing it.
 
 **It keeps the URLs.** This is the part that actually required work. Galleries, albums and image
 tags are custom types, and a custom type exists only while a plugin registers it — so removing
-Envira without replacing its registrations sends every gallery URL to a 404. Atelier registers
+Envira without replacing its registrations sends every gallery URL to a 404. Lichtbild registers
 them, and the type names change at migration while `/envira/`, `/envira_album/` and `/envira-tag/`
 stay pinned exactly where search engines already have them. The paths are filterable through
-`atelier_url_slugs`; Envira's are the right default only for a site that already has them indexed.
+`lichtbild_url_slugs`; Envira's are the right default only for a site that already has them indexed.
 
 ## What you get over Envira
 
@@ -55,7 +55,7 @@ WordPress 6.0+, PHP 8.1+. No build step, no npm dependency at runtime, no bundle
 ## Installing
 
 Copy the plugin directory into `wp-content/plugins/` and activate it. With Envira still active it
-does nothing by default — the takeover setting under **Settings → Atelier** defaults to `auto`,
+does nothing by default — the takeover setting under **Settings → Lichtbild** defaults to `auto`,
 which means "handle `[envira-gallery]` only while Envira is inactive". That is deliberate: it lets
 you install it on a live site and change nothing until you choose to.
 
@@ -63,16 +63,16 @@ you install it on a live site and change nothing until you choose to.
 |---|---|
 | `auto` | handle `[envira-gallery]` only while Envira is inactive (default) |
 | `always` | handle it even when Envira is active, for an A/B comparison on one page |
-| `never` | only `[atelier-gallery]` renders through Atelier |
+| `never` | only `[lichtbild-gallery]` renders through Lichtbild |
 
-`[atelier-gallery id="N"]` always renders through Atelier regardless of the setting, and there are
+`[lichtbild-gallery id="N"]` always renders through Lichtbild regardless of the setting, and there are
 block-editor blocks for galleries and albums.
 
 ## Migrating
 
-Deactivate Envira, then run the migration from **Settings → Atelier**. It reports what it will do
+Deactivate Envira, then run the migration from **Settings → Lichtbild**. It reports what it will do
 before it does it, and the counts on that screen come from the same code that performs the work.
-Afterwards Atelier owns the data and the edit screens, and Envira can be uninstalled without
+Afterwards Lichtbild owns the data and the edit screens, and Envira can be uninstalled without
 taking any URL off the site.
 
 Rollback is on the same screen and stays available: Envira's records were never touched.

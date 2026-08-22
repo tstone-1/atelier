@@ -97,7 +97,7 @@ const wp = {
 		}
 	},
 	blockEditor: {
-		useBlockProps: () => ( { className: 'wp-block-atelier' } ),
+		useBlockProps: () => ( { className: 'wp-block-lichtbild' } ),
 		InspectorControls: component( 'InspectorControls' )
 	},
 	components: {
@@ -108,7 +108,7 @@ const wp = {
 	serverSideRender: component( 'ServerSideRender' )
 };
 
-// Shaped like what `Atelier_Block::editor_data()` prints, with two galleries and one album so a
+// Shaped like what `Lichtbild_Block::editor_data()` prints, with two galleries and one album so a
 // picker that offered a constant would be visible.
 const data = {
 	galleries: [
@@ -117,8 +117,8 @@ const data = {
 	],
 	albums: [ { value: 33, label: 'Travel' } ],
 	i18n: {
-		galleryTitle: 'Atelier-Galerie',
-		albumTitle: 'Atelier-Album',
+		galleryTitle: 'Lichtbild-Galerie',
+		albumTitle: 'Lichtbild-Album',
 		chooseGallery: 'Galerie auswählen',
 		chooseAlbum: 'Album auswählen',
 		galleryInstructions: 'gallery instructions',
@@ -133,7 +133,7 @@ const data = {
 	}
 };
 
-const sandbox = { window: { wp, AtelierBlocks: data }, console };
+const sandbox = { window: { wp, LichtbildBlocks: data }, console };
 sandbox.global = sandbox;
 
 const source = fs.readFileSync( path.join( __dirname, '..', 'assets', 'js', 'blocks.js' ), 'utf8' );
@@ -153,7 +153,7 @@ const names = Object.keys( registered ).sort();
 
 check(
 	'both blocks registered themselves',
-	2 === names.length && 'atelier/album' === names[ 0 ] && 'atelier/gallery' === names[ 1 ],
+	2 === names.length && 'lichtbild/album' === names[ 0 ] && 'lichtbild/gallery' === names[ 1 ],
 	`registered: ${ names.length ? names.join( ', ' ) : '(nothing)' }`
 );
 
@@ -172,7 +172,7 @@ check(
 		( names.filter( ( name ) => null !== registered[ name ].save() ).join( ', ' ) || '(none)' )
 );
 
-// Only Atelier's own shortcode. `[envira-gallery]` still renders under a rollback because Envira
+// Only Lichtbild's own shortcode. `[envira-gallery]` still renders under a rollback because Envira
 // registers it again; a one-click conversion with no confirmation is the wrong place to spend
 // that, so a transform naming it is a regression rather than a feature.
 const tags = names.flatMap( ( name ) =>
@@ -181,11 +181,11 @@ const tags = names.flatMap( ( name ) =>
 
 check(
 	'only our own shortcodes transform',
-	2 === tags.length && 'atelier-album' === tags[ 0 ] && 'atelier-gallery' === tags[ 1 ],
+	2 === tags.length && 'lichtbild-album' === tags[ 0 ] && 'lichtbild-gallery' === tags[ 1 ],
 	`transforms from: ${ tags.join( ', ' ) || '(nothing)' }`
 );
 
-const shortcodeAttr = registered[ 'atelier/gallery' ].transforms.from[ 0 ].attributes.id.shortcode;
+const shortcodeAttr = registered[ 'lichtbild/gallery' ].transforms.from[ 0 ].attributes.id.shortcode;
 
 check(
 	'the shortcode transform reads a number',
@@ -199,7 +199,7 @@ check(
 // Each is rendered and inspected for what it contains. `edit` is a plain function here because
 // nothing in it uses a hook the mock cannot answer, which is itself worth knowing: the day it
 // does, this file stops running rather than quietly testing less.
-const edit = registered[ 'atelier/gallery' ].edit;
+const edit = registered[ 'lichtbild/gallery' ].edit;
 
 /**
  * Renders `edit` once and returns every element it produced.
@@ -238,7 +238,7 @@ const preview = chosen.find( ( el ) => 'ServerSideRender' === el.type.displayNam
 
 check(
 	'the preview names its own block and id',
-	'atelier/gallery' === preview.props.block && 11 === preview.props.attributes.id,
+	'lichtbild/gallery' === preview.props.block && 11 === preview.props.attributes.id,
 	`block ${ preview.props.block }, id ${ JSON.stringify( preview.props.attributes.id ) }`
 );
 
@@ -273,12 +273,12 @@ check(
 // A site with nothing to pick gets a statement, not an empty dropdown that reads as a bug.
 const emptyEdit = ( () => {
 	const bare = Object.assign( {}, data, { galleries: [] } );
-	const box = { window: { wp, AtelierBlocks: bare }, console };
+	const box = { window: { wp, LichtbildBlocks: bare }, console };
 	box.global = box;
 
 	vm.runInNewContext( source, box, { filename: 'assets/js/blocks.js' } );
 
-	return registered[ 'atelier/gallery' ].edit;
+	return registered[ 'lichtbild/gallery' ].edit;
 } )();
 
 const nothing = flatten( emptyEdit( { attributes: { id: 0 }, setAttributes: () => {} } ) );

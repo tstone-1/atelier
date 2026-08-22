@@ -15,11 +15,11 @@ function out( $label, $ok, $detail = '' ) {
 	printf( "%-8s %-50s %s\n", $ok ? '[OK]' : '[FAIL]', $label, $detail );
 
 	if ( ! $ok ) {
-		$GLOBALS['atelier_live_failed'] = ( isset( $GLOBALS['atelier_live_failed'] ) ? $GLOBALS['atelier_live_failed'] : 0 ) + 1;
+		$GLOBALS['lichtbild_live_failed'] = ( isset( $GLOBALS['lichtbild_live_failed'] ) ? $GLOBALS['lichtbild_live_failed'] : 0 ) + 1;
 	}
 }
 
-$settings = new Atelier_Settings();
+$settings = new Lichtbild_Settings();
 
 // ---------------------------------------------------------------- preconditions
 // Checked before anything is changed. `devenv.sh reset` restores the imported
@@ -27,7 +27,7 @@ $settings = new Atelier_Settings();
 // check after it then fails for a reason that has nothing to do with the code.
 if ( $settings->envira_is_active() ) {
 	echo "[ERROR] Envira Gallery is active, so the migration will refuse.\n";
-	echo "        bash tools/devenv.sh wp plugin deactivate --all --exclude=atelier\n";
+	echo "        bash tools/devenv.sh wp plugin deactivate --all --exclude=lichtbild\n";
 
 	exit( 1 );
 }
@@ -40,7 +40,7 @@ if ( $settings->has_migrated() ) {
 }
 
 // ---------------------------------------------------------------- migrate
-$migration = new Atelier_Migration( $settings );
+$migration = new Lichtbild_Migration( $settings );
 $result    = $migration->migrate();
 
 out(
@@ -60,30 +60,30 @@ if ( ! empty( $result['errors'] ) ) {
 
 wp_cache_flush();
 
-$settings = new Atelier_Settings();
+$settings = new Lichtbild_Settings();
 
 // Registered at `init`, before the rename, so the types still say `envira_album`. That is why
 // the migration screen does a post/redirect/get; here it means every capability check would
 // run against a type no row is under.
-( new Atelier_Post_Types( $settings ) )->register_types();
+( new Lichtbild_Post_Types( $settings ) )->register_types();
 
 out(
 	'the migrated album type is registered',
-	post_type_exists( 'atelier_album' ),
-	post_type_exists( 'atelier_album' ) ? 'atelier_album' : 'absent'
+	post_type_exists( 'lichtbild_album' ),
+	post_type_exists( 'lichtbild_album' ) ? 'lichtbild_album' : 'absent'
 );
 
-$repository   = new Atelier_Repository( 'atelier_gallery', 'atelier_album', 'atelier_tag', true );
-$renderer     = new Atelier_Renderer( new Atelier_Assets( $settings ) );
-$album_editor = new Atelier_Album_Editor( $settings, $repository );
+$repository   = new Lichtbild_Repository( 'lichtbild_gallery', 'lichtbild_album', 'lichtbild_tag', true );
+$renderer     = new Lichtbild_Renderer( new Lichtbild_Assets( $settings ) );
+$album_editor = new Lichtbild_Album_Editor( $settings, $repository );
 
 // ---------------------------------------------------------------- metaboxes
 $GLOBALS['wp_meta_boxes'] = array();
-set_current_screen( 'atelier_album' );
+set_current_screen( 'lichtbild_album' );
 
 $album_editor->add_meta_boxes();
 
-$boxes = isset( $GLOBALS['wp_meta_boxes']['atelier_album'] ) ? $GLOBALS['wp_meta_boxes']['atelier_album'] : array();
+$boxes = isset( $GLOBALS['wp_meta_boxes']['lichtbild_album'] ) ? $GLOBALS['wp_meta_boxes']['lichtbild_album'] : array();
 $found = array();
 
 foreach ( $boxes as $context => $priorities ) {
@@ -98,14 +98,14 @@ sort( $found );
 
 out(
 	'metaboxes register on the real screen',
-	array( 'atelier-album-galleries', 'atelier-album-settings', 'atelier-album-shortcode' ) === $found,
+	array( 'lichtbild-album-galleries', 'lichtbild-album-settings', 'lichtbild-album-shortcode' ) === $found,
 	implode( ', ', $found )
 );
 
 // ---------------------------------------------------------------- pick an album
 $ids = get_posts(
 	array(
-		'post_type'      => 'atelier_album',
+		'post_type'      => 'lichtbild_album',
 		'post_status'    => array( 'publish', 'private', 'draft' ),
 		'posts_per_page' => -1,
 		'fields'         => 'ids',
@@ -115,7 +115,7 @@ $ids = get_posts(
 $target = 0;
 
 foreach ( $ids as $candidate ) {
-	$record = get_post_meta( $candidate, '_atelier_album', true );
+	$record = get_post_meta( $candidate, '_lichtbild_album', true );
 
 	if ( is_array( $record ) && ! empty( $record['items'] ) ) {
 		$target = (int) $candidate;
@@ -130,7 +130,7 @@ if ( 0 === $target ) {
 	exit( 1 );
 }
 
-$record = get_post_meta( $target, '_atelier_album', true );
+$record = get_post_meta( $target, '_lichtbild_album', true );
 $before = $renderer->album( $repository->album( $target ), $repository );
 
 // ---------------------------------------------------------------- the edit screen
@@ -146,8 +146,8 @@ $settings_form = ob_get_clean();
 
 $missing = array();
 
-foreach ( array_keys( Atelier_Album_Config::defaults() ) as $key ) {
-	if ( false === strpos( $settings_form, 'name="atelier_album_settings[' . $key . ']' ) ) {
+foreach ( array_keys( Lichtbild_Album_Config::defaults() ) as $key ) {
+	if ( false === strpos( $settings_form, 'name="lichtbild_album_settings[' . $key . ']' ) ) {
 		$missing[] = $key;
 	}
 }
@@ -173,14 +173,14 @@ out(
 // row count includes a pseudo-gallery the picker must not offer -- and so does any empty row.
 $gallery_rows = get_posts(
 	array(
-		'post_type'      => 'atelier_gallery',
+		'post_type'      => 'lichtbild_gallery',
 		'post_status'    => array( 'publish', 'private', 'draft', 'pending' ),
 		'posts_per_page' => -1,
 		'fields'         => 'ids',
 	)
 );
 
-$reader        = new Atelier_Repository( 'atelier_gallery', 'atelier_album', 'atelier_tag', true );
+$reader        = new Lichtbild_Repository( 'lichtbild_gallery', 'lichtbild_album', 'lichtbild_tag', true );
 $gallery_count = 0;
 
 foreach ( $gallery_rows as $row_id ) {
@@ -189,7 +189,7 @@ foreach ( $gallery_rows as $row_id ) {
 	}
 }
 
-$opens   = strpos( $galleries_form, '<select id="atelier-album-add">' );
+$opens   = strpos( $galleries_form, '<select id="lichtbild-album-add">' );
 $offered = false === $opens
 	? 0
 	: substr_count( substr( $galleries_form, $opens, strpos( $galleries_form, '</select>', $opens ) - $opens ), '<option value="' );
@@ -239,10 +239,10 @@ foreach ( $record['settings'] as $key => $value ) {
 }
 
 $_POST = array(
-	'atelier_album_editor_nonce' => wp_create_nonce( 'atelier_album_editor_' . $target ),
-	'atelier_album_items'        => $items,
-	'atelier_album_order'        => implode( ',', $order ),
-	'atelier_album_settings'     => $settings_payload,
+	'lichtbild_album_editor_nonce' => wp_create_nonce( 'lichtbild_album_editor_' . $target ),
+	'lichtbild_album_items'        => $items,
+	'lichtbild_album_order'        => implode( ',', $order ),
+	'lichtbild_album_settings'     => $settings_payload,
 );
 
 // Through the real hook, so `save_post`'s own plumbing is what runs it.
@@ -252,8 +252,8 @@ do_action( 'save_post', $target, get_post( $target ), true );
 wp_cache_flush();
 
 $after = $renderer->album(
-	( new Atelier_Repository( 'atelier_gallery', 'atelier_album', 'atelier_tag', true ) )->album( $target ),
-	new Atelier_Repository( 'atelier_gallery', 'atelier_album', 'atelier_tag', true )
+	( new Lichtbild_Repository( 'lichtbild_gallery', 'lichtbild_album', 'lichtbild_tag', true ) )->album( $target ),
+	new Lichtbild_Repository( 'lichtbild_gallery', 'lichtbild_album', 'lichtbild_tag', true )
 );
 
 out( 'save through save_post round-trips', $before === $after, strlen( $before ) . ' vs ' . strlen( $after ) . ' bytes' );
@@ -262,13 +262,13 @@ out( 'save through save_post round-trips', $before === $after, strlen( $before )
 //
 // The control the round trip needs: an identical render is also what a save that never ran
 // produces.
-$_POST['atelier_album_order'] = implode( ',', array_reverse( $order ) );
+$_POST['lichtbild_album_order'] = implode( ',', array_reverse( $order ) );
 
 do_action( 'save_post', $target, get_post( $target ), true );
 
 wp_cache_flush();
 
-$stored = get_post_meta( $target, '_atelier_album', true );
+$stored = get_post_meta( $target, '_lichtbild_album', true );
 
 out(
 	'a reorder lands in the database',
@@ -276,20 +276,20 @@ out(
 	'first id ' . $stored['items'][0]['id'] . ', was ' . $record['items'][0]['id']
 );
 
-$_POST['atelier_album_order'] = implode( ',', $order );
+$_POST['lichtbild_album_order'] = implode( ',', $order );
 
 // ---------------------------------------------------------------- covers, against real rows
 $member_id    = (int) $record['items'][0]['id'];
-$member_items = ( new Atelier_Repository( 'atelier_gallery', 'atelier_album', 'atelier_tag', true ) )->gallery( $member_id )->items();
+$member_items = ( new Lichtbild_Repository( 'lichtbild_gallery', 'lichtbild_album', 'lichtbild_tag', true ) )->gallery( $member_id )->items();
 $own_cover    = $member_items[ count( $member_items ) - 1 ]->id();
 
-$_POST['atelier_album_items']['i0']['cover_id'] = (string) $own_cover;
+$_POST['lichtbild_album_items']['i0']['cover_id'] = (string) $own_cover;
 
 do_action( 'save_post', $target, get_post( $target ), true );
 
 wp_cache_flush();
 
-$kept = get_post_meta( $target, '_atelier_album', true );
+$kept = get_post_meta( $target, '_lichtbild_album', true );
 
 out(
 	'a cover from the gallery is kept',
@@ -306,7 +306,7 @@ foreach ( $record['items'] as $other ) {
 		continue;
 	}
 
-	$other_items = ( new Atelier_Repository( 'atelier_gallery', 'atelier_album', 'atelier_tag', true ) )->gallery( (int) $other['id'] )->items();
+	$other_items = ( new Lichtbild_Repository( 'lichtbild_gallery', 'lichtbild_album', 'lichtbild_tag', true ) )->gallery( (int) $other['id'] )->items();
 
 	if ( ! empty( $other_items ) ) {
 		$foreign_cover = $other_items[0]->id();
@@ -315,13 +315,13 @@ foreach ( $record['items'] as $other ) {
 	}
 }
 
-$_POST['atelier_album_items']['i0']['cover_id'] = (string) $foreign_cover;
+$_POST['lichtbild_album_items']['i0']['cover_id'] = (string) $foreign_cover;
 
 do_action( 'save_post', $target, get_post( $target ), true );
 
 wp_cache_flush();
 
-$refused = get_post_meta( $target, '_atelier_album', true );
+$refused = get_post_meta( $target, '_lichtbild_album', true );
 
 out(
 	'a cover from another gallery is refused',
@@ -332,13 +332,13 @@ out(
 // ---------------------------------------------------------------- put it all back
 $_POST = array();
 
-update_post_meta( $target, '_atelier_album', $record );
+update_post_meta( $target, '_lichtbild_album', $record );
 
 wp_cache_flush();
 
 $restored = $renderer->album(
-	( new Atelier_Repository( 'atelier_gallery', 'atelier_album', 'atelier_tag', true ) )->album( $target ),
-	new Atelier_Repository( 'atelier_gallery', 'atelier_album', 'atelier_tag', true )
+	( new Lichtbild_Repository( 'lichtbild_gallery', 'lichtbild_album', 'lichtbild_tag', true ) )->album( $target ),
+	new Lichtbild_Repository( 'lichtbild_gallery', 'lichtbild_album', 'lichtbild_tag', true )
 );
 
 out( 'the album is back as it was', $before === $restored, strlen( $restored ) . ' bytes' );
@@ -347,11 +347,11 @@ $rolled = $migration->rollback();
 
 out(
 	'rollback restores the site',
-	empty( $rolled['errors'] ) && ! ( new Atelier_Settings() )->has_migrated(),
+	empty( $rolled['errors'] ) && ! ( new Lichtbild_Settings() )->has_migrated(),
 	sprintf( '%d galleries, %d albums', $rolled['galleries'], $rolled['albums'] )
 );
 
-$failed = isset( $GLOBALS['atelier_live_failed'] ) ? $GLOBALS['atelier_live_failed'] : 0;
+$failed = isset( $GLOBALS['lichtbild_live_failed'] ) ? $GLOBALS['lichtbild_live_failed'] : 0;
 
 printf( "\nchecks: 13, failing: %d\n", $failed );
 

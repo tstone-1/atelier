@@ -90,7 +90,7 @@
  *
  * @return array<string,array> Size entries keyed by registered size name.
  */
-function atelier_fixture_sizes( $width, $height, $stem ) {
+function lichtbild_fixture_sizes( $width, $height, $stem ) {
 	$sizes = array( 'thumbnail' => array( 150, 150 ) );
 
 	foreach ( array(
@@ -131,7 +131,7 @@ function atelier_fixture_sizes( $width, $height, $stem ) {
  *
  * @return int[] Width and height in pixels.
  */
-function atelier_fixture_shape( $index ) {
+function lichtbild_fixture_shape( $index ) {
 	$shapes = array(
 		array( 2000, 1333 ),
 		array( 1600, 1600 ),
@@ -165,7 +165,7 @@ function atelier_fixture_shape( $index ) {
  *
  * @return array The record, with its metadata already base64-encoded.
  */
-function atelier_fixture_attachment( $id, $width, $height, array $options = array() ) {
+function lichtbild_fixture_attachment( $id, $width, $height, array $options = array() ) {
 	$stem = 'image-' . $id;
 
 	$image_meta = array_merge(
@@ -186,7 +186,7 @@ function atelier_fixture_attachment( $id, $width, $height, array $options = arra
 		isset( $options['image_meta'] ) ? $options['image_meta'] : array()
 	);
 
-	$sizes = atelier_fixture_sizes( $width, $height, $stem );
+	$sizes = lichtbild_fixture_sizes( $width, $height, $stem );
 
 	// One attachment on the live site has no `medium_large` entry despite being wide enough
 	// for one — an upload predating the size, which WordPress never backfills. It matters
@@ -236,7 +236,7 @@ function atelier_fixture_attachment( $id, $width, $height, array $options = arra
  *
  * @return array The item.
  */
-function atelier_fixture_item( $attachment_id, array $options = array() ) {
+function lichtbild_fixture_item( $attachment_id, array $options = array() ) {
 	$url = 'https://example.com/wp-content/uploads/2019/07/image-' . $attachment_id . '.jpg';
 
 	return array(
@@ -263,7 +263,7 @@ function atelier_fixture_item( $attachment_id, array $options = array() ) {
  *
  * @return array The config.
  */
-function atelier_fixture_config( array $overrides = array() ) {
+function lichtbild_fixture_config( array $overrides = array() ) {
 	return array_merge(
 		array(
 			'type'                                   => 'default',
@@ -312,7 +312,7 @@ function atelier_fixture_config( array $overrides = array() ) {
  *
  * @return array The record.
  */
-function atelier_fixture_gallery( $id, $title, array $items, array $config, array $options = array() ) {
+function lichtbild_fixture_gallery( $id, $title, array $items, array $config, array $options = array() ) {
 	return array(
 		'id'        => $id,
 		'title'     => $title,
@@ -340,7 +340,7 @@ function atelier_fixture_gallery( $id, $title, array $items, array $config, arra
  *
  * @return array The member entry.
  */
-function atelier_fixture_member( $gallery_id, $cover_id, array $options = array() ) {
+function lichtbild_fixture_member( $gallery_id, $cover_id, array $options = array() ) {
 	return array(
 		'id'                    => (string) $gallery_id,
 		// Envira freezes a copy of the member's title here. WordPress already holds the live
@@ -371,7 +371,7 @@ function atelier_fixture_member( $gallery_id, $cover_id, array $options = array(
  *
  * @return array The record.
  */
-function atelier_fixture_album( $id, $title, array $members, array $order, array $config, array $options = array() ) {
+function lichtbild_fixture_album( $id, $title, array $members, array $order, array $config, array $options = array() ) {
 	$data = array(
 		'galleryIDs' => $order,
 		'galleries'  => $members,
@@ -418,21 +418,21 @@ $galleries   = array();
  *
  * @return array Items keyed by attachment ID.
  */
-function atelier_fixture_block( array &$attachments, $first, $count, array $options = array() ) {
+function lichtbild_fixture_block( array &$attachments, $first, $count, array $options = array() ) {
 	$items = array();
 
 	for ( $index = 0; $index < $count; $index++ ) {
 		$attachment_id = $first + $index;
-		$shape         = atelier_fixture_shape( $index );
+		$shape         = lichtbild_fixture_shape( $index );
 
-		$attachments[ $attachment_id ] = atelier_fixture_attachment(
+		$attachments[ $attachment_id ] = lichtbild_fixture_attachment(
 			$attachment_id,
 			$shape[0],
 			$shape[1],
 			$options
 		);
 
-		$items[ $attachment_id ] = atelier_fixture_item( $attachment_id );
+		$items[ $attachment_id ] = lichtbild_fixture_item( $attachment_id );
 	}
 
 	return $items;
@@ -442,7 +442,7 @@ function atelier_fixture_block( array &$attachments, $first, $count, array $opti
 // Every real gallery turns camera make, model and capture time off while leaving the four
 // exposure values on, so a renderer printing everything it can parse prints the camera body on
 // a gallery whose settings say not to. Flags spelled '1'.
-$items = atelier_fixture_block(
+$items = lichtbild_fixture_block(
 	$attachments,
 	1001,
 	30,
@@ -458,11 +458,11 @@ $items = atelier_fixture_block(
 	)
 );
 
-$galleries[] = atelier_fixture_gallery(
+$galleries[] = lichtbild_fixture_gallery(
 	100,
 	'Justified with pagination',
 	$items,
-	atelier_fixture_config(
+	lichtbild_fixture_config(
 		array(
 			'pagination'                        => '1',
 			'pagination_images_per_page'        => '10',
@@ -491,7 +491,7 @@ $galleries[] = atelier_fixture_gallery(
 // same thing wherever the image appears. Every tag has to match at least one item and every
 // item on a filtered page has to carry the tag it was filtered by, so the assignment below is
 // spread rather than given to one image.
-$items = atelier_fixture_block( $attachments, 1101, 36 );
+$items = lichtbild_fixture_block( $attachments, 1101, 36 );
 
 // Twelve terms across thirty-six images, in consecutive groups of three, and every third
 // image left untagged.
@@ -540,9 +540,9 @@ foreach ( array_keys( $items ) as $attachment_id ) {
 		continue;
 	}
 
-	$shape = atelier_fixture_shape( $index );
+	$shape = lichtbild_fixture_shape( $index );
 
-	$attachments[ $attachment_id ] = atelier_fixture_attachment(
+	$attachments[ $attachment_id ] = lichtbild_fixture_attachment(
 		$attachment_id,
 		$shape[0],
 		$shape[1],
@@ -552,11 +552,11 @@ foreach ( array_keys( $items ) as $attachment_id ) {
 	$index++;
 }
 
-$galleries[] = atelier_fixture_gallery(
+$galleries[] = lichtbild_fixture_gallery(
 	101,
 	'Tagged gallery',
 	$items,
-	atelier_fixture_config(
+	lichtbild_fixture_config(
 		array(
 			'tags'                       => 'True',
 			'tags_filter'                => 'True',
@@ -577,7 +577,7 @@ $galleries[] = atelier_fixture_gallery(
 
 // 102 - a fixed column grid rather than the justified one, which is the other layout branch.
 // Flags spelled as integer 1.
-$items = atelier_fixture_block( $attachments, 1201, 45 );
+$items = lichtbild_fixture_block( $attachments, 1201, 45 );
 
 // One image WordPress never generated a `medium_large` for, in the one gallery that asks for a
 // non-default size. Both facts are needed together: at its own setting the image resolves, and
@@ -587,18 +587,18 @@ $items = atelier_fixture_block( $attachments, 1201, 45 );
 // merge so stored settings lose to defaults, and against the real corpus it turns
 // `grid image is not the original` red — against the first version of this one it did not,
 // because every synthetic attachment carried every size and so nothing could regress.
-$attachments[1201] = atelier_fixture_attachment(
+$attachments[1201] = lichtbild_fixture_attachment(
 	1201,
 	1600,
 	1067,
 	array( 'omit_sizes' => array( 'medium_large' ) )
 );
 
-$galleries[] = atelier_fixture_gallery(
+$galleries[] = lichtbild_fixture_gallery(
 	102,
 	'Fixed columns',
 	$items,
-	atelier_fixture_config(
+	lichtbild_fixture_config(
 		array(
 			'columns'      => '4',
 			'isotope'      => 0,
@@ -613,14 +613,14 @@ $galleries[] = atelier_fixture_gallery(
 );
 
 // 103 - captions, titles, alt text and hand-written custom CSS keyed on Envira's own element
-// id, which the converter rewrites to Atelier's. Sixteen real galleries carry such a rule.
+// id, which the converter rewrites to Lichtbild's. Sixteen real galleries carry such a rule.
 // Flags spelled as PHP booleans.
 //
 // Not one of the 2,264 real items has a caption or alt text and no attachment has an excerpt
 // to fall back to, so the equivalence check run over the real fixture alone cannot notice a
 // conversion that drops those fields — which a mutation demonstrated by surviving. Here they
 // are present from the start.
-$items = atelier_fixture_block(
+$items = lichtbild_fixture_block(
 	$attachments,
 	1301,
 	20,
@@ -640,7 +640,7 @@ $captions = array(
 $index = 0;
 
 foreach ( $items as $attachment_id => $item ) {
-	$items[ $attachment_id ] = atelier_fixture_item(
+	$items[ $attachment_id ] = lichtbild_fixture_item(
 		$attachment_id,
 		array(
 			'title'   => 'Item title ' . $attachment_id,
@@ -652,11 +652,11 @@ foreach ( $items as $attachment_id => $item ) {
 	$index++;
 }
 
-$galleries[] = atelier_fixture_gallery(
+$galleries[] = lichtbild_fixture_gallery(
 	103,
 	'Captions and custom CSS',
 	$items,
-	atelier_fixture_config(
+	lichtbild_fixture_config(
 		array(
 			'custom_css'      => '#envira-gallery-103 .envira-gallery-item { border: 1px solid #333; }',
 			'title_display'   => 'below',
@@ -684,16 +684,16 @@ $galleries[] = atelier_fixture_gallery(
 // asserted a srcset, an intrinsic size, lightbox dimensions and a non-original grid src for
 // every item, which is a property of THIS corpus rather than of the renderer, and an orphan
 // turned all four red while the renderer behaved exactly as designed.
-$items = atelier_fixture_block( $attachments, 1401, 12 );
+$items = lichtbild_fixture_block( $attachments, 1401, 12 );
 
-$items[1412]   = atelier_fixture_item( 1412, array( 'status' => 'pending' ) );
-$items[1499001] = atelier_fixture_item( 1499001, array( 'title' => 'Deleted from the media library' ) );
+$items[1412]   = lichtbild_fixture_item( 1412, array( 'status' => 'pending' ) );
+$items[1499001] = lichtbild_fixture_item( 1499001, array( 'title' => 'Deleted from the media library' ) );
 
-$galleries[] = atelier_fixture_gallery(
+$galleries[] = lichtbild_fixture_gallery(
 	104,
 	'With a pending item',
 	$items,
-	atelier_fixture_config(),
+	lichtbild_fixture_config(),
 	array( 'name' => 'with-a-pending-item' )
 );
 
@@ -701,11 +701,11 @@ $galleries[] = atelier_fixture_gallery(
 // needs is the distinction, and until the exporter carried it the corpus could not tell a
 // protected gallery from a public one — which is how an album cover grid published one for a
 // while with the whole suite green.
-$galleries[] = atelier_fixture_gallery(
+$galleries[] = lichtbild_fixture_gallery(
 	105,
 	'Protected gallery',
-	atelier_fixture_block( $attachments, 1501, 6 ),
-	atelier_fixture_config(),
+	lichtbild_fixture_block( $attachments, 1501, 6 ),
+	lichtbild_fixture_config(),
 	array(
 		'name'      => 'protected-gallery',
 		'protected' => true,
@@ -714,33 +714,33 @@ $galleries[] = atelier_fixture_gallery(
 
 // 106 to 108 - the non-public statuses. Two drafts rather than one, because the live site has
 // two and a single row is not a distribution.
-$galleries[] = atelier_fixture_gallery(
+$galleries[] = lichtbild_fixture_gallery(
 	106,
 	'Private gallery',
-	atelier_fixture_block( $attachments, 1601, 4 ),
-	atelier_fixture_config(),
+	lichtbild_fixture_block( $attachments, 1601, 4 ),
+	lichtbild_fixture_config(),
 	array(
 		'name'   => 'private-gallery',
 		'status' => 'private',
 	)
 );
 
-$galleries[] = atelier_fixture_gallery(
+$galleries[] = lichtbild_fixture_gallery(
 	107,
 	'Draft gallery one',
-	atelier_fixture_block( $attachments, 1701, 3 ),
-	atelier_fixture_config(),
+	lichtbild_fixture_block( $attachments, 1701, 3 ),
+	lichtbild_fixture_config(),
 	array(
 		'name'   => 'draft-gallery-one',
 		'status' => 'draft',
 	)
 );
 
-$galleries[] = atelier_fixture_gallery(
+$galleries[] = lichtbild_fixture_gallery(
 	108,
 	'Draft gallery two',
-	atelier_fixture_block( $attachments, 1801, 3 ),
-	atelier_fixture_config(),
+	lichtbild_fixture_block( $attachments, 1801, 3 ),
+	lichtbild_fixture_config(),
 	array(
 		'name'   => 'draft-gallery-two',
 		'status' => 'draft',
@@ -755,11 +755,11 @@ $galleries[] = atelier_fixture_gallery(
 // row is a draft and every loop skips albums with no members — so the guard was unreachable by
 // accident of the data rather than by anything in the code. A published defaults row is what
 // any other Envira site would have.
-$galleries[] = atelier_fixture_gallery(
+$galleries[] = lichtbild_fixture_gallery(
 	109,
 	'Envira Default Settings',
-	atelier_fixture_block( $attachments, 1901, 1 ),
-	atelier_fixture_config( array( 'type' => 'defaults' ) ),
+	lichtbild_fixture_block( $attachments, 1901, 1 ),
+	lichtbild_fixture_config( array( 'type' => 'defaults' ) ),
 	array( 'name' => 'envira-default-settings' )
 );
 
@@ -767,13 +767,13 @@ $albums = array();
 
 // 200 - three members with titles and counts shown, which is what both real albums do. The
 // three hold disjoint attachments, which is what the cover checks need.
-$albums[] = atelier_fixture_album(
+$albums[] = lichtbild_fixture_album(
 	200,
 	'Album with three members',
 	array(
-		100 => atelier_fixture_member( 100, 1001 ),
-		101 => atelier_fixture_member( 101, 1112 ),
-		102 => atelier_fixture_member( 102, 1217 ),
+		100 => lichtbild_fixture_member( 100, 1001 ),
+		101 => lichtbild_fixture_member( 101, 1112 ),
+		102 => lichtbild_fixture_member( 102, 1217 ),
 	),
 	array( '100', '101', '102' ),
 	array(
@@ -789,12 +789,12 @@ $albums[] = atelier_fixture_album(
 // rendered the first entry's cover and caption for both. Titles and counts are off because
 // both were stored, both varied between the real albums, and the renderer showed them
 // unconditionally anyway — a record carrying a choice nothing read.
-$albums[] = atelier_fixture_album(
+$albums[] = lichtbild_fixture_album(
 	201,
 	'Album with a repeated member',
 	array(
-		103 => atelier_fixture_member( 103, 1302 ),
-		104 => atelier_fixture_member( 104, 1403 ),
+		103 => lichtbild_fixture_member( 103, 1302 ),
+		104 => lichtbild_fixture_member( 104, 1403 ),
 	),
 	array( '103', '104', '103' ),
 	array(
@@ -806,7 +806,7 @@ $albums[] = atelier_fixture_album(
 );
 
 // 202 - Envira's stored album defaults, in the older member-less shape the live one has.
-$albums[] = atelier_fixture_album(
+$albums[] = lichtbild_fixture_album(
 	202,
 	'Envira Default Album Settings',
 	array(),

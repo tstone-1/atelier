@@ -19,16 +19,16 @@ function out( $label, $ok, $detail = '' ) {
 	printf( "%-8s %-46s %s\n", $ok ? '[OK]' : '[FAIL]', $label, $detail );
 
 	if ( ! $ok ) {
-		$GLOBALS['atelier_live_failed'] = ( isset( $GLOBALS['atelier_live_failed'] ) ? $GLOBALS['atelier_live_failed'] : 0 ) + 1;
+		$GLOBALS['lichtbild_live_failed'] = ( isset( $GLOBALS['lichtbild_live_failed'] ) ? $GLOBALS['lichtbild_live_failed'] : 0 ) + 1;
 	}
 }
 
-$settings = new Atelier_Settings();
+$settings = new Lichtbild_Settings();
 
 // ---------------------------------------------------------------- preconditions
 if ( $settings->envira_is_active() ) {
 	echo "[ERROR] Envira Gallery is active, so the migration will refuse.\n";
-	echo "        bash tools/devenv.sh wp plugin deactivate --all --exclude=atelier\n";
+	echo "        bash tools/devenv.sh wp plugin deactivate --all --exclude=lichtbild\n";
 
 	exit( 1 );
 }
@@ -41,7 +41,7 @@ if ( $settings->has_migrated() ) {
 }
 
 // ---------------------------------------------------------------- migrate
-$migration = new Atelier_Migration( $settings );
+$migration = new Lichtbild_Migration( $settings );
 $result    = $migration->migrate();
 
 if ( ! empty( $result['errors'] ) ) {
@@ -52,40 +52,40 @@ if ( ! empty( $result['errors'] ) ) {
 
 wp_cache_flush();
 
-$settings = new Atelier_Settings();
+$settings = new Lichtbild_Settings();
 
 // Post types are registered at `init`, so the rename above left them naming the rows they used
 // to name. Production gets the fresh registration from the migration screen's redirect; here it
 // has to be asked for, or every capability check below warns and every query misses.
-( new Atelier_Post_Types( $settings ) )->register_types();
+( new Lichtbild_Post_Types( $settings ) )->register_types();
 
-$repository = new Atelier_Repository(
-	Atelier_Post_Types::gallery_type( $settings ),
-	Atelier_Post_Types::album_type( $settings ),
-	Atelier_Post_Types::tag_taxonomy( $settings ),
+$repository = new Lichtbild_Repository(
+	Lichtbild_Post_Types::gallery_type( $settings ),
+	Lichtbild_Post_Types::album_type( $settings ),
+	Lichtbild_Post_Types::tag_taxonomy( $settings ),
 	$settings->has_migrated()
 );
 
-$renderer  = new Atelier_Renderer( new Atelier_Assets( $settings ) );
-$shortcode = new Atelier_Shortcode( $repository, $renderer, $settings );
-$block     = new Atelier_Block( $shortcode, $repository );
+$renderer  = new Lichtbild_Renderer( new Lichtbild_Assets( $settings ) );
+$shortcode = new Lichtbild_Shortcode( $repository, $renderer, $settings );
+$block     = new Lichtbild_Block( $shortcode, $repository );
 
 // ---------------------------------------------------------------- registration
 // `register_block_type()` is given a directory, so real WordPress reads the metadata, applies
 // its own i18n schema and validates what it found. A block.json this repository is happy with
 // and core is not simply does not appear.
-$assets = new Atelier_Assets( $settings );
+$assets = new Lichtbild_Assets( $settings );
 $assets->register_assets();
 
 $registry = WP_Block_Type_Registry::get_instance();
 
-// The plugin's own `init` already registered both blocks, and it did so with a `Atelier_Block`
+// The plugin's own `init` already registered both blocks, and it did so with a `Lichtbild_Block`
 // built at `plugins_loaded` -- before this script renamed anything -- so its render callback
 // holds a repository still reading `envira`. Core keeps the FIRST registration and warns about
 // the second, so `do_blocks()` below would quietly use the stale one and every render would
 // come back empty. Unregistering first is the same correction this file already makes for the
 // post types, and for exactly the same reason; production gets it from the screen's redirect.
-foreach ( array( 'atelier/gallery', 'atelier/album' ) as $stale_block ) {
+foreach ( array( 'lichtbild/gallery', 'lichtbild/album' ) as $stale_block ) {
 	if ( $registry->is_registered( $stale_block ) ) {
 		unregister_block_type( $stale_block );
 	}
@@ -93,15 +93,15 @@ foreach ( array( 'atelier/gallery', 'atelier/album' ) as $stale_block ) {
 
 $block->register_blocks();
 
-$gallery_type = $registry->get_registered( 'atelier/gallery' );
-$album_type   = $registry->get_registered( 'atelier/album' );
+$gallery_type = $registry->get_registered( 'lichtbild/gallery' );
+$album_type   = $registry->get_registered( 'lichtbild/album' );
 
 out(
 	'core registered both blocks from block.json',
 	$gallery_type instanceof WP_Block_Type && $album_type instanceof WP_Block_Type,
 	'registered: ' . implode( ', ', array_keys( array_filter( array(
-		'atelier/gallery' => $gallery_type,
-		'atelier/album'   => $album_type,
+		'lichtbild/gallery' => $gallery_type,
+		'lichtbild/album'   => $album_type,
 	) ) ) )
 );
 
@@ -126,31 +126,31 @@ out(
 // word, so the failure mode is an unstyled preview and a clean error log -- and the registry
 // this asks is core's, populated by the same `init` callbacks production uses.
 $styles     = wp_styles();
-$editor_css = $styles->query( 'atelier-blocks' );
-$front_css  = $styles->query( 'atelier' );
+$editor_css = $styles->query( 'lichtbild-blocks' );
+$front_css  = $styles->query( 'lichtbild' );
 
 out(
 	'the editor stylesheet resolves its dependency',
-	false !== $editor_css && false !== $front_css && in_array( 'atelier', (array) $editor_css->deps, true ),
+	false !== $editor_css && false !== $front_css && in_array( 'lichtbild', (array) $editor_css->deps, true ),
 	false === $editor_css
-		? 'atelier-blocks was never registered'
-		: 'deps: ' . implode( ', ', (array) $editor_css->deps ) . '; atelier registered: ' . ( false !== $front_css ? 'yes' : 'NO' )
+		? 'lichtbild-blocks was never registered'
+		: 'deps: ' . implode( ', ', (array) $editor_css->deps ) . '; lichtbild registered: ' . ( false !== $front_css ? 'yes' : 'NO' )
 );
 
 // And the handle block.json names for its editor script, resolved against core's own registry
 // rather than against the string in the PHP.
-$editor_js = wp_scripts()->query( 'atelier-blocks' );
+$editor_js = wp_scripts()->query( 'lichtbild-blocks' );
 
 out(
 	'the editor script handle exists',
-	false !== $editor_js && $gallery_type->editor_script_handles === array( 'atelier-blocks' ),
+	false !== $editor_js && $gallery_type->editor_script_handles === array( 'lichtbild-blocks' ),
 	'block.json names: ' . implode( ', ', (array) $gallery_type->editor_script_handles )
 );
 
 // ---------------------------------------------------------------- rendering real block content
 $target = 0;
 
-foreach ( get_posts( array( 'post_type' => 'atelier_gallery', 'post_status' => 'publish', 'numberposts' => -1, 'fields' => 'ids' ) ) as $candidate ) {
+foreach ( get_posts( array( 'post_type' => 'lichtbild_gallery', 'post_status' => 'publish', 'numberposts' => -1, 'fields' => 'ids' ) ) as $candidate ) {
 	$gallery = $repository->gallery( (int) $candidate );
 
 	if ( null !== $gallery && $gallery->count() > 0 ) {
@@ -170,13 +170,13 @@ if ( 0 === $target ) {
 // `render_block()` -> the render callback. Nothing here calls the callback directly, which is
 // the point: an attribute that does not survive serialisation would be invisible to a test
 // that hands the callback an array it built itself.
-$content  = '<!-- wp:atelier/gallery {"id":' . $target . '} /-->';
+$content  = '<!-- wp:lichtbild/gallery {"id":' . $target . '} /-->';
 $rendered = do_blocks( $content );
 $direct   = $shortcode->gallery( array( 'id' => (string) $target ) );
 
 out(
 	'a serialised block renders through core',
-	'' !== $direct && false !== strpos( $rendered, 'id="atelier-' . $target . '-wrap"' ),
+	'' !== $direct && false !== strpos( $rendered, 'id="lichtbild-' . $target . '-wrap"' ),
 	sprintf( 'block produced %d bytes, shortcode %d', strlen( $rendered ), strlen( $direct ) )
 );
 
@@ -196,14 +196,14 @@ out(
 // is worth asserting here rather than only against a stub that returns false for 0.
 out(
 	'an unchosen block renders nothing',
-	'' === trim( do_blocks( '<!-- wp:atelier/gallery {"id":0} /-->' ) )
-		&& '' === trim( do_blocks( '<!-- wp:atelier/gallery /-->' ) ),
+	'' === trim( do_blocks( '<!-- wp:lichtbild/gallery {"id":0} /-->' ) )
+		&& '' === trim( do_blocks( '<!-- wp:lichtbild/gallery /-->' ) ),
 	'id 0 and an absent id, both rendered'
 );
 
 // ---------------------------------------------------------------- the picker
 $choices = $repository->gallery_choices();
-$rows    = get_posts( array( 'post_type' => 'atelier_gallery', 'post_status' => array( 'publish', 'private', 'draft', 'pending' ), 'numberposts' => -1, 'fields' => 'ids' ) );
+$rows    = get_posts( array( 'post_type' => 'lichtbild_gallery', 'post_status' => array( 'publish', 'private', 'draft', 'pending' ), 'numberposts' => -1, 'fields' => 'ids' ) );
 
 // The pre-migration type name has to find nothing, or the picker would look populated on a site
 // where the rename never happened -- and `<` is what stops "offered nothing" passing as
@@ -243,8 +243,8 @@ if ( $protected > 0 ) {
 	$was = wp_get_current_user()->ID;
 	wp_set_current_user( 0 );
 
-	$locked = do_blocks( '<!-- wp:atelier/gallery {"id":' . $protected . '} /-->' );
-	$open   = do_blocks( '<!-- wp:atelier/gallery {"id":' . $target . '} /-->' );
+	$locked = do_blocks( '<!-- wp:lichtbild/gallery {"id":' . $protected . '} /-->' );
+	$open   = do_blocks( '<!-- wp:lichtbild/gallery {"id":' . $target . '} /-->' );
 
 	wp_set_current_user( $was );
 
@@ -262,11 +262,11 @@ $rolled = $migration->rollback();
 
 out(
 	'rollback restores the site',
-	empty( $rolled['errors'] ) && ! ( new Atelier_Settings() )->has_migrated(),
+	empty( $rolled['errors'] ) && ! ( new Lichtbild_Settings() )->has_migrated(),
 	sprintf( '%d galleries, %d albums', $rolled['galleries'], $rolled['albums'] )
 );
 
-$failed = isset( $GLOBALS['atelier_live_failed'] ) ? $GLOBALS['atelier_live_failed'] : 0;
+$failed = isset( $GLOBALS['lichtbild_live_failed'] ) ? $GLOBALS['lichtbild_live_failed'] : 0;
 
 printf( "\nchecks: 11, failing: %d\n", $failed );
 

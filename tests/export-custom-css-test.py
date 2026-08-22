@@ -5,7 +5,7 @@
 
 Not part of the CI suite, which runs PHP and Node only — this covers a one-shot recovery tool
 rather than the plugin. It exists because that tool's first version read only Envira's record,
-which returns a stale value for any gallery whose CSS was edited through Atelier after the
+which returns a stale value for any gallery whose CSS was edited through Lichtbild after the
 migration, and does so while reporting success. A wrong answer that looks right is the whole
 reason to test this at all: the older CSS is perfectly valid CSS.
 
@@ -43,37 +43,37 @@ def check(name, got, want):
         failed += 1
 
 
-A = "#atelier-1 { margin: 0 }"        # what Envira's record holds
-B = "#atelier-1 { margin: 4px }"      # what Atelier's editor wrote later
+A = "#lichtbild-1 { margin: 0 }"        # what Envira's record holds
+B = "#lichtbild-1 { margin: 4px }"      # what Lichtbild's editor wrote later
 
 print("choose(): which copy is the site actually rendering")
 # The case the first version got wrong.
-check("migrated site prefers Atelier's newer copy", exporter.choose(A, B, True)[0], B)
+check("migrated site prefers Lichtbild's newer copy", exporter.choose(A, B, True)[0], B)
 check("...and reports the disagreement", exporter.choose(A, B, True)[2], True)
 check("un-migrated site prefers Envira's", exporter.choose(A, B, False)[0], A)
 check("identical copies are not a conflict", exporter.choose(A, A, True)[2], False)
 check("Envira alone, migrated", exporter.choose(A, "", True)[0], A)
-check("Atelier alone, un-migrated", exporter.choose("", B, False)[0], B)
+check("Lichtbild alone, un-migrated", exporter.choose("", B, False)[0], B)
 check("neither yields nothing", exporter.choose("", "", True)[0], "")
 check("neither is not a conflict", exporter.choose("", "", True)[2], False)
 
-print("rewrite(): Envira's ids onto Atelier's")
+print("rewrite(): Envira's ids onto Lichtbild's")
 check(
     "the wrapper form moves the id PAST the suffix",
     exporter.rewrite("#envira-gallery-wrap-12 {}"),
-    "#atelier-12-wrap {}",
+    "#lichtbild-12-wrap {}",
 )
 check(
     "...and the general form is not applied to it first",
-    "#atelier-wrap-12" in exporter.rewrite("#envira-gallery-wrap-12 {}"),
+    "#lichtbild-wrap-12" in exporter.rewrite("#envira-gallery-wrap-12 {}"),
     False,
 )
-check("the plain form", exporter.rewrite("#envira-gallery-7 {}"), "#atelier-7 {}")
+check("the plain form", exporter.rewrite("#envira-gallery-7 {}"), "#lichtbild-7 {}")
 check("both in one stylesheet",
       exporter.rewrite("#envira-gallery-wrap-3 a, #envira-gallery-3 b {}"),
-      "#atelier-3-wrap a, #atelier-3 b {}")
+      "#lichtbild-3-wrap a, #lichtbild-3 b {}")
 check("CONTROL: a string with no envira id is untouched",
-      exporter.rewrite("#atelier-9 {}"), "#atelier-9 {}")
+      exporter.rewrite("#lichtbild-9 {}"), "#lichtbild-9 {}")
 
 print("comment_safe(): a title cannot end the CSS comment it sits in")
 check("*/ is neutralised", exporter.comment_safe("Trip */ x"), "Trip *\\/ x")

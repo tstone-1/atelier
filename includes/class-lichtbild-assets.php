@@ -2,7 +2,7 @@
 /**
  * Registers and conditionally enqueues front-end assets.
  *
- * @package Atelier
+ * @package Lichtbild
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -14,7 +14,7 @@ defined( 'ABSPATH' ) || exit;
  * been rendered, so a page with no gallery on it loads none of this. Envira enqueued its
  * stylesheet site-wide, which is a meaningful cost on a site where most pages are text.
  */
-class Atelier_Assets {
+class Lichtbild_Assets {
 
 	/**
 	 * Whether a gallery has been rendered on this request.
@@ -26,16 +26,16 @@ class Atelier_Assets {
 	/**
 	 * Plugin settings.
 	 *
-	 * @var Atelier_Settings
+	 * @var Lichtbild_Settings
 	 */
 	private $settings;
 
 	/**
 	 * Builds the asset handler.
 	 *
-	 * @param Atelier_Settings $settings Plugin settings.
+	 * @param Lichtbild_Settings $settings Plugin settings.
 	 */
-	public function __construct( Atelier_Settings $settings ) {
+	public function __construct( Lichtbild_Settings $settings ) {
 		$this->settings = $settings;
 	}
 
@@ -44,8 +44,8 @@ class Atelier_Assets {
 	 *
 	 * **Registration is on `init`, not on `wp_enqueue_scripts`, and the difference is the
 	 * admin.** `wp_enqueue_scripts` fires on the front end only, so a handle registered there
-	 * does not exist in the block editor — and `Atelier_Block` registers an editor stylesheet
-	 * that *depends* on `atelier`, so the preview would be laid out by nothing. A missing
+	 * does not exist in the block editor — and `Lichtbild_Block` registers an editor stylesheet
+	 * that *depends* on `lichtbild`, so the preview would be laid out by nothing. A missing
 	 * dependency is dropped silently by `WP_Styles`; there is no warning to notice.
 	 *
 	 * Registering is not enqueueing. Nothing below puts a byte on a page: `need_gallery()` is
@@ -66,45 +66,45 @@ class Atelier_Assets {
 	public function register_assets() {
 		wp_register_style(
 			'photoswipe',
-			ATELIER_URL . 'assets/vendor/photoswipe/photoswipe.css',
+			LICHTBILD_URL . 'assets/vendor/photoswipe/photoswipe.css',
 			array(),
 			'5.4.4'
 		);
 
 		wp_register_style(
-			'atelier',
-			ATELIER_URL . 'assets/css/atelier.css',
+			'lichtbild',
+			LICHTBILD_URL . 'assets/css/lichtbild.css',
 			array( 'photoswipe' ),
-			ATELIER_VERSION
+			LICHTBILD_VERSION
 		);
 
 		wp_register_script(
-			'atelier',
-			ATELIER_URL . 'assets/js/atelier.js',
+			'lichtbild',
+			LICHTBILD_URL . 'assets/js/lichtbild.js',
 			array(),
-			ATELIER_VERSION,
+			LICHTBILD_VERSION,
 			true
 		);
 
 		wp_localize_script(
-			'atelier',
-			'AtelierSettings',
+			'lichtbild',
+			'LichtbildSettings',
 			array(
 				'ajaxUrl'    => admin_url( 'admin-ajax.php' ),
-				'nonce'      => wp_create_nonce( 'atelier' ),
-				'photoswipe' => ATELIER_URL . 'assets/vendor/photoswipe/photoswipe.esm.min.js',
+				'nonce'      => wp_create_nonce( 'lichtbild' ),
+				'photoswipe' => LICHTBILD_URL . 'assets/vendor/photoswipe/photoswipe.esm.min.js',
 				'i18n'       => array(
-					'close'      => __( 'Close', 'atelier' ),
-					'next'       => __( 'Next', 'atelier' ),
-					'previous'   => __( 'Previous', 'atelier' ),
-					'zoom'       => __( 'Zoom', 'atelier' ),
-					'download'   => __( 'Download', 'atelier' ),
-					'share'      => __( 'Share', 'atelier' ),
+					'close'      => __( 'Close', 'lichtbild-gallery' ),
+					'next'       => __( 'Next', 'lichtbild-gallery' ),
+					'previous'   => __( 'Previous', 'lichtbild-gallery' ),
+					'zoom'       => __( 'Zoom', 'lichtbild-gallery' ),
+					'download'   => __( 'Download', 'lichtbild-gallery' ),
+					'share'      => __( 'Share', 'lichtbild-gallery' ),
 					/* translators: %s: name of a social network, e.g. Facebook. */
-					'shareOn'    => __( 'Share on %s', 'atelier' ),
-					'copyLink'   => __( 'Copy link', 'atelier' ),
-					'copied'     => __( 'Link copied', 'atelier' ),
-					'loadFailed' => __( 'This page could not be loaded.', 'atelier' ),
+					'shareOn'    => __( 'Share on %s', 'lichtbild-gallery' ),
+					'copyLink'   => __( 'Copy link', 'lichtbild-gallery' ),
+					'copied'     => __( 'Link copied', 'lichtbild-gallery' ),
+					'loadFailed' => __( 'This page could not be loaded.', 'lichtbild-gallery' ),
 				),
 			)
 		);
@@ -120,11 +120,11 @@ class Atelier_Assets {
 	 * the stylesheet in the head for the normal case; `need_gallery()` remains the backstop
 	 * for galleries rendered from a widget, a template call or a block.
 	 *
-	 * **The list of shortcodes has to be the one `Atelier_Shortcode` actually claims, not every
-	 * shortcode Atelier knows the name of.** Enqueueing on `[envira-gallery]` while the takeover
+	 * **The list of shortcodes has to be the one `Lichtbild_Shortcode` actually claims, not every
+	 * shortcode Lichtbild knows the name of.** Enqueueing on `[envira-gallery]` while the takeover
 	 * setting has us standing aside loads a stylesheet and two scripts onto a page that Envira
 	 * is rendering — measured on the live site at about 940 bytes of markup and three requests,
-	 * with no visual change. Small, but it makes "install Atelier and change nothing" false in
+	 * with no visual change. Small, but it makes "install Lichtbild and change nothing" false in
 	 * the one configuration that claim exists for: both plugins active, `takeover=auto`.
 	 *
 	 * @return void
@@ -140,7 +140,7 @@ class Atelier_Assets {
 			return;
 		}
 
-		$shortcodes = array( 'atelier-gallery', 'atelier-album' );
+		$shortcodes = array( 'lichtbild-gallery', 'lichtbild-album' );
 
 		if ( $this->settings->claims_envira_shortcodes() ) {
 			$shortcodes[] = 'envira-gallery';
@@ -170,7 +170,7 @@ class Atelier_Assets {
 
 		$this->needed = true;
 
-		wp_enqueue_style( 'atelier' );
-		wp_enqueue_script( 'atelier' );
+		wp_enqueue_style( 'lichtbild' );
+		wp_enqueue_script( 'lichtbild' );
 	}
 }

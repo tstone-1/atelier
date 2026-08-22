@@ -2,7 +2,7 @@
 /**
  * Renders a gallery on its own permalink.
  *
- * @package Atelier
+ * @package Lichtbild
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -26,39 +26,39 @@ defined( 'ABSPATH' ) || exit;
  *   `in_the_loop()` and `is_main_query()` narrow it to the one place it belongs.
  * - **The setting is owned rather than borrowed.** Reading Envira's option forever would mean
  *   uninstalling Envira could silently blank every gallery permalink on the site, so the
- *   migration copies the value across and this prefers Atelier's own.
+ *   migration copies the value across and this prefers Lichtbild's own.
  */
-class Atelier_Standalone {
+class Lichtbild_Standalone {
 
 	/**
 	 * Gallery repository.
 	 *
-	 * @var Atelier_Repository
+	 * @var Lichtbild_Repository
 	 */
 	private $repository;
 
 	/**
 	 * Renderer.
 	 *
-	 * @var Atelier_Renderer
+	 * @var Lichtbild_Renderer
 	 */
 	private $renderer;
 
 	/**
 	 * Plugin settings.
 	 *
-	 * @var Atelier_Settings
+	 * @var Lichtbild_Settings
 	 */
 	private $settings;
 
 	/**
 	 * Builds the handler.
 	 *
-	 * @param Atelier_Repository $repository Gallery repository.
-	 * @param Atelier_Renderer   $renderer   Renderer.
-	 * @param Atelier_Settings   $settings   Plugin settings.
+	 * @param Lichtbild_Repository $repository Gallery repository.
+	 * @param Lichtbild_Renderer   $renderer   Renderer.
+	 * @param Lichtbild_Settings   $settings   Plugin settings.
 	 */
-	public function __construct( Atelier_Repository $repository, Atelier_Renderer $renderer, Atelier_Settings $settings ) {
+	public function __construct( Lichtbild_Repository $repository, Lichtbild_Renderer $renderer, Lichtbild_Settings $settings ) {
 		$this->repository = $repository;
 		$this->renderer   = $renderer;
 		$this->settings   = $settings;
@@ -108,7 +108,7 @@ class Atelier_Standalone {
 	 * `/envira_album/<slug>/` has the same problem and needed the same answer — but it was
 	 * invisible for a while because registering the post type keeps the URL answering 200,
 	 * and an empty page behind a healthy status code is what this whole class exists to stop.
-	 * Envira's albums addon renders those pages, so switching to Atelier without this is a
+	 * Envira's albums addon renders those pages, so switching to Lichtbild without this is a
 	 * regression rather than a missing extra.
 	 *
 	 * Envira has no separate option for album pages — checked against the live database — so
@@ -127,12 +127,12 @@ class Atelier_Standalone {
 		// one page where the two cannot simply take turns, because neither is invoked by
 		// anything in `post_content` that the other could claim.
 		//
-		// Caught on the live site, in the state this setting exists for: Atelier freshly
+		// Caught on the live site, in the state this setting exists for: Lichtbild freshly
 		// activated alongside Envira, which is meant to be a no-op and was not. The local
 		// WordPress had only ever rendered standalone pages with Envira switched off.
 		//
 		// Measured with both plugins active, one mode at a time: `auto` and `never` leave
-		// Envira's copy alone, and `always` yields Atelier's copy *only* — because Envira's
+		// Envira's copy alone, and `always` yields Lichtbild's copy *only* — because Envira's
 		// standalone filter appends its shortcode rather than rendering directly, so whoever
 		// owns the shortcode renders it and this guard decides the rest. Every mode gives
 		// exactly one gallery.
@@ -146,9 +146,9 @@ class Atelier_Standalone {
 			return '';
 		}
 
-		if ( is_singular( Atelier_Post_Types::gallery_type( $this->settings ) ) ) {
+		if ( is_singular( Lichtbild_Post_Types::gallery_type( $this->settings ) ) ) {
 			$kind = 'gallery';
-		} elseif ( is_singular( Atelier_Post_Types::album_type( $this->settings ) ) ) {
+		} elseif ( is_singular( Lichtbild_Post_Types::album_type( $this->settings ) ) ) {
 			$kind = 'album';
 		} else {
 			return '';
@@ -180,6 +180,6 @@ class Atelier_Standalone {
 		 *
 		 * @param bool $enabled Whether standalone gallery pages are on.
 		 */
-		return (bool) apply_filters( 'atelier_standalone_enabled', $enabled );
+		return (bool) apply_filters( 'lichtbild_standalone_enabled', $enabled );
 	}
 }

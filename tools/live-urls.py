@@ -52,17 +52,17 @@ site = cursor.fetchone()[0].rstrip("/")
 urls: list[str] = []
 
 # WHICH post types the rows are under depends on the migration; WHICH paths they answer on does
-# not. Atelier pins `rewrite['slug']` to Envira's names in both directions precisely so the live,
+# not. Lichtbild pins `rewrite['slug']` to Envira's names in both directions precisely so the live,
 # indexed URLs never move -- so the type names have to be read from the schema option while the
 # path segments stay constant. Building the path out of the post type is the obvious shortcut and
-# it is wrong: after the migration it produces /atelier_gallery/<slug>/, which 404s.
-cursor.execute(f"SELECT option_value FROM {prefix}options WHERE option_name = 'atelier_schema_version'")
+# it is wrong: after the migration it produces /lichtbild_gallery/<slug>/, which 404s.
+cursor.execute(f"SELECT option_value FROM {prefix}options WHERE option_name = 'lichtbild_schema_version'")
 row = cursor.fetchone()
 migrated = bool(row) and int(row[0]) >= 2
 
-GALLERY_TYPE = "atelier_gallery" if migrated else "envira"
-ALBUM_TYPE = "atelier_album" if migrated else "envira_album"
-TAG_TAXONOMY = "atelier_tag" if migrated else "envira-tag"
+GALLERY_TYPE = "lichtbild_gallery" if migrated else "envira"
+ALBUM_TYPE = "lichtbild_album" if migrated else "envira_album"
+TAG_TAXONOMY = "lichtbild_tag" if migrated else "envira-tag"
 
 # The path segments, which never change. Kept beside the type names so the pairing is visible.
 PATHS = {GALLERY_TYPE: "envira", ALBUM_TYPE: "envira_album"}
@@ -109,13 +109,13 @@ if not permalinks or not tags:
 cursor.execute(
     f"""SELECT post_name, post_content FROM {prefix}posts
         WHERE post_status = 'publish' AND post_type IN ('post', 'page')
-          AND (post_content LIKE '%%[envira-gallery%%' OR post_content LIKE '%%[atelier-gallery%%'
-               OR post_content LIKE '%%[envira-album%%' OR post_content LIKE '%%[atelier-album%%')
+          AND (post_content LIKE '%%[envira-gallery%%' OR post_content LIKE '%%[lichtbild-gallery%%'
+               OR post_content LIKE '%%[envira-album%%' OR post_content LIKE '%%[lichtbild-album%%')
         ORDER BY post_name"""
 )
 embed = 0
 for slug, content in cursor.fetchall():
-    if slug and re.search(r"\[(envira|atelier)-(gallery|album)", content or ""):
+    if slug and re.search(r"\[(envira|lichtbild)-(gallery|album)", content or ""):
         urls.append(f"{site}/{slug}/")
         embed += 1
 

@@ -29,28 +29,28 @@
  *   check name to a fixed width, so a parser that assumed the padding would stop matching the
  *   day a check got a longer name — silently, and in the direction that looks like good news.
  *
- * @package Atelier\Tests
+ * @package Lichtbild\Tests
  */
 
 // phpcs:disable WordPress.NamingConventions.PrefixAllGlobals
 
 $root = dirname( __DIR__ ) . '/';
 
-$editor     = 'includes/class-atelier-editor.php';
-$config     = 'includes/class-atelier-config.php';
-$item       = 'includes/class-atelier-item.php';
-$repository = 'includes/class-atelier-repository.php';
-$renderer   = 'includes/class-atelier-renderer.php';
-$assets     = 'includes/class-atelier-assets.php';
-$album      = 'includes/class-atelier-album-config.php';
-$migration  = 'includes/class-atelier-migration.php';
-$standalone = 'includes/class-atelier-standalone.php';
-$ajax       = 'includes/class-atelier-ajax.php';
-$shortcode  = 'includes/class-atelier-shortcode.php';
-$album_editor = 'includes/class-atelier-album-editor.php';
-$metabox      = 'includes/class-atelier-metabox-editor.php';
-$screen       = 'includes/class-atelier-migration-screen.php';
-$block        = 'includes/class-atelier-block.php';
+$editor     = 'includes/class-lichtbild-editor.php';
+$config     = 'includes/class-lichtbild-config.php';
+$item       = 'includes/class-lichtbild-item.php';
+$repository = 'includes/class-lichtbild-repository.php';
+$renderer   = 'includes/class-lichtbild-renderer.php';
+$assets     = 'includes/class-lichtbild-assets.php';
+$album      = 'includes/class-lichtbild-album-config.php';
+$migration  = 'includes/class-lichtbild-migration.php';
+$standalone = 'includes/class-lichtbild-standalone.php';
+$ajax       = 'includes/class-lichtbild-ajax.php';
+$shortcode  = 'includes/class-lichtbild-shortcode.php';
+$album_editor = 'includes/class-lichtbild-album-editor.php';
+$metabox      = 'includes/class-lichtbild-metabox-editor.php';
+$screen       = 'includes/class-lichtbild-migration-screen.php';
+$block        = 'includes/class-lichtbild-block.php';
 
 /**
  * The mutations, each with the check it is predicted to kill.
@@ -175,7 +175,7 @@ $mutations = array(
 		'id'      => 'E12',
 		'file'    => $editor,
 		'find'    => "\t\t\$type = \$this->post_type();\n\n\t\tadd_meta_box(",
-		'replace' => "\t\t\$type = Atelier_Repository::GALLERY_POST_TYPE;\n\n\t\tadd_meta_box(",
+		'replace' => "\t\t\$type = Lichtbild_Repository::GALLERY_POST_TYPE;\n\n\t\tadd_meta_box(",
 		'expect'  => 'metaboxes attach to the post type that exists',
 		'why'     => 'the post type changes at migration',
 	),
@@ -191,7 +191,7 @@ $mutations = array(
 		'id'      => 'E18',
 		'file'    => $editor,
 		'find'    => "\t\t\$gallery = \$this->repository->gallery( (int) \$post_id );\n\n\t\techo null === \$gallery ? 0 : (int) \$gallery->count();",
-		'replace' => "\t\t\$record = get_post_meta( (int) \$post_id, Atelier_Repository::GALLERY_META_V2, true );\n\t\techo (int) ( is_array( \$record ) && isset( \$record['items'] ) ? count( \$record['items'] ) : 0 );",
+		'replace' => "\t\t\$record = get_post_meta( (int) \$post_id, Lichtbild_Repository::GALLERY_META_V2, true );\n\t\techo (int) ( is_array( \$record ) && isset( \$record['items'] ) ? count( \$record['items'] ) : 0 );",
 		'expect'  => 'the list column counts the stored images',
 		'why'     => 'which record is authoritative is the thing that changes at migration',
 	),
@@ -206,15 +206,15 @@ $mutations = array(
 	array(
 		'id'      => 'E14',
 		'file'    => $editor,
-		'find'    => "\t\t\$this->row_number( \$settings, 'gutter', __( 'Gutter', 'atelier' ), 0, 100,",
-		'replace' => "\t\t\$this->row_number( \$settings, 'guttr', __( 'Gutter', 'atelier' ), 0, 100,",
+		'find'    => "\t\t\$this->row_number( \$settings, 'gutter', __( 'Gutter', 'lichtbild-gallery' ), 0, 100,",
+		'replace' => "\t\t\$this->row_number( \$settings, 'guttr', __( 'Gutter', 'lichtbild-gallery' ), 0, 100,",
 		'expect'  => 'the settings form has a field for every setting',
 		'why'     => 'a setting with no field on the form saves as its default forever',
 	),
 	array(
 		'id'      => 'E15',
 		'file'    => $editor,
-		'find'    => "\t\t\t\t<input type=\"hidden\" name=\"atelier_items[{{ data.key }}][link]\" value=\"{{ data.link }}\" />\n",
+		'find'    => "\t\t\t\t<input type=\"hidden\" name=\"lichtbild_items[{{ data.key }}][link]\" value=\"{{ data.link }}\" />\n",
 		'replace' => "",
 		'expect'  => 'both item templates carry every record field',
 		'why'     => 'a field missing from one template silently stops surviving a save',
@@ -222,8 +222,8 @@ $mutations = array(
 	array(
 		'id'      => 'E16',
 		'file'    => $editor,
-		'find'    => "\t\t\t\t'settings' => Atelier_Config::sanitize( \$settings ),",
-		'replace' => "\t\t\t\t'settings' => Atelier_Config::defaults(),",
+		'find'    => "\t\t\t\t'settings' => Lichtbild_Config::sanitize( \$settings ),",
+		'replace' => "\t\t\t\t'settings' => Lichtbild_Config::defaults(),",
 		'expect'  => 'a save round-trips the gallery byte for byte',
 		'why'     => 'saving a gallery unchanged has to leave the page unchanged',
 	),
@@ -301,8 +301,8 @@ $mutations = array(
 	),
 	array(
 		'id'      => 'P0b',
-		'file'    => 'includes/class-atelier-standalone.php',
-		'find'    => "\t\t} elseif ( is_singular( Atelier_Post_Types::album_type( \$this->settings ) ) ) {\n\t\t\t\$kind = 'album';",
+		'file'    => 'includes/class-lichtbild-standalone.php',
+		'find'    => "\t\t} elseif ( is_singular( Lichtbild_Post_Types::album_type( \$this->settings ) ) ) {\n\t\t\t\$kind = 'album';",
 		'replace' => "\t\t} elseif ( false ) {\n\t\t\t\$kind = 'album';",
 		'expect'  => 'an album is appended to its own page',
 		'why'     => 'an album permalink answers 200 and renders nothing without this',
@@ -323,7 +323,7 @@ $mutations = array(
 	),
 	array(
 		'id'      => 'P0',
-		'file'    => 'includes/class-atelier-standalone.php',
+		'file'    => 'includes/class-lichtbild-standalone.php',
 		'find'    => "\t\tif ( ! \$this->settings->should_take_over() ) {\n\t\t\treturn '';\n\t\t}",
 		'replace' => "\t\tif ( false ) {\n\t\t\treturn '';\n\t\t}",
 		'expect'  => 'standalone defers to envira on the gallery\'s own page',
@@ -339,7 +339,7 @@ $mutations = array(
 	),
 	array(
 		'id'      => 'P3',
-		'file'    => 'includes/class-atelier-standalone.php',
+		'file'    => 'includes/class-lichtbild-standalone.php',
 		'find'    => "\t\t\treturn null === \$gallery ? \$content : \$content . \$this->renderer->gallery( \$gallery, 1 );",
 		'replace' => "\t\t\treturn \$content;",
 		'expect'  => 'a gallery is appended to its own page',
@@ -347,7 +347,7 @@ $mutations = array(
 	),
 	array(
 		'id'      => 'P4',
-		'file'    => 'includes/class-atelier-ajax.php',
+		'file'    => 'includes/class-lichtbild-ajax.php',
 		'find'    => "\t\twp_send_json_success( array( 'items' => \$items ) );",
 		'replace' => "\t\twp_send_json_success( array( 'items' => array() ) );",
 		'expect'  => 'the ajax endpoints serve a public gallery',
@@ -404,14 +404,14 @@ $mutations = array(
 	array(
 		'id'      => 'A3',
 		'file'    => $assets,
-		'find'    => "\t\t\$shortcodes = array( 'atelier-gallery', 'atelier-album' );",
+		'find'    => "\t\t\$shortcodes = array( 'lichtbild-gallery', 'lichtbild-album' );",
 		'replace' => "\t\t\$shortcodes = array();",
 		'expect'  => 'the early scan still claims its own shortcodes',
 		'why'     => 'the control: a scan matching nothing also stops enqueueing where it should not',
 	),
 	array(
 		'id'      => 'A1',
-		'file'    => 'includes/class-atelier-ajax.php',
+		'file'    => 'includes/class-lichtbild-ajax.php',
 		'find'    => "\t\t\$gallery->prime( \$gallery->items() );",
 		'replace' => "\t\t// primed nothing.",
 		'expect'  => 'the lightbox endpoint primes its attachments in one call',
@@ -424,9 +424,9 @@ $mutations = array(
 	// one's and checks that the difference is asserted rather than incidental.
 	array(
 		'id'      => 'NC1',
-		'file'    => 'includes/class-atelier-ajax.php',
-		'find'    => "\t\tcheck_ajax_referer( 'atelier', 'nonce', false );",
-		'replace' => "\t\tcheck_ajax_referer( 'atelier', 'nonce' );",
+		'file'    => 'includes/class-lichtbild-ajax.php',
+		'find'    => "\t\tcheck_ajax_referer( 'lichtbild', 'nonce', false );",
+		'replace' => "\t\tcheck_ajax_referer( 'lichtbild', 'nonce' );",
 		'expect'  => 'a stale nonce does not stop a cached page loading its gallery',
 		'why'     => 'dropping the third argument is the whole defect, and it looks like tidying',
 	),
@@ -440,7 +440,7 @@ $mutations = array(
 	),
 	array(
 		'id'      => 'NC3',
-		'file'    => 'includes/class-atelier-ajax.php',
+		'file'    => 'includes/class-lichtbild-ajax.php',
 		'find'    => "\t\tif ( ! \$this->repository->is_viewable( \$gallery->id() ) ) {",
 		'replace' => "\t\tif ( false ) {",
 		'expect'  => 'a stale nonce does not lift the authorization it never carried',
@@ -453,8 +453,8 @@ $mutations = array(
 	array(
 		'id'      => 'AL1',
 		'file'    => $repository,
-		'find'    => "\t\t\t\treturn new Atelier_Album( \$post_id, \$own['settings'], self::clean_album_items( \$items ) );",
-		'replace' => "\t\t\t\treturn new Atelier_Album( \$post_id, array(), array() );",
+		'find'    => "\t\t\t\treturn new Lichtbild_Album( \$post_id, \$own['settings'], self::clean_album_items( \$items ) );",
+		'replace' => "\t\t\t\treturn new Lichtbild_Album( \$post_id, array(), array() );",
 		'expect'  => 'migrated album renders identically',
 		'why'     => 'the post-migration reader must prefer the album record it wrote',
 	),
@@ -516,7 +516,7 @@ $mutations = array(
 	),
 	array(
 		'id'      => 'AL9',
-		'file'    => 'includes/class-atelier-album.php',
+		'file'    => 'includes/class-lichtbild-album.php',
 		'find'    => "\t\treturn (string) get_the_title( \$this->id );",
 		'replace' => "\t\treturn '';",
 		'expect'  => 'an album titles itself from its post',
@@ -552,7 +552,7 @@ $mutations = array(
 	array(
 		'id'      => 'AE3',
 		'file'    => $album_editor,
-		'find'    => "\t\t\tif ( ! \$gallery instanceof Atelier_Gallery ) {\n\t\t\t\tcontinue;\n\t\t\t}\n\n\t\t\t\$items[] = array(\n\t\t\t\t'id'       => \$gallery_id,\n\t\t\t\t'cover_id' => \$this->clean_cover( \$gallery, isset( \$row['cover_id'] ) ? \$row['cover_id'] : 0 ),",
+		'find'    => "\t\t\tif ( ! \$gallery instanceof Lichtbild_Gallery ) {\n\t\t\t\tcontinue;\n\t\t\t}\n\n\t\t\t\$items[] = array(\n\t\t\t\t'id'       => \$gallery_id,\n\t\t\t\t'cover_id' => \$this->clean_cover( \$gallery, isset( \$row['cover_id'] ) ? \$row['cover_id'] : 0 ),",
 		'replace' => "\t\t\t\$items[] = array(\n\t\t\t\t'id'       => \$gallery_id,\n\t\t\t\t'cover_id' => 0,",
 		'expect'  => 'a member that is not a gallery is dropped',
 		'why'     => 'an album is an ordered set of galleries, so a row naming anything else is not a member',
@@ -583,7 +583,7 @@ $mutations = array(
 	),
 	array(
 		// Re-anchored in 26.8.14 along with AE11: the query moved into
-		// `Atelier_Repository::rows()`, where the type arrives as an argument rather than being
+		// `Lichtbild_Repository::rows()`, where the type arrives as an argument rather than being
 		// read from the settings. Same defect stated at the new site — a picker naming the type
 		// the rows *left* rather than the one they are under now, which after a migration finds
 		// nothing and reads as "this site has no galleries".
@@ -600,7 +600,7 @@ $mutations = array(
 	array(
 		'id'      => 'SC1',
 		'file'    => $migration,
-		'find'    => "\t\tif ( (int) get_option( Atelier_Settings::OPTION_SCHEMA, 0 ) === (int) \$value ) {\n\t\t\treturn true;\n\t\t}",
+		'find'    => "\t\tif ( (int) get_option( Lichtbild_Settings::OPTION_SCHEMA, 0 ) === (int) \$value ) {\n\t\t\treturn true;\n\t\t}",
 		'replace' => "\t\tif ( true ) {\n\t\t\treturn true;\n\t\t}",
 		'expect'  => 'a migration that cannot write the schema reports it',
 		'why'     => 'the flag decides which post types the next request queries; a silent failure hides every gallery',
@@ -616,14 +616,14 @@ $mutations = array(
 	array(
 		'id'      => 'AE9',
 		'file'    => $album_editor,
-		'find'    => "\t\t\t&& get_post_type( \$album_id ) === Atelier_Post_Types::album_type( \$this->settings )\n",
+		'find'    => "\t\t\t&& get_post_type( \$album_id ) === Lichtbild_Post_Types::album_type( \$this->settings )\n",
 		'replace' => "",
 		'expect'  => 'the cover endpoint refuses an album id that is not an album',
 		'why'     => 'without it, edit_post on any post the user authored is the key',
 	),
 	// Reintroduces the first-match-wins lookup the renderer was moved off in 26.8.5.
 	//
-	// It used to do that by calling `Atelier_Album::cover_id( $id )` and `::caption( $id )`,
+	// It used to do that by calling `Lichtbild_Album::cover_id( $id )` and `::caption( $id )`,
 	// which is why those two methods survived having no production caller: a mutation needed
 	// them, so deleting them "broke a test". They are gone now and the lookup is inlined here,
 	// where the bug being reintroduced actually belongs. A mutation is meant to reproduce a
@@ -637,7 +637,7 @@ $mutations = array(
 		'why'     => 'looking a member up by id returns the first match for every position',
 	),
 	array(
-		// Re-anchored in 26.8.14: the loop moved to `Atelier_Repository::gallery_choices()` when
+		// Re-anchored in 26.8.14: the loop moved to `Lichtbild_Repository::gallery_choices()` when
 		// the block editor's picker needed the same answer. It is the same defect and the same
 		// prediction; what changed is that one edit now goes red in two pickers rather than one,
 		// which is the coverage the duplicated version claimed and did not have.
@@ -652,23 +652,23 @@ $mutations = array(
 		'id'      => 'AE12',
 		'file'    => $album_editor,
 		'find'    => "\t\t\$album = \$this->repository->album( (int) \$post_id );\n\n\t\techo null === \$album ? 0 : (int) \$album->count();",
-		'replace' => "\t\t\$record = get_post_meta( (int) \$post_id, Atelier_Repository::ALBUM_META_V2, true );\n\t\techo (int) ( is_array( \$record ) && isset( \$record['items'] ) ? count( \$record['items'] ) : 0 );",
+		'replace' => "\t\t\$record = get_post_meta( (int) \$post_id, Lichtbild_Repository::ALBUM_META_V2, true );\n\t\techo (int) ( is_array( \$record ) && isset( \$record['items'] ) ? count( \$record['items'] ) : 0 );",
 		'expect'  => 'the album list column counts its galleries',
 		'why'     => 'which record is authoritative is the thing that changes at migration',
 	),
 	array(
 		'id'      => 'SL1',
 		'file'    => $album_editor,
-		'find'    => "\t\t\twp_slash(\n\t\t\t\tarray(\n\t\t\t\t\t'version'  => Atelier_Album_Config::VERSION,",
-		'replace' => "\t\t\t( function ( \$v ) { return \$v; } )(\n\t\t\t\tarray(\n\t\t\t\t\t'version'  => Atelier_Album_Config::VERSION,",
+		'find'    => "\t\t\twp_slash(\n\t\t\t\tarray(\n\t\t\t\t\t'version'  => Lichtbild_Album_Config::VERSION,",
+		'replace' => "\t\t\t( function ( \$v ) { return \$v; } )(\n\t\t\t\tarray(\n\t\t\t\t\t'version'  => Lichtbild_Album_Config::VERSION,",
 		'expect'  => 'a backslash in a caption survives the save',
 		'why'     => 'the metadata layer unslashes what it stores, so an unslashed value loses a level',
 	),
 	array(
 		'id'      => 'SL2',
 		'file'    => $editor,
-		'find'    => "\t\t\twp_slash(\n\t\t\t\tarray(\n\t\t\t\t\t'version'  => Atelier_Config::VERSION,",
-		'replace' => "\t\t\t( function ( \$v ) { return \$v; } )(\n\t\t\t\tarray(\n\t\t\t\t\t'version'  => Atelier_Config::VERSION,",
+		'find'    => "\t\t\twp_slash(\n\t\t\t\tarray(\n\t\t\t\t\t'version'  => Lichtbild_Config::VERSION,",
+		'replace' => "\t\t\t( function ( \$v ) { return \$v; } )(\n\t\t\t\tarray(\n\t\t\t\t\t'version'  => Lichtbild_Config::VERSION,",
 		'expect'  => 'a save round-trips the gallery byte for byte',
 		'why'     => 'the same defect on the gallery side, and it shipped',
 	),
@@ -709,7 +709,7 @@ $mutations = array(
 		'id'      => 'SEO2',
 		'file'    => $migration,
 		'find'    => "\t\t\t\tlist( \$head, \$tax ) = explode( '-tax-', \$key, 2 );\n\n\t\t\t\tif ( isset( \$taxes[ \$tax ] ) ) {",
-		'replace' => "\t\t\t\tlist( \$head, \$tax ) = explode( '-tax-', \$key, 2 );\n\n\t\t\t\tif ( 0 === strpos( \$tax, 'envira' ) ) {\n\t\t\t\t\t\$taxes[ \$tax ] = 'atelier_' . \$tax;\n\t\t\t\t}\n\n\t\t\t\tif ( isset( \$taxes[ \$tax ] ) ) {",
+		'replace' => "\t\t\t\tlist( \$head, \$tax ) = explode( '-tax-', \$key, 2 );\n\n\t\t\t\tif ( 0 === strpos( \$tax, 'envira' ) ) {\n\t\t\t\t\t\$taxes[ \$tax ] = 'lichtbild_' . \$tax;\n\t\t\t\t}\n\n\t\t\t\tif ( isset( \$taxes[ \$tax ] ) ) {",
 		'expect'  => 'it never invents settings for types it does not register',
 		'why'     => 'a loose match writes settings describing archives that no longer exist',
 	),
@@ -744,7 +744,7 @@ $mutations = array(
 		'id'      => 'R1',
 		'file'    => $repository,
 		'find'    => "\t\t\t\treturn \$this->build_from_own( \$post_id, \$own );",
-		'replace' => "\t\t\t\treturn new Atelier_Gallery( \$post_id, array(), array() );",
+		'replace' => "\t\t\t\treturn new Lichtbild_Gallery( \$post_id, array(), array() );",
 		'expect'  => 'migrated gallery renders identically',
 		'why'     => 'the post-migration reader has to prefer the record the migration wrote',
 	),
@@ -769,8 +769,8 @@ $mutations = array(
 	array(
 		'id'      => 'RT1',
 		'file'    => $renderer,
-		'find'    => "\t\t\t\$item_class = 'atelier-item';",
-		'replace' => "\t\t\tif ( ! empty( \$tags ) ) {\n\t\t\t\t\$attributes['data-atelier-tags'] = implode( ' ', wp_list_pluck( \$tags, 'slug' ) );\n\t\t\t}\n\n\t\t\t\$item_class = 'atelier-item';",
+		'find'    => "\t\t\t\$item_class = 'lichtbild-item';",
+		'replace' => "\t\t\tif ( ! empty( \$tags ) ) {\n\t\t\t\t\$attributes['data-lichtbild-tags'] = implode( ' ', wp_list_pluck( \$tags, 'slug' ) );\n\t\t\t}\n\n\t\t\t\$item_class = 'lichtbild-item';",
 		'expect'  => 'the tag list is emitted once per item',
 		'why'     => 'the anchor copy is read by nothing and can disagree with the one that is',
 	),
@@ -783,8 +783,8 @@ $mutations = array(
 		'file'    => $migration,
 		// The message is still composed and then dropped, rather than the whole block deleted, so
 		// what this asks about is the logging alone and not the sprintf beside it.
-		'find'    => "\t\t\terror_log( // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log\n\t\t\t\tsprintf(\n\t\t\t\t\t'Atelier: could not rename %1\$s \"%2\$s\" to \"%3\$s\" in %4\$s: %5\$s',\n\t\t\t\t\t\$column,\n\t\t\t\t\t\$from,\n\t\t\t\t\t\$to,\n\t\t\t\t\t\$table,\n\t\t\t\t\t\$wpdb->last_error\n\t\t\t\t)\n\t\t\t);",
-		'replace' => "\t\t\tsprintf(\n\t\t\t\t'Atelier: could not rename %1\$s \"%2\$s\" to \"%3\$s\" in %4\$s: %5\$s',\n\t\t\t\t\$column,\n\t\t\t\t\$from,\n\t\t\t\t\$to,\n\t\t\t\t\$table,\n\t\t\t\t\$wpdb->last_error\n\t\t\t);",
+		'find'    => "\t\t\terror_log( // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log\n\t\t\t\tsprintf(\n\t\t\t\t\t'Lichtbild: could not rename %1\$s \"%2\$s\" to \"%3\$s\" in %4\$s: %5\$s',\n\t\t\t\t\t\$column,\n\t\t\t\t\t\$from,\n\t\t\t\t\t\$to,\n\t\t\t\t\t\$table,\n\t\t\t\t\t\$wpdb->last_error\n\t\t\t\t)\n\t\t\t);",
+		'replace' => "\t\t\tsprintf(\n\t\t\t\t'Lichtbild: could not rename %1\$s \"%2\$s\" to \"%3\$s\" in %4\$s: %5\$s',\n\t\t\t\t\$column,\n\t\t\t\t\$from,\n\t\t\t\t\$to,\n\t\t\t\t\$table,\n\t\t\t\t\$wpdb->last_error\n\t\t\t);",
 		'expect'  => 'a failed rename says why in the log',
 		'why'     => 'the admin notice lives five minutes; the log is what is still there tomorrow',
 	),
@@ -792,7 +792,7 @@ $mutations = array(
 		'id'      => 'LOG2',
 		'file'    => $migration,
 		'find'    => "\t\t\$changed = \$wpdb->update( \$table, array( \$column => \$to ), array( \$column => \$from ), array( '%s' ), array( '%s' ) );",
-		'replace' => "\t\t\$changed = \$wpdb->update( \$table, array( \$column => \$to ), array( \$column => \$from ), array( '%s' ), array( '%s' ) );\n\n\t\terror_log( 'Atelier: renamed ' . \$from ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log",
+		'replace' => "\t\t\$changed = \$wpdb->update( \$table, array( \$column => \$to ), array( \$column => \$from ), array( '%s' ), array( '%s' ) );\n\n\t\terror_log( 'Lichtbild: renamed ' . \$from ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log",
 		'expect'  => 'an ordinary rename logs nothing',
 		'why'     => 'a line per rename is the log nobody reads, and it buries the one that matters',
 	),
@@ -887,7 +887,7 @@ $mutations = array(
 	array(
 		'id'      => 'CSS1',
 		'file'    => $renderer,
-		'find'    => "\t\t// any case -- `Atelier_Assets` enqueues every stylesheet this plugin has.\n\t\t\$out = sprintf(",
+		'find'    => "\t\t// any case -- `Lichtbild_Assets` enqueues every stylesheet this plugin has.\n\t\t\$out = sprintf(",
 		'replace' => "\t\t\$out  = '<style>' . \$gallery->title() . '</style>';\n\t\t\$out .= sprintf(",
 		'expect'  => 'no gallery emits a style element',
 		'why'     => 'the directory does not permit a plugin to print CSS it stored from its own UI, and the check has to see an inline style element however it got there -- not only through the setting that used to feed one',
@@ -920,13 +920,13 @@ $mutations = array(
 		'id'      => 'CSS5',
 		'file'    => $editor,
 		'find'    => "\t\techo '</table>';",
-		'replace' => "\t\techo '<tr><td><textarea name=\"atelier_settings[custom_css]\"></textarea></td></tr>';\n\t\techo '</table>';",
+		'replace' => "\t\techo '<tr><td><textarea name=\"lichtbild_settings[custom_css]\"></textarea></td></tr>';\n\t\techo '</table>';",
 		'expect'  => 'the settings form offers no custom css field',
 		'why'     => 'the UI is the half the directory actually objected to, and the drift check above cannot see a field for a setting that does not exist',
 	),
 	array(
 		'id'      => 'SLUG1',
-		'file'    => 'includes/class-atelier-settings.php',
+		'file'    => 'includes/class-lichtbild-settings.php',
 		'find'    => "\t\t\$scheme = get_option( self::OPTION_SLUG_SCHEME, '' );\n\n\t\tif ( 'envira' === \$scheme || 'generic' === \$scheme ) {\n\t\t\treturn;\n\t\t}\n\n",
 		'replace' => "",
 		'expect'  => 'the scheme is recorded, not re-derived',
@@ -934,7 +934,7 @@ $mutations = array(
 	),
 	array(
 		'id'      => 'SLUG2',
-		'file'    => 'includes/class-atelier-post-types.php',
+		'file'    => 'includes/class-lichtbild-post-types.php',
 		'find'    => "\tconst SLUGS_GENERIC = array(\n\t\t'gallery' => 'gallery',",
 		'replace' => "\tconst SLUGS_GENERIC = array(\n\t\t'gallery' => 'envira',",
 		'expect'  => 'a site with no envira history serves generic paths',
@@ -942,15 +942,15 @@ $mutations = array(
 	),
 	array(
 		'id'      => 'FRESH1',
-		'file'    => 'includes/class-atelier-settings.php',
+		'file'    => 'includes/class-lichtbild-settings.php',
 		'find'    => "\t\tif ( ! \$history && null === \$schema ) {\n\t\t\tupdate_option( self::OPTION_SCHEMA, self::SCHEMA_MIGRATED );\n\t\t}",
 		'replace' => "",
-		'expect'  => 'a site that never had envira starts on atelier storage',
+		'expect'  => 'a site that never had envira starts on lichtbild storage',
 		'why'     => 'without it a brand new install registers post types literally named envira and every editor screen refuses to work, telling the owner their gallery is in a format the site has never had',
 	),
 	array(
 		'id'      => 'FRESH2',
-		'file'    => 'includes/class-atelier-migration.php',
+		'file'    => 'includes/class-lichtbild-migration.php',
 		'find'    => "\t\tif ( ! \$this->settings->continues_envira() ) {",
 		'replace' => "\t\tif ( false ) {",
 		'expect'  => 'a site with no envira history cannot roll back',
@@ -966,7 +966,7 @@ $mutations = array(
 	),
 	array(
 		'id'      => 'B9',
-		'file'    => 'includes/class-atelier-gallery.php',
+		'file'    => 'includes/class-lichtbild-gallery.php',
 		'find'    => "\t\treturn max( 1, (int) ceil( count( \$this->filtered_items( \$tag ) ) / \$this->per_page() ) );",
 		'replace' => "\t\treturn max( 1, (int) floor( count( \$this->filtered_items( \$tag ) ) / \$this->per_page() ) );",
 		'expect'  => 'page count arithmetic',
@@ -974,7 +974,7 @@ $mutations = array(
 	),
 	array(
 		'id'      => 'B10',
-		'file'    => 'includes/class-atelier-gallery.php',
+		'file'    => 'includes/class-lichtbild-gallery.php',
 		'find'    => "\t\treturn max( 1, (int) ceil( count( \$this->filtered_items( \$tag ) ) / \$this->per_page() ) );",
 		'replace' => "\t\treturn max( 1, (int) ceil( count( \$this->items ) / \$this->per_page() ) );",
 		'expect'  => 'filtered page count follows the filter',
@@ -982,7 +982,7 @@ $mutations = array(
 	),
 	array(
 		'id'      => 'B11',
-		'file'    => 'includes/class-atelier-gallery.php',
+		'file'    => 'includes/class-lichtbild-gallery.php',
 		'find'    => "\t\treturn array_slice( \$items, ( \$page - 1 ) * \$this->per_page(), \$this->per_page() );",
 		'replace' => "\t\treturn array_slice( \$items, \$page * \$this->per_page(), \$this->per_page() );",
 		'expect'  => 'page one is the first slice of the gallery',
@@ -990,7 +990,7 @@ $mutations = array(
 	),
 	array(
 		'id'      => 'B12',
-		'file'    => 'includes/class-atelier-gallery.php',
+		'file'    => 'includes/class-lichtbild-gallery.php',
 		'find'    => "\t\t\$items = \$this->filtered_items( \$tag );",
 		'replace' => "\t\t\$items = \$this->items;",
 		'expect'  => 'a filtered page holds only matching items',
@@ -998,7 +998,7 @@ $mutations = array(
 	),
 	array(
 		'id'      => 'B13',
-		'file'    => 'includes/class-atelier-gallery.php',
+		'file'    => 'includes/class-lichtbild-gallery.php',
 		'find'    => "\t\t\t\tif ( \$item_tag['slug'] === \$tag ) {",
 		'replace' => "\t\t\t\tif ( \$item_tag['slug'] !== \$tag ) {",
 		'expect'  => 'an unknown tag yields nothing',
@@ -1006,9 +1006,9 @@ $mutations = array(
 	),
 	array(
 		'id'      => 'B14',
-		'file'    => 'includes/class-atelier-gallery.php',
-		'find'    => "\t\treturn '' !== \$label ? \$label : __( 'All', 'atelier' );",
-		'replace' => "\t\treturn __( 'All', 'atelier' );",
+		'file'    => 'includes/class-lichtbild-gallery.php',
+		'find'    => "\t\treturn '' !== \$label ? \$label : __( 'All', 'lichtbild-gallery' );",
+		'replace' => "\t\treturn __( 'All', 'lichtbild-gallery' );",
 		'expect'  => 'tag bar uses the stored all label',
 		'why'     => 'the label is translated by the site owner and stored per gallery',
 	),
@@ -1047,7 +1047,7 @@ $mutations = array(
 	array(
 		'id'      => 'B19',
 		'file'    => $renderer,
-		'find'    => "\t\t\t\t! empty( \$tags ) ? ' data-atelier-tags=\"' . esc_attr( implode( ' ', wp_list_pluck( \$tags, 'slug' ) ) ) . '\"' : ''",
+		'find'    => "\t\t\t\t! empty( \$tags ) ? ' data-lichtbild-tags=\"' . esc_attr( implode( ' ', wp_list_pluck( \$tags, 'slug' ) ) ) . '\"' : ''",
 		'replace' => "\t\t\t\t''",
 		'expect'  => 'tagged items carry their tag slugs',
 		'why'     => 'the client marks the current filter from these',
@@ -1095,8 +1095,8 @@ $mutations = array(
 	array(
 		'id'      => 'B25',
 		'file'    => $renderer,
-		'find'    => "\t\t\t\t'class'            => 'atelier-link',",
-		'replace' => "\t\t\t\t'class'            => 'atelier-anchor',",
+		'find'    => "\t\t\t\t'class'            => 'lichtbild-link',",
+		'replace' => "\t\t\t\t'class'            => 'lichtbild-anchor',",
 		'expect'  => 'item has a link',
 		'why'     => 'the class is what the lightbox binds to',
 	),
@@ -1135,7 +1135,7 @@ $mutations = array(
 	array(
 		'id'      => 'B30',
 		'file'    => $renderer,
-		'find'    => "\t\t\$dom_id = 'atelier-' . \$gallery->id();",
+		'find'    => "\t\t\$dom_id = 'lichtbild-' . \$gallery->id();",
 		'replace' => "\t\t\$dom_id = 'envira-gallery-' . \$gallery->id();",
 		'expect'  => 'no envira identifiers in output',
 		'why'     => 'a drop-in must not leak the old plugin\'s names into its own markup',
@@ -1278,7 +1278,7 @@ $mutations = array(
 	),
 	array(
 		'id'      => 'B48',
-		'file'    => 'includes/class-atelier-exif.php',
+		'file'    => 'includes/class-lichtbild-exif.php',
 		'find'    => "\t\tif ( in_array( 'make', \$enabled, true ) || in_array( 'model', \$enabled, true ) ) {",
 		'replace' => "\t\tif ( true ) {",
 		'expect'  => 'exif respects per-field toggles',
@@ -1286,7 +1286,7 @@ $mutations = array(
 	),
 	array(
 		'id'      => 'B49',
-		'file'    => 'includes/class-atelier-exif.php',
+		'file'    => 'includes/class-lichtbild-exif.php',
 		'find'    => "\t\tif ( \$attachment_id <= 0 || empty( \$enabled ) ) {\n\t\t\treturn array();\n\t\t}",
 		'replace' => "\t\tif ( true ) {\n\t\t\treturn array();\n\t\t}",
 		'expect'  => 'exif gallery emits some exif',
@@ -1303,8 +1303,8 @@ $mutations = array(
 	array(
 		'id'      => 'B51',
 		'file'    => $renderer,
-		'find'    => "\t\t\t\t\t\$attributes['data-atelier-exif'] = wp_json_encode( \$exif );",
-		'replace' => "\t\t\t\t\t\$attributes['data-atelier-exif'] = 'x' . wp_json_encode( \$exif );",
+		'find'    => "\t\t\t\t\t\$attributes['data-lichtbild-exif'] = wp_json_encode( \$exif );",
+		'replace' => "\t\t\t\t\t\$attributes['data-lichtbild-exif'] = 'x' . wp_json_encode( \$exif );",
 		'expect'  => 'exif payload is valid JSON',
 		'why'     => 'the lightbox parses this attribute and shows nothing when it cannot',
 	),
@@ -1366,7 +1366,7 @@ $mutations = array(
 	),
 	array(
 		'id'      => 'B59',
-		'file'    => 'includes/class-atelier-settings.php',
+		'file'    => 'includes/class-lichtbild-settings.php',
 		'find'    => "\t\tif ( \$this->has_migrated() ) {\n\t\t\treturn true;\n\t\t}\n\n\t\t\$mode = \$this->takeover();",
 		'replace' => "\t\tif ( false ) {\n\t\t\treturn true;\n\t\t}\n\n\t\t\$mode = \$this->takeover();",
 		'expect'  => 'migrated site always takes the shortcode over',
@@ -1374,23 +1374,23 @@ $mutations = array(
 	),
 	array(
 		'id'      => 'B60',
-		'file'    => 'includes/class-atelier-settings.php',
+		'file'    => 'includes/class-lichtbild-settings.php',
 		'find'    => "\t\tif ( null !== \$own && '' !== \$own ) {\n\t\t\treturn (bool) \$own;\n\t\t}",
 		'replace' => "\t\tif ( false ) {\n\t\t\treturn (bool) \$own;\n\t\t}",
 		'expect'  => 'standalone setting follows envira before migration',
-		'why'     => 'atelier\'s own value has to win, or uninstalling envira blanks every gallery page',
+		'why'     => 'lichtbild\'s own value has to win, or uninstalling envira blanks every gallery page',
 	),
 	array(
 		'id'      => 'B61',
-		'file'    => 'includes/class-atelier-post-types.php',
+		'file'    => 'includes/class-lichtbild-post-types.php',
 		'find'    => "\t\tif ( ! \$migrated && \$this->settings->envira_is_active() ) {\n\t\t\treturn;\n\t\t}",
 		'replace' => "\t\tif ( \$this->settings->envira_is_active() ) {\n\t\t\treturn;\n\t\t}",
 		'expect'  => 'a migrated site registers its types even with envira active',
-		'why'     => 'nobody else registers atelier_gallery, so standing aside takes every url off the site',
+		'why'     => 'nobody else registers lichtbild_gallery, so standing aside takes every url off the site',
 	),
 	array(
 		'id'      => 'B62',
-		'file'    => 'includes/class-atelier-post-types.php',
+		'file'    => 'includes/class-lichtbild-post-types.php',
 		'find'    => "\t\tif ( ! \$migrated && \$this->settings->envira_is_active() ) {\n\t\t\treturn;\n\t\t}",
 		'replace' => "\t\tif ( false ) {\n\t\t\treturn;\n\t\t}",
 		'expect'  => 'an unmigrated site stands aside for envira',
@@ -1398,15 +1398,15 @@ $mutations = array(
 	),
 	array(
 		'id'      => 'B63',
-		'file'    => 'includes/class-atelier-post-types.php',
-		'find'    => "\t\tregister_post_type(\n\t\t\t\$migrated ? self::GALLERY : Atelier_Repository::GALLERY_POST_TYPE,\n\t\t\t\$this->gallery_args()\n\t\t);",
+		'file'    => 'includes/class-lichtbild-post-types.php',
+		'find'    => "\t\tregister_post_type(\n\t\t\t\$migrated ? self::GALLERY : Lichtbild_Repository::GALLERY_POST_TYPE,\n\t\t\t\$this->gallery_args()\n\t\t);",
 		'replace' => "\t\tregister_post_type(\n\t\t\tself::GALLERY,\n\t\t\t\$this->gallery_args()\n\t\t);",
 		'expect'  => 'an unmigrated site registers envira\'s types',
 		'why'     => 'before the migration the rows still say envira, and a type nobody registers has no url',
 	),
 	array(
 		'id'      => 'B64',
-		'file'    => 'includes/class-atelier-post-types.php',
+		'file'    => 'includes/class-lichtbild-post-types.php',
 		'find'    => "\t\t\t\t'slug'       => \$this->slug( 'gallery', self::GALLERY_SLUG ),",
 		'replace' => "\t\t\t\t'slug'       => self::GALLERY,",
 		'expect'  => 'registration keeps envira url paths',
@@ -1414,15 +1414,15 @@ $mutations = array(
 	),
 	array(
 		'id'      => 'B65',
-		'file'    => 'includes/class-atelier-post-types.php',
-		'find'    => "\t\t\$parent = \$this->settings->has_migrated() ? self::GALLERY : Atelier_Repository::GALLERY_POST_TYPE;",
+		'file'    => 'includes/class-lichtbild-post-types.php',
+		'find'    => "\t\t\$parent = \$this->settings->has_migrated() ? self::GALLERY : Lichtbild_Repository::GALLERY_POST_TYPE;",
 		'replace' => "\t\t\$parent = self::GALLERY;",
 		'expect'  => 'the album menu hangs off the type that exists',
 		'why'     => 'a submenu under a type that is not registered yet is dropped entirely',
 	),
 	array(
 		'id'      => 'B66',
-		'file'    => 'includes/class-atelier-migration-screen.php',
+		'file'    => 'includes/class-lichtbild-migration-screen.php',
 		'find'    => "\t\tif ( 'POST' !== strtoupper( isset( \$_SERVER['REQUEST_METHOD'] ) ? sanitize_text_field( wp_unslash( \$_SERVER['REQUEST_METHOD'] ) ) : '' ) ) {",
 		'replace' => "\t\tif ( false ) {",
 		'expect'  => 'the migrate action refuses a GET',
@@ -1430,33 +1430,33 @@ $mutations = array(
 	),
 	array(
 		'id'      => 'B67',
-		'file'    => 'includes/class-atelier-migration-screen.php',
-		'find'    => "\t\tif ( empty( \$_POST['atelier_confirm'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing",
+		'file'    => 'includes/class-lichtbild-migration-screen.php',
+		'find'    => "\t\tif ( empty( \$_POST['lichtbild_confirm'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing",
 		'replace' => "\t\tif ( false ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing",
 		'expect'  => 'the migrate action requires the confirmation',
 		'why'     => 'a required attribute is a hint to a browser, not a guard',
 	),
 	array(
 		'id'      => 'B68',
-		'file'    => 'includes/class-atelier-migration-screen.php',
-		'find'    => "\t\tif ( ! current_user_can( 'manage_options' ) ) {\n\t\t\twp_die( esc_html__( 'You are not allowed to migrate galleries.', 'atelier' ), '', array( 'response' => 403 ) );\n\t\t}",
-		'replace' => "\t\tif ( false ) {\n\t\t\twp_die( esc_html__( 'You are not allowed to migrate galleries.', 'atelier' ), '', array( 'response' => 403 ) );\n\t\t}",
+		'file'    => 'includes/class-lichtbild-migration-screen.php',
+		'find'    => "\t\tif ( ! current_user_can( 'manage_options' ) ) {\n\t\t\twp_die( esc_html__( 'You are not allowed to migrate galleries.', 'lichtbild-gallery' ), '', array( 'response' => 403 ) );\n\t\t}",
+		'replace' => "\t\tif ( false ) {\n\t\t\twp_die( esc_html__( 'You are not allowed to migrate galleries.', 'lichtbild-gallery' ), '', array( 'response' => 403 ) );\n\t\t}",
 		'expect'  => 'the migrate action requires the capability',
 		'why'     => 'the button the screen declines to draw is still reachable by url',
 	),
 	array(
 		'id'      => 'B69',
 		'file'    => $migration,
-		'find'    => "\t\tif ( \$this->settings->envira_is_active() ) {\n\t\t\t\$result['errors'][] = __( 'Deactivate Envira Gallery before migrating.', 'atelier' );",
-		'replace' => "\t\tif ( false ) {\n\t\t\t\$result['errors'][] = __( 'Deactivate Envira Gallery before migrating.', 'atelier' );",
+		'find'    => "\t\tif ( \$this->settings->envira_is_active() ) {\n\t\t\t\$result['errors'][] = __( 'Deactivate Envira Gallery before migrating.', 'lichtbild-gallery' );",
+		'replace' => "\t\tif ( false ) {\n\t\t\t\$result['errors'][] = __( 'Deactivate Envira Gallery before migrating.', 'lichtbild-gallery' );",
 		'expect'  => 'migration refuses while envira is active',
 		'why'     => 'renaming the rows out from under envira leaves its shortcode rendering nothing',
 	),
 	array(
 		'id'      => 'B70',
 		'file'    => $migration,
-		'find'    => "\t\t\t\$result['errors'][] = __( 'Deactivate Envira Gallery before migrating.', 'atelier' );\n\n\t\t\treturn \$result;\n\t\t}",
-		'replace' => "\t\t\t\$result['errors'][] = __( 'Deactivate Envira Gallery before migrating.', 'atelier' );\n\t\t}",
+		'find'    => "\t\t\t\$result['errors'][] = __( 'Deactivate Envira Gallery before migrating.', 'lichtbild-gallery' );\n\n\t\t\treturn \$result;\n\t\t}",
+		'replace' => "\t\t\t\$result['errors'][] = __( 'Deactivate Envira Gallery before migrating.', 'lichtbild-gallery' );\n\t\t}",
 		'expect'  => 'a refused migration changes nothing',
 		'why'     => 'reporting the refusal and doing the work anyway is the worst of both',
 	),
@@ -1503,15 +1503,15 @@ $mutations = array(
 	array(
 		'id'      => 'B76',
 		'file'    => $migration,
-		'find'    => "\t\t\$gallery_type = \$migrated ? Atelier_Post_Types::GALLERY : Atelier_Repository::GALLERY_POST_TYPE;",
-		'replace' => "\t\t\$gallery_type = Atelier_Repository::GALLERY_POST_TYPE;",
+		'find'    => "\t\t\$gallery_type = \$migrated ? Lichtbild_Post_Types::GALLERY : Lichtbild_Repository::GALLERY_POST_TYPE;",
+		'replace' => "\t\t\$gallery_type = Lichtbild_Repository::GALLERY_POST_TYPE;",
 		'expect'  => 'plan follows the direction',
 		'why'     => 'a plan counting only envira\'s types reports three zeroes on the screen offering the rollback',
 	),
 	array(
 		'id'      => 'B77',
 		'file'    => $migration,
-		'find'    => "\t\t\$stranded = \$migrated ? 0 : \$this->atelier_rows();",
+		'find'    => "\t\t\$stranded = \$migrated ? 0 : \$this->lichtbild_rows();",
 		'replace' => "\t\t\$stranded = 0;",
 		'expect'  => 'a mixed state is reported as one',
 		'why'     => 'the state a directional plan structurally cannot describe is the one it must',
@@ -1530,7 +1530,7 @@ $mutations = array(
 		'find'    => "\t\t\t\t'galleries' => \$counts['galleries'],",
 		'replace' => "\t\t\t\t'galleries' => 0,",
 		'expect'  => 'plan counts the rows that exist',
-		// Aimed at what `plan()` reports rather than at `rows_under()`, which `atelier_rows()`
+		// Aimed at what `plan()` reports rather than at `rows_under()`, which `lichtbild_rows()`
 		// also counts on: breaking the shared counter would take the rollback gating with it and
 		// ask about two things at once.
 		'why'     => 'the plan has to describe the site rather than a constant',
@@ -1546,8 +1546,8 @@ $mutations = array(
 	array(
 		'id'      => 'B81',
 		'file'    => $migration,
-		'find'    => "\t\t\$result['terms'] = \$this->move(\n\t\t\t\$wpdb->term_taxonomy,\n\t\t\t'taxonomy',\n\t\t\tAtelier_Post_Types::TAG,\n\t\t\tAtelier_Repository::TAG_TAXONOMY,\n\t\t\t\$result['errors']\n\t\t);",
-		'replace' => "\t\t\$result['terms'] = \$this->move(\n\t\t\t\$wpdb->term_taxonomy,\n\t\t\t'taxonomy',\n\t\t\tAtelier_Post_Types::TAG,\n\t\t\tAtelier_Post_Types::TAG,\n\t\t\t\$result['errors']\n\t\t);",
+		'find'    => "\t\t\$result['terms'] = \$this->move(\n\t\t\t\$wpdb->term_taxonomy,\n\t\t\t'taxonomy',\n\t\t\tLichtbild_Post_Types::TAG,\n\t\t\tLichtbild_Repository::TAG_TAXONOMY,\n\t\t\t\$result['errors']\n\t\t);",
+		'replace' => "\t\t\$result['terms'] = \$this->move(\n\t\t\t\$wpdb->term_taxonomy,\n\t\t\t'taxonomy',\n\t\t\tLichtbild_Post_Types::TAG,\n\t\t\tLichtbild_Post_Types::TAG,\n\t\t\t\$result['errors']\n\t\t);",
 		'expect'  => 'rollback restores every row',
 		'why'     => 'reversible has to mean the taxonomy too, or every image comes back untagged',
 	),
@@ -1562,15 +1562,15 @@ $mutations = array(
 	array(
 		'id'      => 'B83',
 		'file'    => $migration,
-		'find'    => "\t\treturn array(\n\t\t\t'version'  => Atelier_Config::VERSION,\n\t\t\t'settings' => Atelier_Config::from_envira( \$config, \$post_id ),\n\t\t\t'items'    => \$items,\n\t\t);",
-		'replace' => "\t\t\$items[] = array(\n\t\t\t'id'      => 0,\n\t\t\t'status'  => 'active',\n\t\t\t'src'     => '',\n\t\t\t'link'    => '',\n\t\t\t'title'   => '',\n\t\t\t'caption' => '',\n\t\t\t'alt'     => '',\n\t\t);\n\n\t\treturn array(\n\t\t\t'version'  => Atelier_Config::VERSION,\n\t\t\t'settings' => Atelier_Config::from_envira( \$config, \$post_id ),\n\t\t\t'items'    => \$items,\n\t\t);",
+		'find'    => "\t\treturn array(\n\t\t\t'version'  => Lichtbild_Config::VERSION,\n\t\t\t'settings' => Lichtbild_Config::from_envira( \$config, \$post_id ),\n\t\t\t'items'    => \$items,\n\t\t);",
+		'replace' => "\t\t\$items[] = array(\n\t\t\t'id'      => 0,\n\t\t\t'status'  => 'active',\n\t\t\t'src'     => '',\n\t\t\t'link'    => '',\n\t\t\t'title'   => '',\n\t\t\t'caption' => '',\n\t\t\t'alt'     => '',\n\t\t);\n\n\t\treturn array(\n\t\t\t'version'  => Lichtbild_Config::VERSION,\n\t\t\t'settings' => Lichtbild_Config::from_envira( \$config, \$post_id ),\n\t\t\t'items'    => \$items,\n\t\t);",
 		'expect'  => 'conversion preserves the item count',
 		'why'     => 'a converted gallery has to carry the images it had and no others',
 	),
 	array(
 		'id'      => 'B84',
 		'file'    => $migration,
-		'find'    => "\t\t\t'settings' => Atelier_Config::from_envira( \$config, \$post_id ),",
+		'find'    => "\t\t\t'settings' => Lichtbild_Config::from_envira( \$config, \$post_id ),",
 		'replace' => "\t\t\t'settings' => array(),",
 		'expect'  => 'converted settings carry every key',
 		'why'     => 'a record missing a key is one the reader fills from a default nobody chose',
@@ -1578,16 +1578,16 @@ $mutations = array(
 	array(
 		'id'      => 'B85',
 		'file'    => $migration,
-		'find'    => "\t\tforeach ( Atelier_Repository::envira_album_entries( \$data ) as \$gallery_id => \$entry ) {\n\t\t\t\$items[] = Atelier_Album_Config::item_from_envira( \$gallery_id, is_array( \$entry ) ? \$entry : array() );\n\t\t}\n\n\t\treturn array(\n\t\t\t'version'  => Atelier_Album_Config::VERSION,",
-		'replace' => "\t\tforeach ( array() as \$gallery_id => \$entry ) {\n\t\t\t\$items[] = Atelier_Album_Config::item_from_envira( \$gallery_id, is_array( \$entry ) ? \$entry : array() );\n\t\t}\n\n\t\treturn array(\n\t\t\t'version'  => Atelier_Album_Config::VERSION,",
+		'find'    => "\t\tforeach ( Lichtbild_Repository::envira_album_entries( \$data ) as \$gallery_id => \$entry ) {\n\t\t\t\$items[] = Lichtbild_Album_Config::item_from_envira( \$gallery_id, is_array( \$entry ) ? \$entry : array() );\n\t\t}\n\n\t\treturn array(\n\t\t\t'version'  => Lichtbild_Album_Config::VERSION,",
+		'replace' => "\t\tforeach ( array() as \$gallery_id => \$entry ) {\n\t\t\t\$items[] = Lichtbild_Album_Config::item_from_envira( \$gallery_id, is_array( \$entry ) ? \$entry : array() );\n\t\t}\n\n\t\treturn array(\n\t\t\t'version'  => Lichtbild_Album_Config::VERSION,",
 		'expect'  => 'album conversion preserves the member count',
 		'why'     => 'an album with no members renders as nothing at all',
 	),
 	array(
 		'id'      => 'B86',
 		'file'    => $migration,
-		'find'    => "\t\t\tupdate_option(\n\t\t\t\tAtelier_Settings::OPTION_STANDALONE,\n\t\t\t\t(int) (bool) get_option( Atelier_Settings::OPTION_STANDALONE_ENVIRA, false )\n\t\t\t);",
-		'replace' => "\t\t\tupdate_option(\n\t\t\t\tAtelier_Settings::OPTION_STANDALONE,\n\t\t\t\t1\n\t\t\t);",
+		'find'    => "\t\t\tupdate_option(\n\t\t\t\tLichtbild_Settings::OPTION_STANDALONE,\n\t\t\t\t(int) (bool) get_option( Lichtbild_Settings::OPTION_STANDALONE_ENVIRA, false )\n\t\t\t);",
+		'replace' => "\t\t\tupdate_option(\n\t\t\t\tLichtbild_Settings::OPTION_STANDALONE,\n\t\t\t\t1\n\t\t\t);",
 		'expect'  => 'migration takes ownership of the standalone setting',
 		'why'     => 'the choice has to outlive the plugin that recorded it, whichever way it was set',
 	),
@@ -1602,22 +1602,22 @@ $mutations = array(
 	array(
 		'id'      => 'B98',
 		'file'    => $config,
-		'find'    => "\t\treturn (array) apply_filters( 'atelier_config_sanitize', \$out );",
-		'replace' => "\t\treturn (array) apply_filters( 'atelier_config_sanitize', \$out, \$input );",
+		'find'    => "\t\treturn (array) apply_filters( 'lichtbild_config_sanitize', \$out );",
+		'replace' => "\t\treturn (array) apply_filters( 'lichtbild_config_sanitize', \$out, \$input );",
 		'expect'  => 'the config sanitize filter is handed no raw input',
 		'why'     => 'the return value is identical either way, so nothing else in the suite can see this',
 	),
 	array(
 		'id'      => 'B99',
 		'file'    => $config,
-		'find'    => "\t\treturn (array) apply_filters( 'atelier_config_sanitize', \$out );",
+		'find'    => "\t\treturn (array) apply_filters( 'lichtbild_config_sanitize', \$out );",
 		'replace' => "\t\treturn \$out;",
 		'expect'  => 'the config sanitize filter is handed no raw input',
 		'why'     => 'the control for B98: a check reading a recorder must fail when nothing records, or it is passing on a stale value from an earlier call rather than on this one',
 	),
 	array(
 		'id'      => 'B97',
-		'file'    => 'includes/class-atelier-settings.php',
+		'file'    => 'includes/class-lichtbild-settings.php',
 		'find'    => "\t\treturn \$this->should_take_over() && 'envira' === \$this->slug_scheme();",
 		'replace' => "\t\treturn \$this->should_take_over();",
 		'expect'  => 'a site with no envira history claims no envira shortcodes',
@@ -1633,7 +1633,7 @@ $mutations = array(
 	),
 	array(
 		'id'      => 'B89',
-		'file'    => 'includes/class-atelier.php',
+		'file'    => 'includes/class-lichtbild.php',
 		'find'    => "\t\t\$this->standalone->register();",
 		'replace' => "\t\t// standalone left unregistered.",
 		'expect'  => 'the container constructs and registers its hooks',
@@ -1702,7 +1702,7 @@ $mutations = array(
 	array(
 		'id'      => 'B95',
 		'file'    => $repository,
-		'find'    => "\t\t\t\treturn new Atelier_Album( \$post_id, \$own['settings'], self::clean_album_items( \$items ) );",
+		'find'    => "\t\t\t\treturn new Lichtbild_Album( \$post_id, \$own['settings'], self::clean_album_items( \$items ) );",
 		'replace' => "\t\t\t\treturn null;",
 		'expect'  => 'the reader finds the album it is asked for',
 		'why'     => 'the album twin of B93; twelve call sites fataled on this before they were guarded',
@@ -1710,8 +1710,8 @@ $mutations = array(
 	array(
 		'id'      => 'B94',
 		'file'    => $migration,
-		'find'    => "\t\treturn array(\n\t\t\t'version'  => Atelier_Config::VERSION,\n\t\t\t'settings' => Atelier_Config::from_envira( \$config, \$post_id ),\n\t\t\t'items'    => \$items,\n\t\t);",
-		'replace' => "\t\treturn array(\n\t\t\t'version'  => Atelier_Config::VERSION,\n\t\t\t'settings' => Atelier_Config::from_envira( \$config, \$post_id ),\n\t\t\t'items'    => array(),\n\t\t);",
+		'find'    => "\t\treturn array(\n\t\t\t'version'  => Lichtbild_Config::VERSION,\n\t\t\t'settings' => Lichtbild_Config::from_envira( \$config, \$post_id ),\n\t\t\t'items'    => \$items,\n\t\t);",
+		'replace' => "\t\treturn array(\n\t\t\t'version'  => Lichtbild_Config::VERSION,\n\t\t\t'settings' => Lichtbild_Config::from_envira( \$config, \$post_id ),\n\t\t\t'items'    => array(),\n\t\t);",
 		'expect'  => 'the converter emits an item for a gallery that has one',
 		'why'     => 'a converted record with no items is a gallery that survives the rename empty',
 	),
@@ -1773,7 +1773,7 @@ $mutations = array(
 	// --- the blocks (26.8.14) ------------------------------------------------------------
 	//
 	// Two of the nine block checks have no mutation here, and it is worth saying why rather than
-	// contriving one. Neither visibility check can be killed by any edit to `Atelier_Block`,
+	// contriving one. Neither visibility check can be killed by any edit to `Lichtbild_Block`,
 	// because the class holds no copy of the rule to break — it hands to the shortcode, which
 	// asks `is_viewable()`. `V1` and `V2` are what pin them, and measured with `--names` they
 	// now go red in six and four places respectively, one more each than before the blocks
@@ -1798,19 +1798,19 @@ $mutations = array(
 	array(
 		'id'      => 'BK2',
 		'file'    => $block,
-		'find'    => "\t\tregister_block_type(\n\t\t\tATELIER_DIR . 'blocks/album',\n\t\t\tarray( 'render_callback' => array( \$this, 'render_album' ) )\n\t\t);",
+		'find'    => "\t\tregister_block_type(\n\t\t\tLICHTBILD_DIR . 'blocks/album',\n\t\t\tarray( 'render_callback' => array( \$this, 'render_album' ) )\n\t\t);",
 		'replace' => "\t\t// the album block was never registered.",
 		'expect'  => 'both blocks are registered from their metadata',
 		'why'     => 'a block absent from the inserter is invisible; nothing errors',
 	),
 	// The one that is a real bug rather than a slip. `after` prints the data below the script
-	// that reads it, so `window.AtelierBlocks` is undefined, the editor script returns at its
+	// that reads it, so `window.LichtbildBlocks` is undefined, the editor script returns at its
 	// first line, and BOTH blocks vanish from the inserter with no error anywhere.
 	array(
 		'id'      => 'BK3',
 		'file'    => $block,
-		'find'    => "\t\t\t'window.AtelierBlocks = ' . wp_json_encode( \$this->editor_data() ) . ';',\n\t\t\t'before'",
-		'replace' => "\t\t\t'window.AtelierBlocks = ' . wp_json_encode( \$this->editor_data() ) . ';',\n\t\t\t'after'",
+		'find'    => "\t\t\t'window.LichtbildBlocks = ' . wp_json_encode( \$this->editor_data() ) . ';',\n\t\t\t'before'",
+		'replace' => "\t\t\t'window.LichtbildBlocks = ' . wp_json_encode( \$this->editor_data() ) . ';',\n\t\t\t'after'",
 		'expect'  => 'the editor script carries the picker data',
 		'why'     => 'data printed after the script that reads it is data nothing reads',
 	),
@@ -1822,16 +1822,16 @@ $mutations = array(
 	array(
 		'id'      => 'BK8',
 		'file'    => $block,
-		'find'    => "\t\t// Depends on `atelier`, so the preview is laid out by the same stylesheet the visitor",
-		'replace' => "\t\twp_add_inline_script(\n\t\t\tself::HANDLE,\n\t\t\t'window.AtelierBlocks = ' . wp_json_encode( \$this->editor_data() ) . ';',\n\t\t\t'before'\n\t\t);\n\n\t\t// Depends on `atelier`, so the preview is laid out by the same stylesheet the visitor",
+		'find'    => "\t\t// Depends on `lichtbild`, so the preview is laid out by the same stylesheet the visitor",
+		'replace' => "\t\twp_add_inline_script(\n\t\t\tself::HANDLE,\n\t\t\t'window.LichtbildBlocks = ' . wp_json_encode( \$this->editor_data() ) . ';',\n\t\t\t'before'\n\t\t);\n\n\t\t// Depends on `lichtbild`, so the preview is laid out by the same stylesheet the visitor",
 		'expect'  => 'registering the blocks reads nothing',
 		'why'     => 'a cost paid on every request that changes no output is invisible to every other check',
 	),
 	array(
 		'id'      => 'BK4',
 		'file'    => $block,
-		'find'    => "\t\t\tATELIER_URL . 'assets/css/blocks.css',\n\t\t\tarray( 'atelier' ),",
-		'replace' => "\t\t\tATELIER_URL . 'assets/css/blocks.css',\n\t\t\tarray(),",
+		'find'    => "\t\t\tLICHTBILD_URL . 'assets/css/blocks.css',\n\t\t\tarray( 'lichtbild' ),",
+		'replace' => "\t\t\tLICHTBILD_URL . 'assets/css/blocks.css',\n\t\t\tarray(),",
 		'expect'  => 'the editor stylesheet is laid out by the front-end one',
 		'why'     => 'the preview then renders unstyled, and WP_Styles says nothing either way',
 	),
@@ -1869,14 +1869,14 @@ $mutations = array(
  *
  * @return array{ok:bool,checks:int,failing:int,names:string[],reported:array<string,int>,note:string}
  */
-function atelier_run_suite() {
+function lichtbild_run_suite() {
 	$output = array();
 	$status = 0;
 
 	$command = escapeshellarg( PHP_BINARY ) . ' ' . escapeshellarg( __DIR__ . '/render-test.php' );
 
-	if ( '' !== $GLOBALS['atelier_mutation_fixture'] ) {
-		$command .= ' ' . escapeshellarg( $GLOBALS['atelier_mutation_fixture'] );
+	if ( '' !== $GLOBALS['lichtbild_mutation_fixture'] ) {
+		$command .= ' ' . escapeshellarg( $GLOBALS['lichtbild_mutation_fixture'] );
 	}
 
 	exec( $command . ' 2>&1', $output, $status );
@@ -1976,7 +1976,7 @@ $names = false;
 // passes while pinning nothing is exactly the empty-filter-reads-as-a-pass trap this file
 // exists to catch. Measuring how many mutations it kills is the only thing that says whether it
 // covers anything, and that measurement is impossible without this flag.
-$GLOBALS['atelier_mutation_fixture'] = '';
+$GLOBALS['lichtbild_mutation_fixture'] = '';
 
 foreach ( $only as $index => $argument ) {
 	if ( '--names' === $argument ) {
@@ -1986,10 +1986,10 @@ foreach ( $only as $index => $argument ) {
 	}
 
 	if ( 0 === strpos( (string) $argument, '--fixture=' ) ) {
-		$GLOBALS['atelier_mutation_fixture'] = substr( $argument, strlen( '--fixture=' ) );
+		$GLOBALS['lichtbild_mutation_fixture'] = substr( $argument, strlen( '--fixture=' ) );
 
-		if ( ! is_readable( $GLOBALS['atelier_mutation_fixture'] ) ) {
-			printf( "[ERROR] fixture not readable: %s\n", $GLOBALS['atelier_mutation_fixture'] );
+		if ( ! is_readable( $GLOBALS['lichtbild_mutation_fixture'] ) ) {
+			printf( "[ERROR] fixture not readable: %s\n", $GLOBALS['lichtbild_mutation_fixture'] );
 			exit( 1 );
 		}
 
@@ -2025,7 +2025,7 @@ foreach ( $only as $requested ) {
 	}
 }
 
-$baseline = atelier_run_suite();
+$baseline = lichtbild_run_suite();
 
 if ( ! $baseline['ok'] || $baseline['failing'] > 0 ) {
 	// Establish green before editing anything: every later failure is then a signal about the
@@ -2064,7 +2064,7 @@ foreach ( $mutations as $mutation ) {
 	// comparison that should catch it reads back through the same translation.
 	file_put_contents( $path, str_replace( $mutation['find'], $mutation['replace'], $original ) );
 
-	$result = atelier_run_suite();
+	$result = lichtbild_run_suite();
 
 	file_put_contents( $path, $original );
 

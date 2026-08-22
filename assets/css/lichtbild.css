@@ -1,5 +1,5 @@
 /*
- * Atelier front-end styles.
+ * Lichtbild front-end styles.
  *
  * The justified grid is pure CSS. Within a flex row every item is both sized and grown in
  * proportion to its own aspect ratio, so each settles at a width of `aspect * k` for one
@@ -20,29 +20,29 @@
  *
  * Envira centred here, at this same 580px, and that is measured rather than remembered: the
  * same gallery under Envira on a local copy of this site reports `margin-left: 306px` where
- * Atelier reported `0px`. So this was a regression introduced by the switchover, invisible to
+ * Lichtbild reported `0px`. So this was a regression introduced by the switchover, invisible to
  * every check in this repo for the reason recorded at 26.8.11 — the markup never changed.
  *
  * `auto` costs nothing where no theme constrains the width: on a full-width block it resolves
  * to zero, which is what the declaration it replaced said explicitly.
  */
-.atelier-wrap {
-	--atelier-gap: 10px;
-	--atelier-row: 150;
-	--atelier-columns: 3;
+.lichtbild-wrap {
+	--lichtbild-gap: 10px;
+	--lichtbild-row: 150;
+	--lichtbild-columns: 3;
 	margin: 0 auto 1.5em;
 }
 
-.atelier {
+.lichtbild {
 	display: flex;
 	flex-wrap: wrap;
-	gap: var(--atelier-gap);
+	gap: var(--lichtbild-gap);
 	margin: 0;
 	padding: 0;
 	list-style: none;
 }
 
-.atelier-item {
+.lichtbild-item {
 	position: relative;
 	margin: 0;
 	padding: 0;
@@ -50,9 +50,9 @@
 	background: rgba(127, 127, 127, 0.12);
 }
 
-.atelier-justified .atelier-item {
-	flex-grow: var(--atelier-aspect, 1.5);
-	flex-basis: calc(var(--atelier-aspect, 1.5) * var(--atelier-row) * 1px);
+.lichtbild-justified .lichtbild-item {
+	flex-grow: var(--lichtbild-aspect, 1.5);
+	flex-basis: calc(var(--lichtbild-aspect, 1.5) * var(--lichtbild-row) * 1px);
 }
 
 /*
@@ -60,18 +60,18 @@
  * half-full last row keeps its natural size instead of being stretched across the width.
  * Earlier rows never see it, and stay fully justified.
  */
-.atelier-justified::after {
+.lichtbild-justified::after {
 	content: "";
 	flex-grow: 1000000;
 	min-width: 0;
 }
 
-.atelier-columns {
+.lichtbild-columns {
 	display: grid;
-	grid-template-columns: repeat(var(--atelier-columns), minmax(0, 1fr));
+	grid-template-columns: repeat(var(--lichtbild-columns), minmax(0, 1fr));
 }
 
-.atelier-link {
+.lichtbild-link {
 	position: relative;
 	display: block;
 	width: 100%;
@@ -81,19 +81,19 @@
 	outline-offset: 2px;
 }
 
-.atelier-justified .atelier-link::before {
+.lichtbild-justified .lichtbild-link::before {
 	content: "";
 	display: block;
-	padding-top: calc(100% / var(--atelier-aspect, 1.5));
+	padding-top: calc(100% / var(--lichtbild-aspect, 1.5));
 }
 
-.atelier-columns .atelier-link::before {
+.lichtbild-columns .lichtbild-link::before {
 	content: "";
 	display: block;
 	padding-top: 75%;
 }
 
-.atelier-link img {
+.lichtbild-link img {
 	position: absolute;
 	inset: 0;
 	width: 100%;
@@ -106,26 +106,26 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-	.atelier-link img {
+	.lichtbild-link img {
 		transition: none;
 	}
 }
 
-.atelier-link:hover img,
-.atelier-link:focus-visible img {
+.lichtbild-link:hover img,
+.lichtbild-link:focus-visible img {
 	transform: scale(1.04);
 }
 
 /* Captions ---------------------------------------------------------------- */
 
-.atelier-caption {
+.lichtbild-caption {
 	margin: 0.4em 0 0;
 	font-size: 0.85em;
 	line-height: 1.35;
 	opacity: 0.85;
 }
 
-.atelier-caption-float {
+.lichtbild-caption-float {
 	position: absolute;
 	inset: auto 0 0 0;
 	margin: 0;
@@ -138,15 +138,15 @@
 	pointer-events: none;
 }
 
-.atelier-item:hover .atelier-caption-float,
-.atelier-link:focus-visible ~ .atelier-caption-float {
+.lichtbild-item:hover .lichtbild-caption-float,
+.lichtbild-link:focus-visible ~ .lichtbild-caption-float {
 	opacity: 1;
 	transform: translateY(0);
 }
 
 /* Image protection -------------------------------------------------------- */
 
-.atelier-protected .atelier-link img {
+.lichtbild-protected .lichtbild-link img {
 	-webkit-user-select: none;
 	user-select: none;
 	-webkit-user-drag: none;
@@ -155,18 +155,18 @@
 
 /* Tag filter -------------------------------------------------------------- */
 
-.atelier-tags {
+.lichtbild-tags {
 	display: flex;
 	flex-wrap: wrap;
 	gap: 0.4em;
 	margin: 0 0 0.9em;
 }
 
-.atelier-tags + .atelier {
+.lichtbild-tags + .lichtbild {
 	margin-top: 0;
 }
 
-.atelier-tag {
+.lichtbild-tag {
 	padding: 0.32em 0.8em;
 	font: inherit;
 	font-size: 0.82em;
@@ -180,8 +180,8 @@
 	transition: opacity 0.2s ease, background-color 0.2s ease;
 }
 
-.atelier-tag:hover,
-.atelier-tag:focus-visible {
+.lichtbild-tag:hover,
+.lichtbild-tag:focus-visible {
 	opacity: 1;
 }
 
@@ -192,25 +192,25 @@
  * Two earlier attempts did exactly that -- one white-on-white, one dark-on-dark -- so the
  * pair is stated explicitly here and exposed as custom properties for themes to override.
  */
-.atelier-tags {
-	--atelier-tag-fill: #1a1a1a;
-	--atelier-tag-label: #fff;
+.lichtbild-tags {
+	--lichtbild-tag-fill: #1a1a1a;
+	--lichtbild-tag-label: #fff;
 }
 
-.atelier-tag.is-current {
+.lichtbild-tag.is-current {
 	opacity: 1;
-	color: var(--atelier-tag-label);
-	background: var(--atelier-tag-fill);
-	border-color: var(--atelier-tag-fill);
+	color: var(--lichtbild-tag-label);
+	background: var(--lichtbild-tag-fill);
+	border-color: var(--lichtbild-tag-fill);
 }
 
-.atelier-item.is-filtered {
+.lichtbild-item.is-filtered {
 	display: none;
 }
 
 /* Pagination -------------------------------------------------------------- */
 
-.atelier-pagination {
+.lichtbild-pagination {
 	display: flex;
 	flex-wrap: wrap;
 	align-items: center;
@@ -219,13 +219,13 @@
 	margin: 1em 0 0;
 }
 
-.atelier-page-list {
+.lichtbild-page-list {
 	display: flex;
 	flex-wrap: wrap;
 	gap: 0.3em;
 }
 
-.atelier-pagination button {
+.lichtbild-pagination button {
 	min-width: 2.2em;
 	padding: 0.35em 0.7em;
 	font: inherit;
@@ -239,22 +239,22 @@
 	transition: opacity 0.2s ease;
 }
 
-.atelier-pagination button:hover:not(:disabled),
-.atelier-pagination button:focus-visible:not(:disabled) {
+.lichtbild-pagination button:hover:not(:disabled),
+.lichtbild-pagination button:focus-visible:not(:disabled) {
 	opacity: 1;
 }
 
-.atelier-pagination button:disabled {
+.lichtbild-pagination button:disabled {
 	cursor: default;
 	opacity: 0.25;
 }
 
-.atelier-pagination button.is-current {
+.lichtbild-pagination button.is-current {
 	font-weight: 700;
 	opacity: 1;
 }
 
-.atelier.is-loading {
+.lichtbild.is-loading {
 	opacity: 0.45;
 	transition: opacity 0.15s ease;
 }
@@ -263,7 +263,7 @@
 
 /* Flex rather than grid, for one reason: an album with fewer members than columns.
  *
- * `repeat(var(--atelier-album-columns), 1fr)` always fills the row, so an album with two members
+ * `repeat(var(--lichtbild-album-columns), 1fr)` always fills the row, so an album with two members
  * in a three-column layout puts both in columns one and two and leaves a hole on the right.
  * That is `American Football` on the live site, and it is what "the covers used to be centred"
  * turned out to mean in part. Flex with `justify-content: center` centres any incomplete row —
@@ -274,13 +274,13 @@
  * the gaps between N columns, divided by N. Items may shrink below it on narrow screens, which
  * is what the wrap is for, but they never grow past one column's worth. */
 /*
- * The horizontal `auto` is the same fix as on `.atelier-wrap` above, and an album needed it just
+ * The horizontal `auto` is the same fix as on `.lichtbild-wrap` above, and an album needed it just
  * as badly: `justify-content: center` centres the covers *within* this box, which is what
  * 26.8.11 and 26.8.12 were about, while the box itself was sitting flush left in a column twice
  * its width. Centring the contents of a misplaced container is the kind of half-fix that
  * survives review because the part that was measured is genuinely correct.
  */
-.atelier-album {
+.lichtbild-album {
 	display: flex;
 	flex-wrap: wrap;
 	justify-content: center;
@@ -288,22 +288,22 @@
 	margin: 0 auto 1.5em;
 }
 
-.atelier-album-item {
+.lichtbild-album-item {
 	margin: 0;
 	flex: 0 1 calc(
-		(100% - (var(--atelier-album-columns, 3) - 1) * 1.1em) / var(--atelier-album-columns, 3)
+		(100% - (var(--lichtbild-album-columns, 3) - 1) * 1.1em) / var(--lichtbild-album-columns, 3)
 	);
 	min-width: 0;
 }
 
-.atelier-album-link {
+.lichtbild-album-link {
 	display: block;
 	text-decoration: none;
 	color: inherit;
 	box-shadow: none;
 }
 
-.atelier-album-link img {
+.lichtbild-album-link img {
 	display: block;
 	width: 100%;
 	height: auto;
@@ -315,28 +315,28 @@
  *
  * `envira-albums/assets/css/albums.css` sets `text-align: center` on the album title, caption
  * and image count unconditionally — not behind the `album_alignment` setting, which is `0` on
- * both live albums. Atelier inherited the theme's left alignment instead, so the labels under
+ * both live albums. Lichtbild inherited the theme's left alignment instead, so the labels under
  * every cover moved on the day Envira was uninstalled. Nothing in the markup or the settings
  * recorded the difference, which is why it took someone looking at the page to notice. */
-.atelier-album-caption {
+.lichtbild-album-caption {
 	display: block;
 	margin-top: 0.5em;
 	line-height: 1.4;
 	text-align: center;
 }
 
-.atelier-album-title {
+.lichtbild-album-title {
 	display: block;
 	font-weight: 600;
 }
 
-.atelier-album-count {
+.lichtbild-album-count {
 	display: block;
 	font-size: 0.82em;
 	opacity: 0.7;
 }
 
-.atelier-album-excerpt {
+.lichtbild-album-excerpt {
 	display: block;
 	margin-top: 0.2em;
 	font-size: 0.85em;
@@ -355,18 +355,18 @@
 	 * `flex: 1 1 190px` is the equivalent — at least 190px, growing to share whatever is left,
 	 * wrapping when two no longer fit. `grow: 1` here and `0` above is deliberate: on a phone
 	 * filling the width matters more than matching the configured column count. */
-	.atelier-album-item {
+	.lichtbild-album-item {
 		flex: 1 1 190px;
 	}
 
-	.atelier-wrap {
-		--atelier-row: 110;
+	.lichtbild-wrap {
+		--lichtbild-row: 110;
 	}
 }
 
 /* Lightbox additions ------------------------------------------------------ */
 
-.pswp__atelier-info {
+.pswp__lichtbild-info {
 	position: absolute;
 	inset: auto 0 0 0;
 	z-index: 10;
@@ -379,22 +379,22 @@
 	pointer-events: none;
 }
 
-.pswp--ui-visible .pswp__atelier-info {
+.pswp--ui-visible .pswp__lichtbild-info {
 	opacity: 1;
 }
 
-.pswp__atelier-info:empty {
+.pswp__lichtbild-info:empty {
 	display: none;
 }
 
-.pswp__atelier-title {
+.pswp__lichtbild-title {
 	display: block;
 	font-size: 1rem;
 	font-weight: 600;
 	line-height: 1.35;
 }
 
-.pswp__atelier-caption {
+.pswp__lichtbild-caption {
 	display: block;
 	max-width: 62ch;
 	margin: 0.3em auto 0;
@@ -403,7 +403,7 @@
 	opacity: 0.88;
 }
 
-.pswp__atelier-exif {
+.pswp__lichtbild-exif {
 	display: flex;
 	flex-wrap: wrap;
 	justify-content: center;
@@ -416,25 +416,25 @@
 	opacity: 0.72;
 }
 
-.pswp__atelier-exif li {
+.pswp__lichtbild-exif li {
 	margin: 0;
 	white-space: nowrap;
 }
 
-.pswp__atelier-exif b {
+.pswp__lichtbild-exif b {
 	font-weight: 400;
 	opacity: 0.65;
 }
 
-.pswp__atelier-exif b::after {
+.pswp__lichtbild-exif b::after {
 	content: " ";
 }
 
-.pswp__atelier-share {
+.pswp__lichtbild-share {
 	position: relative;
 }
 
-.pswp__atelier-share-menu {
+.pswp__lichtbild-share-menu {
 	position: absolute;
 	top: 100%;
 	right: 0;
@@ -448,12 +448,12 @@
 	box-shadow: 0 6px 22px rgba(0, 0, 0, 0.45);
 }
 
-.pswp__atelier-share-menu[hidden] {
+.pswp__lichtbild-share-menu[hidden] {
 	display: none;
 }
 
-.pswp__atelier-share-menu a,
-.pswp__atelier-share-menu button {
+.pswp__lichtbild-share-menu a,
+.pswp__lichtbild-share-menu button {
 	display: block;
 	width: 100%;
 	padding: 0.5em 0.8em;
@@ -468,18 +468,18 @@
 	border-radius: 3px;
 }
 
-.pswp__atelier-share-menu a:hover,
-.pswp__atelier-share-menu a:focus-visible,
-.pswp__atelier-share-menu button:hover,
-.pswp__atelier-share-menu button:focus-visible {
+.pswp__lichtbild-share-menu a:hover,
+.pswp__lichtbild-share-menu a:focus-visible,
+.pswp__lichtbild-share-menu button:hover,
+.pswp__lichtbild-share-menu button:focus-visible {
 	background: rgba(255, 255, 255, 0.14);
 }
 
-.pswp--atelier-light .pswp__bg {
+.pswp--lichtbild-light .pswp__bg {
 	background: #f6f6f6;
 }
 
-.pswp--atelier-light .pswp__atelier-info {
+.pswp--lichtbild-light .pswp__lichtbild-info {
 	color: #111;
 	background: linear-gradient(to top, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0));
 }
@@ -490,11 +490,11 @@
  * in either stylesheet, so a failed fetch looked exactly like a successful one that returned the
  * same page. It dims the stale grid rather than hiding it: the content is still correct, it is
  * merely not the page that was asked for. */
-.atelier.is-error {
+.lichtbild.is-error {
 	opacity: 0.55;
 }
 
-.atelier-message {
+.lichtbild-message {
 	margin: 0.8em 0 0;
 	padding: 0.6em 0.9em;
 	border-left: 3px solid currentColor;

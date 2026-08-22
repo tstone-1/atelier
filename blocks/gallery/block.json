@@ -1,13 +1,13 @@
 {
 	"$schema": "https://schemas.wp.org/trunk/block.json",
 	"apiVersion": 3,
-	"name": "atelier/gallery",
-	"title": "Atelier Gallery",
+	"name": "lichtbild/gallery",
+	"title": "Lichtbild Gallery",
 	"category": "media",
 	"icon": "format-gallery",
-	"description": "Places an existing Atelier gallery in the post.",
+	"description": "Places an existing Lichtbild gallery in the post.",
 	"keywords": [ "gallery", "images", "photos", "envira" ],
-	"textdomain": "atelier",
+	"textdomain": "lichtbild-gallery",
 	"attributes": {
 		"id": {
 			"type": "number",
@@ -19,6 +19,6 @@
 		"multiple": true,
 		"reusable": true
 	},
-	"editorScript": "atelier-blocks",
-	"editorStyle": "atelier-blocks"
+	"editorScript": "lichtbild-blocks",
+	"editorStyle": "lichtbild-blocks"
 }

@@ -11,7 +11,7 @@
  * Title, icon, category, keywords and attributes all live in each block's own `block.json` and
  * reach this file through WordPress's own server-side bootstrap — `register_block_type()` prints
  * the registry into the editor, and `registerBlockType()` merges it under the client settings. So
- * there is one declaration of what a Atelier block *is*, and the two halves cannot drift.
+ * there is one declaration of what a Lichtbild block *is*, and the two halves cannot drift.
  *
  * The one thing that is deliberately not shared is `id`'s type. `block.json` says `number`; the
  * `SelectControl` below hands back a string, because a `<select>` value always is one. Every
@@ -93,7 +93,7 @@
 				),
 				el(
 					'div',
-					{ className: 'atelier-block-preview' },
+					{ className: 'lichtbild-block-preview' },
 					el( wp.serverSideRender, {
 						block: config.name,
 						attributes: { id: id },
@@ -132,7 +132,7 @@
 				return null;
 			},
 
-			// Only Atelier's own shortcode transforms. `[envira-gallery]` deliberately does
+			// Only Lichtbild's own shortcode transforms. `[envira-gallery]` deliberately does
 			// not: it still renders under a rollback, because Envira registers it again, and
 			// a one-click conversion with no confirmation is the wrong place to quietly spend
 			// that. Someone who wants the block can pick it.
@@ -157,7 +157,7 @@
 
 	register(
 		{
-			name: 'atelier/gallery',
+			name: 'lichtbild/gallery',
 			choices: data.galleries || [],
 			title: strings.galleryTitle,
 			chooseLabel: strings.chooseGallery,
@@ -166,12 +166,12 @@
 			noneMessage: strings.noGalleries,
 			emptyMessage: strings.emptyGallery
 		},
-		'atelier-gallery'
+		'lichtbild-gallery'
 	);
 
 	register(
 		{
-			name: 'atelier/album',
+			name: 'lichtbild/album',
 			choices: data.albums || [],
 			title: strings.albumTitle,
 			chooseLabel: strings.chooseAlbum,
@@ -180,6 +180,6 @@
 			noneMessage: strings.noAlbums,
 			emptyMessage: strings.emptyAlbum
 		},
-		'atelier-album'
+		'lichtbild-album'
 	);
-} )( window.wp, window.AtelierBlocks );
+} )( window.wp, window.LichtbildBlocks );

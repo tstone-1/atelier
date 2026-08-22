@@ -35,7 +35,7 @@
 set -uo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-ENV_DIR="${ATELIER_DEVENV:-$HOME/Developer/wp-atelier}"
+ENV_DIR="${LICHTBILD_DEVENV:-$HOME/Developer/wp-lichtbild}"
 
 MARIADB_PREFIX=/opt/homebrew/opt/mariadb@10.11
 PHP_VERSION=8.2
@@ -58,7 +58,7 @@ BASELINE_SQL="$SNAPSHOT_DIR/baseline.sql"
 # Local credentials. Deliberately trivial: this database listens on a non-default port, holds
 # a copy of public gallery content, and is thrown away. The production credentials never
 # appear here — they are read from tests/.db.json only when a dump is taken.
-DB_NAME=atelier_dev
+DB_NAME=lichtbild_dev
 DB_USER=root
 
 # The table prefix belongs to the PRODUCTION site, not to this environment -- the local database
@@ -67,7 +67,7 @@ DB_USER=root
 # the gitignored `tools/deploy.env` (or the environment) instead of sitting here as a literal in a
 # public repository. `wp_` is WordPress's own default and the right fallback for anyone else.
 [ -f "$(dirname "${BASH_SOURCE[0]}")/deploy.env" ] && . "$(dirname "${BASH_SOURCE[0]}")/deploy.env"
-DB_PREFIX="${ATELIER_DB_PREFIX:-wp_}"
+DB_PREFIX="${LICHTBILD_DB_PREFIX:-wp_}"
 
 say() { printf '[devenv] %s\n' "$*"; }
 die() { printf '[devenv] ERROR: %s\n' "$*" >&2; exit 1; }
@@ -152,7 +152,7 @@ start_web() {
 	# The router is not optional. PHP's built-in server has no rewrite engine, so without it
 	# every pretty permalink — `/envira/<slug>/` included — returns 404 from the server before
 	# WordPress is ever loaded. Since those URLs are the entire point of this environment, a
-	# missing router would make the environment agree that Atelier had broken them.
+	# missing router would make the environment agree that Lichtbild had broken them.
 	say "starting web server at $WP_URL (PHP $PHP_VERSION)"
 	"$PHP_BIN" -S "localhost:$WP_PORT" -t "$WP_DIR" "$ENV_DIR/router.php" >>"$WP_LOG" 2>&1 &
 	echo $! > "$ENV_DIR/web.pid"
@@ -321,10 +321,10 @@ install_uploads_proxy() {
 	# Attachment *metadata* is in the database, so sizes, srcset and the justified geometry are
 	# all exact without a single image file present. Only the bytes come from the live domain,
 	# and only because copying 2,243 files would prove nothing further.
-	cat > "$mu/atelier-devenv-uploads.php" <<-'PHP'
+	cat > "$mu/lichtbild-devenv-uploads.php" <<-'PHP'
 	<?php
 	/**
-	 * Plugin Name: Atelier dev environment - serve uploads from the live site
+	 * Plugin Name: Lichtbild dev environment - serve uploads from the live site
 	 *
 	 * This install has a copy of the live database and none of its uploads. Rather than copy
 	 * thousands of image files, attachment URLs are rewritten to the live domain, which is
@@ -335,7 +335,7 @@ install_uploads_proxy() {
 
 	defined( 'ABSPATH' ) || exit;
 
-	const ATELIER_DEVENV_LIVE = 'https://timo-stein.com';
+	const LICHTBILD_DEVENV_LIVE = 'https://timo-stein.com';
 
 	/**
 	 * Rewrites a local upload URL to the live site.
@@ -344,27 +344,27 @@ install_uploads_proxy() {
 	 *
 	 * @return string URL on the live domain.
 	 */
-	function atelier_devenv_live_url( $url ) {
+	function lichtbild_devenv_live_url( $url ) {
 		$local = home_url();
 
 		if ( false === strpos( $url, '/wp-content/uploads/' ) ) {
 			return $url;
 		}
 
-		return str_replace( $local, ATELIER_DEVENV_LIVE, $url );
+		return str_replace( $local, LICHTBILD_DEVENV_LIVE, $url );
 	}
 
-	add_filter( 'wp_get_attachment_url', 'atelier_devenv_live_url', 99 );
+	add_filter( 'wp_get_attachment_url', 'lichtbild_devenv_live_url', 99 );
 	add_filter( 'wp_get_attachment_image_src', function ( $image ) {
 		if ( is_array( $image ) && isset( $image[0] ) ) {
-			$image[0] = atelier_devenv_live_url( $image[0] );
+			$image[0] = lichtbild_devenv_live_url( $image[0] );
 		}
 
 		return $image;
 	}, 99 );
 	add_filter( 'wp_calculate_image_srcset', function ( $sources ) {
 		foreach ( $sources as $width => $source ) {
-			$sources[ $width ]['url'] = atelier_devenv_live_url( $source['url'] );
+			$sources[ $width ]['url'] = lichtbild_devenv_live_url( $source['url'] );
 		}
 
 		return $sources;
@@ -378,7 +378,7 @@ install_uploads_proxy() {
 }
 
 link_plugin() {
-	local target="$WP_DIR/wp-content/plugins/atelier"
+	local target="$WP_DIR/wp-content/plugins/lichtbild-gallery"
 
 	# Symlinked rather than copied, so an edit in the repo is live here with no sync step and
 	# no second copy to drift.
@@ -426,8 +426,8 @@ cmd_status() {
 	printf '%-22s %s\n' "wordpress:" "$(wp_cli core version 2>/dev/null || echo '?')"
 	echo
 	printf '%-22s %s\n' "envira galleries:" "$(mysql_client -N -B "$DB_NAME" -e "SELECT COUNT(*) FROM ${DB_PREFIX}posts WHERE post_type='envira';" 2>/dev/null)"
-	printf '%-22s %s\n' "atelier galleries:" "$(mysql_client -N -B "$DB_NAME" -e "SELECT COUNT(*) FROM ${DB_PREFIX}posts WHERE post_type='atelier_gallery';" 2>/dev/null)"
-	printf '%-22s %s\n' "schema option:" "$(mysql_client -N -B "$DB_NAME" -e "SELECT option_value FROM ${DB_PREFIX}options WHERE option_name='atelier_schema_version';" 2>/dev/null || echo '(unset)')"
+	printf '%-22s %s\n' "lichtbild galleries:" "$(mysql_client -N -B "$DB_NAME" -e "SELECT COUNT(*) FROM ${DB_PREFIX}posts WHERE post_type='lichtbild_gallery';" 2>/dev/null)"
+	printf '%-22s %s\n' "schema option:" "$(mysql_client -N -B "$DB_NAME" -e "SELECT option_value FROM ${DB_PREFIX}options WHERE option_name='lichtbild_schema_version';" 2>/dev/null || echo '(unset)')"
 	echo
 	printf '%-22s %s\n' "active plugins:" ""
 	wp_cli plugin list --status=active --field=name 2>/dev/null | sed 's/^/  /'

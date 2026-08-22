@@ -3,12 +3,12 @@
  * A small WordPress stand-in, backed by a fixture exported from a real site.
  *
  * This exists so the renderer can be exercised against every gallery on a live site
- * without a WordPress install. It implements only the functions Atelier calls, and it
+ * without a WordPress install. It implements only the functions Lichtbild calls, and it
  * implements them the way WordPress does — in particular `wp_get_attachment_image_src()`
  * falling back to the full size when a registered size was never generated, which is the
  * case that decides whether the lightbox gets correct dimensions.
  *
- * @package Atelier\Tests
+ * @package Lichtbild\Tests
  */
 
 // phpcs:disable WordPress.NamingConventions.PrefixAllGlobals
@@ -16,12 +16,12 @@
 /**
  * Holds the fixture and answers queries against it.
  */
-class Atelier_Test_Site {
+class Lichtbild_Test_Site {
 
 	/**
 	 * The shared instance.
 	 *
-	 * @var Atelier_Test_Site|null
+	 * @var Lichtbild_Test_Site|null
 	 */
 	public static $instance = null;
 
@@ -58,7 +58,7 @@ class Atelier_Test_Site {
 	 *
 	 * @param string $path Path to the JSON fixture.
 	 *
-	 * @return Atelier_Test_Site The loaded site.
+	 * @return Lichtbild_Test_Site The loaded site.
 	 */
 	public static function load( $path ) {
 		$site = new self();
@@ -341,17 +341,17 @@ class Atelier_Test_Site {
  * @return mixed Meta value.
  */
 function get_post_meta( $post_id, $key = '', $single = false ) {
-	$site = Atelier_Test_Site::$instance;
+	$site = Lichtbild_Test_Site::$instance;
 
-	if ( '_atelier_gallery' === $key ) {
-		return isset( $site->galleries[ $post_id ]['atelier'] )
-			? $site->galleries[ $post_id ]['atelier']
+	if ( '_lichtbild_gallery' === $key ) {
+		return isset( $site->galleries[ $post_id ]['lichtbild'] )
+			? $site->galleries[ $post_id ]['lichtbild']
 			: '';
 	}
 
-	if ( '_atelier_album' === $key ) {
-		return isset( $site->albums[ $post_id ]['atelier'] )
-			? $site->albums[ $post_id ]['atelier']
+	if ( '_lichtbild_album' === $key ) {
+		return isset( $site->albums[ $post_id ]['lichtbild'] )
+			? $site->albums[ $post_id ]['lichtbild']
 			: '';
 	}
 
@@ -378,7 +378,7 @@ function get_post_meta( $post_id, $key = '', $single = false ) {
  * @return array|false Metadata, or false when unknown.
  */
 function wp_get_attachment_metadata( $attachment_id ) {
-	$site = Atelier_Test_Site::$instance;
+	$site = Lichtbild_Test_Site::$instance;
 
 	return isset( $site->attachments[ $attachment_id ]['data'] )
 		? $site->attachments[ $attachment_id ]['data']
@@ -394,7 +394,7 @@ function wp_get_attachment_metadata( $attachment_id ) {
  * @return array|false Array of URL, width, height and intermediate flag.
  */
 function wp_get_attachment_image_src( $attachment_id, $size = 'thumbnail' ) {
-	$site = Atelier_Test_Site::$instance;
+	$site = Lichtbild_Test_Site::$instance;
 	$meta = wp_get_attachment_metadata( $attachment_id );
 
 	if ( ! is_array( $meta ) || empty( $meta['file'] ) ) {
@@ -432,7 +432,7 @@ function wp_get_attachment_image_src( $attachment_id, $size = 'thumbnail' ) {
  * @return string|false Srcset string, or false when there is nothing to offer.
  */
 function wp_get_attachment_image_srcset( $attachment_id, $size = 'medium' ) {
-	$site = Atelier_Test_Site::$instance;
+	$site = Lichtbild_Test_Site::$instance;
 	$meta = wp_get_attachment_metadata( $attachment_id );
 
 	if ( ! is_array( $meta ) || empty( $meta['sizes'] ) || empty( $meta['width'] ) ) {
@@ -477,7 +477,7 @@ function wp_get_attachment_image_srcset( $attachment_id, $size = 'medium' ) {
  * @return string Title.
  */
 function get_the_title( $post_id = 0 ) {
-	$site = Atelier_Test_Site::$instance;
+	$site = Lichtbild_Test_Site::$instance;
 
 	foreach ( array( 'galleries', 'albums', 'attachments' ) as $bucket ) {
 		if ( isset( $site->$bucket[ $post_id ]['title'] ) ) {
@@ -497,7 +497,7 @@ function get_the_title( $post_id = 0 ) {
  * @return string Field value.
  */
 function get_post_field( $field, $post_id = 0 ) {
-	$site = Atelier_Test_Site::$instance;
+	$site = Lichtbild_Test_Site::$instance;
 
 	if ( 'post_excerpt' === $field && isset( $site->attachments[ $post_id ]['excerpt'] ) ) {
 		return (string) $site->attachments[ $post_id ]['excerpt'];
@@ -514,7 +514,7 @@ function get_post_field( $field, $post_id = 0 ) {
  * @return string|false Post type, or false when unknown.
  */
 function get_post_type( $post_id = 0 ) {
-	$site = Atelier_Test_Site::$instance;
+	$site = Lichtbild_Test_Site::$instance;
 
 	// Answered from the rows rather than from which fixture bucket the ID is in, so that a
 	// migration which renames the post type is visible here. A stub that always said `envira`
@@ -540,14 +540,14 @@ function get_post_type( $post_id = 0 ) {
  * `false` for every album, which reads exactly like a draft.
  *
  * Returning `false` for an unknown ID is deliberate: a stub that fell back to `publish` would
- * make the status leg of `Atelier_Repository::is_viewable()` impossible to fail.
+ * make the status leg of `Lichtbild_Repository::is_viewable()` impossible to fail.
  *
  * @param int $post_id Post ID.
  *
  * @return string|false Status, or false when unknown.
  */
 function get_post_status( $post_id = 0 ) {
-	$site = Atelier_Test_Site::$instance;
+	$site = Lichtbild_Test_Site::$instance;
 
 	foreach ( array( $site->galleries, $site->albums ) as $bucket ) {
 		if ( isset( $bucket[ $post_id ]['status'] ) ) {
@@ -567,7 +567,7 @@ function get_post_status( $post_id = 0 ) {
  * @return array|false Term objects, or false when none.
  */
 function get_the_terms( $post_id, $taxonomy ) {
-	$site = Atelier_Test_Site::$instance;
+	$site = Lichtbild_Test_Site::$instance;
 
 	if ( $site->tag_taxonomy() !== $taxonomy || empty( $site->attachments[ $post_id ]['tags'] ) ) {
 		return false;
@@ -593,7 +593,7 @@ function get_the_terms( $post_id, $taxonomy ) {
  * @return string Permalink.
  */
 function get_permalink( $post_id = 0 ) {
-	$site = Atelier_Test_Site::$instance;
+	$site = Lichtbild_Test_Site::$instance;
 	$name = isset( $site->galleries[ $post_id ]['name'] ) ? $site->galleries[ $post_id ]['name'] : (string) $post_id;
 
 	return $site->siteurl . '/' . $name . '/';
@@ -620,7 +620,7 @@ function get_permalink( $post_id = 0 ) {
  * @return int[] Matching post IDs.
  */
 function get_posts( $args = array() ) {
-	$site = Atelier_Test_Site::$instance;
+	$site = Lichtbild_Test_Site::$instance;
 	$type = isset( $args['post_type'] ) ? $args['post_type'] : '';
 	$name = isset( $args['name'] ) ? $args['name'] : '';
 
@@ -628,7 +628,7 @@ function get_posts( $args = array() ) {
 	// cache one call here plus the reads behind it costs 111 queries, and the whole point of
 	// where it is called from is that pages which never use the answer do not pay for it. That
 	// is invisible in every rendered byte, so it can only be asserted as a call count.
-	$GLOBALS['atelier_test_queries'] = ( $GLOBALS['atelier_test_queries'] ?? 0 ) + 1;
+	$GLOBALS['lichtbild_test_queries'] = ( $GLOBALS['lichtbild_test_queries'] ?? 0 ) + 1;
 
 	// `any` is the real function's escape hatch; everything else is a list to match against.
 	$statuses = isset( $args['post_status'] ) ? (array) $args['post_status'] : array( 'publish' );
@@ -676,7 +676,7 @@ function get_posts( $args = array() ) {
  * @return string Edit URL, or an empty string.
  */
 function get_edit_post_link( $post_id = 0 ) {
-	$site    = Atelier_Test_Site::$instance;
+	$site    = Lichtbild_Test_Site::$instance;
 	$post_id = (int) $post_id;
 
 	if ( ! isset( $site->posts[ $post_id ] ) ) {
@@ -695,7 +695,7 @@ function get_edit_post_link( $post_id = 0 ) {
  * @return mixed Option value.
  */
 function get_option( $name, $default = false ) {
-	$site = Atelier_Test_Site::$instance;
+	$site = Lichtbild_Test_Site::$instance;
 
 	if ( 'date_format' === $name ) {
 		return 'F j, Y';
@@ -713,10 +713,10 @@ function get_option( $name, $default = false ) {
  * @return bool Always true.
  */
 function update_option( $name, $value ) {
-	$site = Atelier_Test_Site::$instance;
+	$site = Lichtbild_Test_Site::$instance;
 
 	// A knob, because the branch it reaches is otherwise unreachable and that branch is the
-	// whole point of `Atelier_Migration::set_schema()`. A stub that always succeeds makes "the
+	// whole point of `Lichtbild_Migration::set_schema()`. A stub that always succeeds makes "the
 	// rows were renamed but the flag was not written" impossible to construct — which is
 	// exactly the state that leaves every gallery on the site unfindable, and exactly the state
 	// this stub asserted could not happen for as long as it returned true unconditionally.
@@ -737,7 +737,7 @@ function update_option( $name, $value ) {
  * @return bool Always true.
  */
 function delete_option( $name ) {
-	unset( Atelier_Test_Site::$instance->options[ $name ] );
+	unset( Lichtbild_Test_Site::$instance->options[ $name ] );
 
 	return true;
 }
@@ -752,7 +752,7 @@ function delete_option( $name ) {
  * @return bool Always true.
  */
 function update_post_meta( $post_id, $key, $value ) {
-	$site = Atelier_Test_Site::$instance;
+	$site = Lichtbild_Test_Site::$instance;
 
 	// A write that silently does not land is the case the migration's read-back exists for,
 	// and it is unreachable unless the stub can produce it.
@@ -767,12 +767,12 @@ function update_post_meta( $post_id, $key, $value ) {
 	// between them does with backslashes, which is how a double-unslash shipped in three places.
 	$value = wp_unslash( $value );
 
-	if ( '_atelier_gallery' === $key ) {
-		$site->galleries[ (int) $post_id ]['atelier'] = $value;
+	if ( '_lichtbild_gallery' === $key ) {
+		$site->galleries[ (int) $post_id ]['lichtbild'] = $value;
 	}
 
-	if ( '_atelier_album' === $key ) {
-		$site->albums[ (int) $post_id ]['atelier'] = $value;
+	if ( '_lichtbild_album' === $key ) {
+		$site->albums[ (int) $post_id ]['lichtbild'] = $value;
 	}
 
 	return true;
@@ -800,7 +800,7 @@ function update_meta_cache() {}
  * @return void
  */
 function _prime_post_caches( $ids, $update_term_cache = true, $update_meta_cache = true ) {
-	Atelier_Test_Site::$instance->primed[] = array(
+	Lichtbild_Test_Site::$instance->primed[] = array(
 		'ids'   => array_values( array_map( 'intval', (array) $ids ) ),
 		'terms' => (bool) $update_term_cache,
 		'meta'  => (bool) $update_meta_cache,
@@ -822,7 +822,7 @@ function wp_cache_flush() {}
  * wrong rows here instead of quietly matching a hardcoded expectation. That is the
  * difference between a stub that can disagree with the code and one that cannot.
  */
-class Atelier_Test_wpdb {
+class Lichtbild_Test_wpdb {
 
 	/**
 	 * Text of the error a simulated failure reports.
@@ -1014,7 +1014,7 @@ class Atelier_Test_wpdb {
 	 * @return array Reference to the rows.
 	 */
 	private function &table( $table ) {
-		$site = Atelier_Test_Site::$instance;
+		$site = Lichtbild_Test_Site::$instance;
 
 		if ( $this->posts === $table ) {
 			return $site->posts;
@@ -1058,7 +1058,7 @@ class Atelier_Test_wpdb {
 	}
 }
 
-$GLOBALS['wpdb'] = new Atelier_Test_wpdb();
+$GLOBALS['wpdb'] = new Lichtbild_Test_wpdb();
 
 /**
  * Formats a timestamp.
@@ -1077,7 +1077,7 @@ function date_i18n( $format, $stamp = 0 ) {
  *
  * No callback ever runs here, so the value is not the interesting part. The ARGUMENT COUNT is:
  * a filter's extra arguments are its context, and what a plugin puts in that context is a
- * public API decision no other instrument in this suite can see. `atelier_config_sanitize`
+ * public API decision no other instrument in this suite can see. `lichtbild_config_sanitize`
  * passed the raw `$_POST` array as context until the wordpress.org review objected, and nothing
  * would have noticed it coming back — the return value is identical either way.
  *
@@ -1087,7 +1087,7 @@ function date_i18n( $format, $stamp = 0 ) {
  * @return mixed The value.
  */
 function apply_filters( $hook, $value ) {
-	$GLOBALS['atelier_test_filters'][ (string) $hook ] = func_num_args();
+	$GLOBALS['lichtbild_test_filters'][ (string) $hook ] = func_num_args();
 
 	return $value;
 }
@@ -1095,7 +1095,7 @@ function apply_filters( $hook, $value ) {
 /**
  * Records a hook registration.
  *
- * These were no-ops until the harness-completeness guard showed that `Atelier` -- the container
+ * These were no-ops until the harness-completeness guard showed that `Lichtbild` -- the container
  * that constructs the whole object graph and registers every hook -- had never been loaded by
  * this suite at all. Recording makes `boot()` checkable, which is worth having: the container is
  * where a constructor signature change lands, and nothing else would notice one.
@@ -1106,7 +1106,7 @@ function apply_filters( $hook, $value ) {
  * @return void
  */
 function add_action( $hook = '', $callback = null ) {
-	$GLOBALS['atelier_test_hooks'][] = array( 'kind' => 'action', 'hook' => (string) $hook, 'callback' => $callback );
+	$GLOBALS['lichtbild_test_hooks'][] = array( 'kind' => 'action', 'hook' => (string) $hook, 'callback' => $callback );
 }
 
 /**
@@ -1118,7 +1118,7 @@ function add_action( $hook = '', $callback = null ) {
  * @return void
  */
 function add_filter( $hook = '', $callback = null ) {
-	$GLOBALS['atelier_test_hooks'][] = array( 'kind' => 'filter', 'hook' => (string) $hook, 'callback' => $callback );
+	$GLOBALS['lichtbild_test_hooks'][] = array( 'kind' => 'filter', 'hook' => (string) $hook, 'callback' => $callback );
 }
 
 /**
@@ -1130,7 +1130,7 @@ function add_filter( $hook = '', $callback = null ) {
  * @return void
  */
 function add_shortcode( $tag, $callback ) {
-	$GLOBALS['atelier_test_shortcodes'][ (string) $tag ] = $callback;
+	$GLOBALS['lichtbild_test_shortcodes'][ (string) $tag ] = $callback;
 }
 
 /**
@@ -1141,7 +1141,7 @@ function add_shortcode( $tag, $callback ) {
  * @return void
  */
 function remove_shortcode( $tag ) {
-	unset( $GLOBALS['atelier_test_shortcodes'][ (string) $tag ] );
+	unset( $GLOBALS['lichtbild_test_shortcodes'][ (string) $tag ] );
 }
 
 /**
@@ -1152,7 +1152,7 @@ function remove_shortcode( $tag ) {
  * @return bool True when registered.
  */
 function shortcode_exists( $tag ) {
-	return isset( $GLOBALS['atelier_test_shortcodes'][ (string) $tag ] );
+	return isset( $GLOBALS['lichtbild_test_shortcodes'][ (string) $tag ] );
 }
 
 /**
@@ -1314,21 +1314,21 @@ function wp_list_pluck( $list, $field ) {
  *
  * @var array<string,int>
  */
-$GLOBALS['atelier_test_enqueued'] = array();
+$GLOBALS['lichtbild_test_enqueued'] = array();
 
 /**
  * Registered styles and scripts, keyed by handle.
  *
  * These three were no-ops until 26.8.14, with docblocks claiming they recorded something.
  * What made recording worth the lines is the block editor's stylesheet: it is registered with
- * `atelier` as a **dependency**, and `WP_Styles` drops a dependency that was never registered
+ * `lichtbild` as a **dependency**, and `WP_Styles` drops a dependency that was never registered
  * without a word — so the one arrangement that breaks the editor preview is also the one that
  * produces no error anywhere. That is a fact about handles and their dependencies, which is
  * precisely what a no-op cannot hold.
  *
  * @var array<string,array{deps:array,src:string}>
  */
-$GLOBALS['atelier_test_registered'] = array(
+$GLOBALS['lichtbild_test_registered'] = array(
 	'style'  => array(),
 	'script' => array(),
 );
@@ -1338,14 +1338,14 @@ $GLOBALS['atelier_test_registered'] = array(
  *
  * @var array<int,array{handle:string,data:string,position:string}>
  */
-$GLOBALS['atelier_test_inline'] = array();
+$GLOBALS['lichtbild_test_inline'] = array();
 
 /**
  * Registered block definitions, keyed by block name.
  *
  * @var array<string,array>
  */
-$GLOBALS['atelier_test_blocks'] = array();
+$GLOBALS['lichtbild_test_blocks'] = array();
 
 /**
  * Records a registered style.
@@ -1357,7 +1357,7 @@ $GLOBALS['atelier_test_blocks'] = array();
  * @return void
  */
 function wp_register_style( $handle = '', $src = '', $deps = array() ) {
-	$GLOBALS['atelier_test_registered']['style'][ (string) $handle ] = array(
+	$GLOBALS['lichtbild_test_registered']['style'][ (string) $handle ] = array(
 		'src'  => (string) $src,
 		'deps' => (array) $deps,
 	);
@@ -1373,7 +1373,7 @@ function wp_register_style( $handle = '', $src = '', $deps = array() ) {
  * @return void
  */
 function wp_register_script( $handle = '', $src = '', $deps = array() ) {
-	$GLOBALS['atelier_test_registered']['script'][ (string) $handle ] = array(
+	$GLOBALS['lichtbild_test_registered']['script'][ (string) $handle ] = array(
 		'src'  => (string) $src,
 		'deps' => (array) $deps,
 	);
@@ -1396,7 +1396,7 @@ function wp_localize_script() {}
  * @return void
  */
 function wp_add_inline_script( $handle = '', $data = '', $position = 'after' ) {
-	$GLOBALS['atelier_test_inline'][] = array(
+	$GLOBALS['lichtbild_test_inline'][] = array(
 		'handle'   => (string) $handle,
 		'data'     => (string) $data,
 		'position' => (string) $position,
@@ -1435,7 +1435,7 @@ function register_block_type( $name_or_path = '', $args = array() ) {
 
 	$definition = array_merge( $metadata, (array) $args );
 
-	$GLOBALS['atelier_test_blocks'][ (string) $definition['name'] ] = $definition;
+	$GLOBALS['lichtbild_test_blocks'][ (string) $definition['name'] ] = $definition;
 
 	return $definition;
 }
@@ -1448,9 +1448,9 @@ function register_block_type( $name_or_path = '', $args = array() ) {
  * @return void
  */
 function wp_enqueue_style( $handle ) {
-	$GLOBALS['atelier_test_enqueued'][ 'style:' . $handle ] =
-		isset( $GLOBALS['atelier_test_enqueued'][ 'style:' . $handle ] )
-			? $GLOBALS['atelier_test_enqueued'][ 'style:' . $handle ] + 1
+	$GLOBALS['lichtbild_test_enqueued'][ 'style:' . $handle ] =
+		isset( $GLOBALS['lichtbild_test_enqueued'][ 'style:' . $handle ] )
+			? $GLOBALS['lichtbild_test_enqueued'][ 'style:' . $handle ] + 1
 			: 1;
 }
 
@@ -1462,9 +1462,9 @@ function wp_enqueue_style( $handle ) {
  * @return void
  */
 function wp_enqueue_script( $handle ) {
-	$GLOBALS['atelier_test_enqueued'][ 'script:' . $handle ] =
-		isset( $GLOBALS['atelier_test_enqueued'][ 'script:' . $handle ] )
-			? $GLOBALS['atelier_test_enqueued'][ 'script:' . $handle ] + 1
+	$GLOBALS['lichtbild_test_enqueued'][ 'script:' . $handle ] =
+		isset( $GLOBALS['lichtbild_test_enqueued'][ 'script:' . $handle ] )
+			? $GLOBALS['lichtbild_test_enqueued'][ 'script:' . $handle ] + 1
 			: 1;
 }
 
@@ -1476,7 +1476,7 @@ function wp_enqueue_script( $handle ) {
  * @return string Absolute URL.
  */
 function admin_url( $path = '' ) {
-	return Atelier_Test_Site::$instance->siteurl . '/wp-admin/' . ltrim( (string) $path, '/' );
+	return Lichtbild_Test_Site::$instance->siteurl . '/wp-admin/' . ltrim( (string) $path, '/' );
 }
 
 /**
@@ -1531,7 +1531,7 @@ function wp_nonce_field( $action = '', $name = '_wpnonce' ) {
  * @return void
  */
 function add_meta_box( $id, $title, $callback, $screen = '', $context = 'advanced', $priority = 'default' ) {
-	Atelier_Test_Site::$instance->meta_boxes[ $id ] = array(
+	Lichtbild_Test_Site::$instance->meta_boxes[ $id ] = array(
 		'title'    => $title,
 		'screen'   => $screen,
 		'context'  => $context,
@@ -1577,7 +1577,7 @@ function wp_get_attachment_image_url( $attachment_id, $size = 'thumbnail' ) {
  * @return array The stored term names.
  */
 function wp_set_object_terms( $object_id, $terms, $taxonomy ) {
-	$site = Atelier_Test_Site::$instance;
+	$site = Lichtbild_Test_Site::$instance;
 
 	if ( $site->tag_taxonomy() !== $taxonomy ) {
 		return array();
@@ -1618,7 +1618,7 @@ function get_intermediate_image_sizes() {
  * @return object|null The screen, or null when this is not an admin page load.
  */
 function get_current_screen() {
-	return Atelier_Test_Site::$instance->current_screen;
+	return Lichtbild_Test_Site::$instance->current_screen;
 }
 
 /**
@@ -1845,7 +1845,7 @@ function check_ajax_referer( $action = -1, $query_arg = false, $stop = true ) {
  * @return bool Whether the current user has the capability.
  */
 function current_user_can( $capability = '', ...$args ) {
-	$site      = Atelier_Test_Site::$instance;
+	$site      = Lichtbild_Test_Site::$instance;
 	$overrides = $site->capability_overrides;
 
 	// Most specific first: `edit_post:123` beats `edit_post`, which beats the blanket flag.
@@ -1883,7 +1883,7 @@ function wp_send_json_success( $data = null ) {
 	// Thrown rather than `exit`, so a check can call an endpoint and inspect what it sent.
 	// With `exit` the first AJAX assertion would end the whole run, and a suite that stops
 	// early looks a lot like one that passed.
-	throw new Atelier_Test_Halt( 'success' );
+	throw new Lichtbild_Test_Halt( 'success' );
 }
 
 /**
@@ -1904,7 +1904,7 @@ function wp_send_json_error( $data = null, $status = 400 ) {
 		)
 	);
 
-	throw new Atelier_Test_Halt( 'error ' . (int) $status );
+	throw new Lichtbild_Test_Halt( 'error ' . (int) $status );
 }
 
 /**
@@ -2001,12 +2001,12 @@ function wp_parse_url_scheme( $url ) {
  * @param string $title   Title.
  * @param array  $args    Arguments, including the HTTP response code.
  *
- * @throws Atelier_Test_Halt Always, carrying the response code.
+ * @throws Lichtbild_Test_Halt Always, carrying the response code.
  *
  * @return void
  */
 function wp_die( $message = '', $title = '', $args = array() ) {
-	throw new Atelier_Test_Halt( 'die:' . ( isset( $args['response'] ) ? $args['response'] : 0 ) );
+	throw new Lichtbild_Test_Halt( 'die:' . ( isset( $args['response'] ) ? $args['response'] : 0 ) );
 }
 
 /**
@@ -2014,18 +2014,18 @@ function wp_die( $message = '', $title = '', $args = array() ) {
  *
  * @param string $location Target URL.
  *
- * @throws Atelier_Test_Halt Always.
+ * @throws Lichtbild_Test_Halt Always.
  *
  * @return void
  */
 function wp_safe_redirect( $location ) {
-	throw new Atelier_Test_Halt( 'redirect' );
+	throw new Lichtbild_Test_Halt( 'redirect' );
 }
 
 /**
  * Raised in place of the request ending, so a test can tell which way it ended.
  */
-class Atelier_Test_Halt extends RuntimeException {}
+class Lichtbild_Test_Halt extends RuntimeException {}
 
 /**
  * Verifies an admin nonce; accepts whatever the fixture is set to expect.
@@ -2054,7 +2054,7 @@ function get_current_user_id() {
  * @return bool Always true.
  */
 function set_transient( $key, $value ) {
-	Atelier_Test_Site::$instance->options[ 'transient:' . $key ] = $value;
+	Lichtbild_Test_Site::$instance->options[ 'transient:' . $key ] = $value;
 
 	return true;
 }
@@ -2067,7 +2067,7 @@ function set_transient( $key, $value ) {
  * @return mixed Value, or false when absent.
  */
 function get_transient( $key ) {
-	$site = Atelier_Test_Site::$instance;
+	$site = Lichtbild_Test_Site::$instance;
 
 	return array_key_exists( 'transient:' . $key, $site->options ) ? $site->options[ 'transient:' . $key ] : false;
 }
@@ -2080,7 +2080,7 @@ function get_transient( $key ) {
  * @return bool Always true.
  */
 function delete_transient( $key ) {
-	unset( Atelier_Test_Site::$instance->options[ 'transient:' . $key ] );
+	unset( Lichtbild_Test_Site::$instance->options[ 'transient:' . $key ] );
 
 	return true;
 }
@@ -2105,7 +2105,7 @@ function sanitize_text_field( $value ) {
  * @return void
  */
 function register_post_type( $name, $args = array() ) {
-	$site                         = Atelier_Test_Site::$instance;
+	$site                         = Lichtbild_Test_Site::$instance;
 	$site->registered[]           = $name;
 	$site->rewrite_slugs[ $name ] = isset( $args['rewrite']['slug'] ) ? $args['rewrite']['slug'] : '';
 	$site->menu_parents[ $name ]  = isset( $args['show_in_menu'] ) ? $args['show_in_menu'] : '';
@@ -2121,7 +2121,7 @@ function register_post_type( $name, $args = array() ) {
  * @return void
  */
 function register_taxonomy( $name, $object_type = '', $args = array() ) {
-	$site                 = Atelier_Test_Site::$instance;
+	$site                 = Lichtbild_Test_Site::$instance;
 	$site->registered[]   = $name;
 	$site->rewrite_slugs[ $name ] = isset( $args['rewrite']['slug'] ) ? $args['rewrite']['slug'] : '';
 }
@@ -2132,7 +2132,7 @@ function register_taxonomy( $name, $object_type = '', $args = array() ) {
  * @return bool Always false.
  */
 function is_singular( $post_type = '' ) {
-	$site = Atelier_Test_Site::$instance;
+	$site = Lichtbild_Test_Site::$instance;
 
 	if ( $site->current_post <= 0 ) {
 		return false;
@@ -2147,7 +2147,7 @@ function is_singular( $post_type = '' ) {
  * @return bool True during a simulated singular request.
  */
 function in_the_loop() {
-	return Atelier_Test_Site::$instance->current_post > 0;
+	return Lichtbild_Test_Site::$instance->current_post > 0;
 }
 
 /**
@@ -2156,7 +2156,7 @@ function in_the_loop() {
  * @return bool True during a simulated singular request.
  */
 function is_main_query() {
-	return Atelier_Test_Site::$instance->current_post > 0;
+	return Lichtbild_Test_Site::$instance->current_post > 0;
 }
 
 /**
@@ -2165,7 +2165,7 @@ function is_main_query() {
  * @return int Post ID, or 0.
  */
 function get_the_ID() {
-	return Atelier_Test_Site::$instance->current_post;
+	return Lichtbild_Test_Site::$instance->current_post;
 }
 
 /**
@@ -2179,7 +2179,7 @@ function get_the_ID() {
  * @return bool True when the password has not been entered.
  */
 function post_password_required( $post = null ) {
-	$site = Atelier_Test_Site::$instance;
+	$site = Lichtbild_Test_Site::$instance;
 
 	if ( is_object( $post ) && isset( $post->ID ) ) {
 		$id = (int) $post->ID;
@@ -2196,7 +2196,7 @@ function post_password_required( $post = null ) {
  * A post object.
  *
  * Real enough for the one production `instanceof WP_Post` check, which is what stops
- * `Atelier_Assets::maybe_enqueue_early()` reading `post_content` off a null.
+ * `Lichtbild_Assets::maybe_enqueue_early()` reading `post_content` off a null.
  */
 class WP_Post {
 
@@ -2223,7 +2223,7 @@ class WP_Post {
  * @return WP_Post|null The post, or null when no post is being viewed.
  */
 function get_post( $post = null ) {
-	$site = Atelier_Test_Site::$instance;
+	$site = Lichtbild_Test_Site::$instance;
 	$id   = is_numeric( $post ) ? (int) $post : $site->current_post;
 
 	if ( $id <= 0 ) {
@@ -2257,5 +2257,5 @@ function has_shortcode( $content, $shortcode ) {
  * @return string Relative path.
  */
 function plugin_basename( $file ) {
-	return 'atelier/' . basename( (string) $file );
+	return 'lichtbild/' . basename( (string) $file );
 }

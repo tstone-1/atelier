@@ -15,7 +15,7 @@
  * what suggested writing this at all: the first extraction pass reported 153 of 180 strings and
  * looked complete.
  *
- * @package Atelier\Tests
+ * @package Lichtbild\Tests
  */
 
 // phpcs:disable WordPress.NamingConventions.PrefixAllGlobals
@@ -49,7 +49,7 @@ $context = array( '_x', 'esc_html_x', 'esc_attr_x' );
  *
  * @return string[] The literals found, in source order.
  */
-function atelier_extract( $path, array $single, array $plural, array $context, array &$dynamic ) {
+function lichtbild_extract( $path, array $single, array $plural, array $context, array &$dynamic ) {
 	$tokens = token_get_all( (string) file_get_contents( $path ) );
 	$found  = array();
 	$names  = array_merge( $single, $plural, $context );
@@ -118,7 +118,7 @@ function atelier_extract( $path, array $single, array $plural, array $context, a
  *
  * @return array<string,bool> Msgids as keys.
  */
-function atelier_msgids( $path ) {
+function lichtbild_msgids( $path ) {
 	$ids     = array();
 	$buffer  = '';
 	$reading = false;
@@ -169,7 +169,7 @@ function atelier_msgids( $path ) {
  *
  * @return array{empty:string[],fuzzy:string[]} The two lists.
  */
-function atelier_untranslated( $path ) {
+function lichtbild_untranslated( $path ) {
 	$body   = (string) file_get_contents( $path );
 	$blocks = explode( "\n\n", $body );
 	$empty  = array();
@@ -184,7 +184,7 @@ function atelier_untranslated( $path ) {
 			continue; // the header
 		}
 
-		$ids = array_keys( atelier_msgids_from_block( $block ) );
+		$ids = array_keys( lichtbild_msgids_from_block( $block ) );
 
 		if ( empty( $ids ) ) {
 			continue;
@@ -212,10 +212,10 @@ function atelier_untranslated( $path ) {
  *
  * @return array<string,bool> Msgids as keys.
  */
-function atelier_msgids_from_block( $block ) {
-	$path = tempnam( sys_get_temp_dir(), 'atelier-po' );
+function lichtbild_msgids_from_block( $block ) {
+	$path = tempnam( sys_get_temp_dir(), 'lichtbild-po' );
 	file_put_contents( $path, $block . "\n\n" );
-	$ids = atelier_msgids( $path );
+	$ids = lichtbild_msgids( $path );
 	unlink( $path );
 
 	return $ids;
@@ -233,14 +233,14 @@ function atelier_msgids_from_block( $block ) {
  *
  * Translation happens only when the metadata declares a `textdomain`. Without one, core skips
  * the whole schema silently, so the missing key is reported here as a failure rather than left
- * to be discovered by a German editor reading "Atelier Gallery" in the inserter.
+ * to be discovered by a German editor reading "Lichtbild Gallery" in the inserter.
  *
  * @param string $path     Path to a `block.json`.
  * @param array  $problems Collects a description of anything that makes the file untranslatable.
  *
  * @return string[] The translatable literals.
  */
-function atelier_block_strings( $path, array &$problems ) {
+function lichtbild_block_strings( $path, array &$problems ) {
 	$meta = json_decode( (string) file_get_contents( $path ), true );
 
 	if ( ! is_array( $meta ) ) {
@@ -284,7 +284,7 @@ function atelier_block_strings( $path, array &$problems ) {
  *
  * @return string[] The header values, in file order.
  */
-function atelier_header_strings( $path ) {
+function lichtbild_header_strings( $path ) {
 	$head   = substr( (string) file_get_contents( $path ), 0, 8192 );
 	$wanted = array( 'Plugin Name', 'Plugin URI', 'Description', 'Author' );
 	$out    = array();
@@ -302,19 +302,19 @@ function atelier_header_strings( $path ) {
 	return $out;
 }
 
-$files = array_merge( glob( $root . '/includes/*.php' ), array( $root . '/atelier.php' ) );
+$files = array_merge( glob( $root . '/includes/*.php' ), array( $root . '/lichtbild-gallery.php' ) );
 sort( $files );
 
 $dynamic = array();
 $source  = array();
 
 foreach ( $files as $file ) {
-	foreach ( atelier_extract( $file, $single, $plural, $context, $dynamic ) as $string ) {
+	foreach ( lichtbild_extract( $file, $single, $plural, $context, $dynamic ) as $string ) {
 		$source[ $string ] = true;
 	}
 }
 
-$header = atelier_header_strings( $root . '/atelier.php' );
+$header = lichtbild_header_strings( $root . '/lichtbild-gallery.php' );
 
 foreach ( $header as $string ) {
 	$source[ $string ] = true;
@@ -331,20 +331,20 @@ $problems = array();
 sort( $blocks );
 
 foreach ( $blocks as $block ) {
-	foreach ( atelier_block_strings( $block, $problems ) as $string ) {
+	foreach ( lichtbild_block_strings( $block, $problems ) as $string ) {
 		$source[ $string ] = true;
 	}
 }
 
 printf( "block metadata files: %d\n", count( $blocks ) );
 
-$po  = $root . '/languages/atelier-de_DE.po';
-$pot = $root . '/languages/atelier.pot';
+$po  = $root . '/languages/lichtbild-gallery-de_DE.po';
+$pot = $root . '/languages/lichtbild-gallery.pot';
 $ok  = true;
 
 printf( "source strings:      %d\n", count( $source ) );
 
-foreach ( array( 'atelier.pot' => $pot, 'atelier-de_DE.po' => $po ) as $label => $path ) {
+foreach ( array( 'lichtbild-gallery.pot' => $pot, 'lichtbild-gallery-de_DE.po' => $po ) as $label => $path ) {
 	if ( ! is_readable( $path ) ) {
 		printf( "[FAIL] %s is missing\n", $label );
 		$ok = false;
@@ -352,7 +352,7 @@ foreach ( array( 'atelier.pot' => $pot, 'atelier-de_DE.po' => $po ) as $label =>
 		continue;
 	}
 
-	$catalogue = atelier_msgids( $path );
+	$catalogue = lichtbild_msgids( $path );
 	$missing   = array_diff_key( $source, $catalogue );
 	$orphaned  = array_diff_key( $catalogue, $source );
 
@@ -371,7 +371,7 @@ foreach ( array( 'atelier.pot' => $pot, 'atelier-de_DE.po' => $po ) as $label =>
 	}
 }
 
-$gaps = atelier_untranslated( $po );
+$gaps = lichtbild_untranslated( $po );
 
 printf( "untranslated:        %d\nfuzzy:               %d\n", count( $gaps['empty'] ), count( $gaps['fuzzy'] ) );
 
@@ -398,8 +398,8 @@ foreach ( $problems as $problem ) {
 
 // The compiled catalogue is what WordPress actually reads. A .po with no .mo beside it is a
 // translation nobody sees, which is indistinguishable from no translation at all.
-if ( ! is_readable( $root . '/languages/atelier-de_DE.mo' ) ) {
-	printf( "  [FAIL] atelier-de_DE.mo is missing; the .po alone is never read\n" );
+if ( ! is_readable( $root . '/languages/lichtbild-gallery-de_DE.mo' ) ) {
+	printf( "  [FAIL] lichtbild-gallery-de_DE.mo is missing; the .po alone is never read\n" );
 	$ok = false;
 }
 

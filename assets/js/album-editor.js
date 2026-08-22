@@ -21,7 +21,7 @@
 	function syncOrder() {
 		var keys = [];
 
-		$( '#atelier-album-editor-items .atelier-editor__item' ).each( function () {
+		$( '#lichtbild-album-editor-items .lichtbild-editor__item' ).each( function () {
 			var key = $( this ).attr( 'data-key' );
 
 			if ( key ) {
@@ -29,8 +29,8 @@
 			}
 		} );
 
-		$( '#atelier-album-editor-order' ).val( keys.join( ',' ) );
-		$( '#atelier-album-editor-empty' ).toggle( 0 === keys.length );
+		$( '#lichtbild-album-editor-order' ).val( keys.join( ',' ) );
+		$( '#lichtbild-album-editor-empty' ).toggle( 0 === keys.length );
 	}
 
 	/**
@@ -41,12 +41,12 @@
 	 */
 	function loadCovers( row, galleryId ) {
 		$.post( window.ajaxurl, {
-			action: 'atelier_album_covers',
-			nonce: AtelierAlbumEditor.nonce,
+			action: 'lichtbild_album_covers',
+			nonce: LichtbildAlbumEditor.nonce,
 			album: $( '#post_ID' ).val(),
 			gallery: galleryId
 		} ).done( function ( response ) {
-			var select = row.find( '.atelier-editor__cover' );
+			var select = row.find( '.lichtbild-editor__cover' );
 
 			if ( ! response || ! response.success || ! response.data ) {
 				return;
@@ -62,7 +62,7 @@
 				// The renderer shows the first image when no cover is chosen, so showing it
 				// here is what makes the thumbnail agree with the page.
 				if ( 0 === index ) {
-					row.find( '.atelier-editor__thumb' ).html(
+					row.find( '.lichtbild-editor__thumb' ).html(
 						$( '<img/>' ).attr( 'src', cover.thumb ).attr( 'alt', '' )
 					);
 				}
@@ -77,7 +77,7 @@
 	 * @param {string} title     Gallery title, for the row heading.
 	 */
 	function addItem( galleryId, title ) {
-		var template = wp.template( 'atelier-album-editor-item' );
+		var template = wp.template( 'lichtbild-album-editor-item' );
 		var row;
 
 		counter += 1;
@@ -91,7 +91,7 @@
 			} )
 		);
 
-		$( '#atelier-album-editor-items' ).append( row );
+		$( '#lichtbild-album-editor-items' ).append( row );
 
 		loadCovers( row, galleryId );
 		syncOrder();
@@ -105,7 +105,7 @@
 	function syncThumb( select ) {
 		var option = select.find( 'option:selected' );
 		var thumb = option.attr( 'data-thumb' );
-		var row = select.closest( '.atelier-editor__item' );
+		var row = select.closest( '.lichtbild-editor__item' );
 
 		if ( ! thumb ) {
 			// "First image in the gallery" carries no thumbnail of its own; the first real
@@ -114,29 +114,29 @@
 		}
 
 		if ( thumb ) {
-			row.find( '.atelier-editor__thumb' ).html(
+			row.find( '.lichtbild-editor__thumb' ).html(
 				$( '<img/>' ).attr( 'src', thumb ).attr( 'alt', '' )
 			);
 		}
 	}
 
 	$( function () {
-		var list = $( '#atelier-album-editor-items' );
+		var list = $( '#lichtbild-album-editor-items' );
 
 		if ( ! list.length ) {
 			return;
 		}
 
 		list.sortable( {
-			items: '> .atelier-editor__item',
-			placeholder: 'atelier-editor__placeholder',
+			items: '> .lichtbild-editor__item',
+			placeholder: 'lichtbild-editor__placeholder',
 			forcePlaceholderSize: true,
 			tolerance: 'pointer',
 			update: syncOrder
 		} );
 
-		$( '#atelier-album-add-button' ).on( 'click', function () {
-			var select = $( '#atelier-album-add' );
+		$( '#lichtbild-album-add-button' ).on( 'click', function () {
+			var select = $( '#lichtbild-album-add' );
 			var galleryId = parseInt( select.val(), 10 );
 
 			if ( ! galleryId ) {
@@ -146,12 +146,12 @@
 			addItem( galleryId, select.find( 'option:selected' ).text() );
 		} );
 
-		list.on( 'click', '.atelier-editor__remove', function () {
-			$( this ).closest( '.atelier-editor__item' ).remove();
+		list.on( 'click', '.lichtbild-editor__remove', function () {
+			$( this ).closest( '.lichtbild-editor__item' ).remove();
 			syncOrder();
 		} );
 
-		list.on( 'change', '.atelier-editor__cover', function () {
+		list.on( 'change', '.lichtbild-editor__cover', function () {
 			syncThumb( $( this ) );
 		} );
 

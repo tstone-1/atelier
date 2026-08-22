@@ -2,7 +2,7 @@
 /**
  * AJAX endpoints for paginated galleries.
  *
- * @package Atelier
+ * @package Lichtbild
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -16,29 +16,29 @@ defined( 'ABSPATH' ) || exit;
  * only to someone who could already read it, and the endpoints have to enforce the same
  * rule or they become a way around it.
  */
-class Atelier_Ajax {
+class Lichtbild_Ajax {
 
 	/**
 	 * Gallery repository.
 	 *
-	 * @var Atelier_Repository
+	 * @var Lichtbild_Repository
 	 */
 	private $repository;
 
 	/**
 	 * Renderer.
 	 *
-	 * @var Atelier_Renderer
+	 * @var Lichtbild_Renderer
 	 */
 	private $renderer;
 
 	/**
 	 * Builds the handler.
 	 *
-	 * @param Atelier_Repository $repository Gallery repository.
-	 * @param Atelier_Renderer   $renderer   Renderer.
+	 * @param Lichtbild_Repository $repository Gallery repository.
+	 * @param Lichtbild_Renderer   $renderer   Renderer.
 	 */
-	public function __construct( Atelier_Repository $repository, Atelier_Renderer $renderer ) {
+	public function __construct( Lichtbild_Repository $repository, Lichtbild_Renderer $renderer ) {
 		$this->repository = $repository;
 		$this->renderer   = $renderer;
 	}
@@ -49,9 +49,9 @@ class Atelier_Ajax {
 	 * @return void
 	 */
 	public function register() {
-		foreach ( array( 'atelier_page', 'atelier_items' ) as $action ) {
-			add_action( 'wp_ajax_' . $action, array( $this, str_replace( 'atelier_', 'handle_', $action ) ) );
-			add_action( 'wp_ajax_nopriv_' . $action, array( $this, str_replace( 'atelier_', 'handle_', $action ) ) );
+		foreach ( array( 'lichtbild_page', 'lichtbild_items' ) as $action ) {
+			add_action( 'wp_ajax_' . $action, array( $this, str_replace( 'lichtbild_', 'handle_', $action ) ) );
+			add_action( 'wp_ajax_nopriv_' . $action, array( $this, str_replace( 'lichtbild_', 'handle_', $action ) ) );
 		}
 	}
 
@@ -63,7 +63,7 @@ class Atelier_Ajax {
 	public function handle_page() {
 		$gallery = $this->authorised_gallery();
 
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- see authorised_gallery(): the nonce is verified and deliberately not refused on, because a full-page cache serves pages older than a nonce's twelve-hour life. This endpoint reads and changes nothing; authorization is Atelier_Repository::is_viewable(). `(int)` is the sanitisation.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- see authorised_gallery(): the nonce is verified and deliberately not refused on, because a full-page cache serves pages older than a nonce's twelve-hour life. This endpoint reads and changes nothing; authorization is Lichtbild_Repository::is_viewable(). `(int)` is the sanitisation.
 		$page = isset( $_REQUEST['page'] ) ? max( 1, (int) $_REQUEST['page'] ) : 1;
 		$tag  = $this->requested_tag();
 
@@ -137,7 +137,7 @@ class Atelier_Ajax {
 			}
 
 			if ( ! empty( $exif_fields ) ) {
-				$exif = Atelier_Exif::fields( $item->id(), $exif_fields, $exif_format );
+				$exif = Lichtbild_Exif::fields( $item->id(), $exif_fields, $exif_format );
 
 				if ( ! empty( $exif ) ) {
 					$entry['exif'] = $exif;
@@ -197,7 +197,7 @@ class Atelier_Ajax {
 	 * Sends a JSON error and exits when the request is not valid, so callers can treat the
 	 * return value as always usable.
 	 *
-	 * @return Atelier_Gallery The requested gallery.
+	 * @return Lichtbild_Gallery The requested gallery.
 	 */
 	private function authorised_gallery() {
 		// **The nonce is verified and never refused on**, which is deliberate and is the third
@@ -218,13 +218,13 @@ class Atelier_Ajax {
 		// or not its page was ever rendered. A nonce that cannot refuse is still worth sending
 		// and checking: it fires `check_ajax_referer` for anything monitoring it, and it keeps
 		// the ordinary same-origin request distinguishable from one that forged its way here.
-		check_ajax_referer( 'atelier', 'nonce', false );
+		check_ajax_referer( 'lichtbild', 'nonce', false );
 
 		$id      = isset( $_REQUEST['gallery'] ) ? (int) $_REQUEST['gallery'] : 0;
 		$gallery = $id > 0 ? $this->repository->gallery( $id ) : null;
 
 		if ( null === $gallery ) {
-			wp_send_json_error( array( 'message' => __( 'Gallery not found.', 'atelier' ) ), 404 );
+			wp_send_json_error( array( 'message' => __( 'Gallery not found.', 'lichtbild-gallery' ) ), 404 );
 		}
 
 		// The nonce above is CSRF hygiene and nothing more — every logged-out visitor shares one
@@ -232,7 +232,7 @@ class Atelier_Ajax {
 		// endpoints are reachable by anyone who knows a gallery ID whether or not its page was
 		// ever rendered, so it has to hold on its own.
 		if ( ! $this->repository->is_viewable( $gallery->id() ) ) {
-			wp_send_json_error( array( 'message' => __( 'Gallery not found.', 'atelier' ) ), 404 );
+			wp_send_json_error( array( 'message' => __( 'Gallery not found.', 'lichtbild-gallery' ) ), 404 );
 		}
 
 		return $gallery;

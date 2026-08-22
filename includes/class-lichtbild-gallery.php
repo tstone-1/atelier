@@ -2,20 +2,20 @@
 /**
  * A gallery: normalised settings plus its items.
  *
- * @package Atelier
+ * @package Lichtbild
  */
 
 defined( 'ABSPATH' ) || exit;
 
 /**
- * One gallery, expressed entirely in Atelier's own terms.
+ * One gallery, expressed entirely in Lichtbild's own terms.
  *
  * Deliberately contains no knowledge of Envira. Whatever a gallery was stored as, the
  * repository hands this class the twenty-six normalised settings defined by
- * `Atelier_Config`, so the reader is the same for a record Envira wrote and one Atelier
+ * `Lichtbild_Config`, so the reader is the same for a record Envira wrote and one Lichtbild
  * wrote. That is the difference between a migration that means something and a rename.
  */
-class Atelier_Gallery {
+class Lichtbild_Gallery {
 
 	/**
 	 * Post ID of the gallery.
@@ -34,7 +34,7 @@ class Atelier_Gallery {
 	/**
 	 * The gallery's items.
 	 *
-	 * @var Atelier_Item[]
+	 * @var Lichtbild_Item[]
 	 */
 	private $items;
 
@@ -43,11 +43,11 @@ class Atelier_Gallery {
 	 *
 	 * @param int           $id       Gallery post ID.
 	 * @param array         $settings Normalised settings; missing keys are filled.
-	 * @param Atelier_Item[] $items    Active items in display order.
+	 * @param Lichtbild_Item[] $items    Active items in display order.
 	 */
 	public function __construct( $id, array $settings, array $items ) {
 		$this->id       = (int) $id;
-		$this->settings = Atelier_Config::fill( $settings );
+		$this->settings = Lichtbild_Config::fill( $settings );
 		$this->items    = $items;
 	}
 
@@ -72,7 +72,7 @@ class Atelier_Gallery {
 	/**
 	 * Returns all active items.
 	 *
-	 * @return Atelier_Item[] Items in display order.
+	 * @return Lichtbild_Item[] Items in display order.
 	 */
 	public function items() {
 		return $this->items;
@@ -108,9 +108,9 @@ class Atelier_Gallery {
 		 * Filters whether a gallery uses the justified row layout.
 		 *
 		 * @param bool           $justified Whether rows are justified.
-		 * @param Atelier_Gallery $gallery   The gallery being rendered.
+		 * @param Lichtbild_Gallery $gallery   The gallery being rendered.
 		 */
-		return (bool) apply_filters( 'atelier_is_justified', $justified, $this );
+		return (bool) apply_filters( 'lichtbild_is_justified', $justified, $this );
 	}
 
 	/**
@@ -150,9 +150,9 @@ class Atelier_Gallery {
 		 * Filters the registered image size used for grid thumbnails.
 		 *
 		 * @param string         $size    Registered image size name.
-		 * @param Atelier_Gallery $gallery The gallery being rendered.
+		 * @param Lichtbild_Gallery $gallery The gallery being rendered.
 		 */
-		return (string) apply_filters( 'atelier_grid_image_size', $this->settings['image_size'], $this );
+		return (string) apply_filters( 'lichtbild_grid_image_size', $this->settings['image_size'], $this );
 	}
 
 	/**
@@ -165,9 +165,9 @@ class Atelier_Gallery {
 		 * Filters the registered image size opened in the lightbox.
 		 *
 		 * @param string         $size    Registered image size name.
-		 * @param Atelier_Gallery $gallery The gallery being rendered.
+		 * @param Lichtbild_Gallery $gallery The gallery being rendered.
 		 */
-		return (string) apply_filters( 'atelier_lightbox_image_size', $this->settings['lightbox_size'], $this );
+		return (string) apply_filters( 'lichtbild_lightbox_image_size', $this->settings['lightbox_size'], $this );
 	}
 
 	/**
@@ -201,7 +201,7 @@ class Atelier_Gallery {
 	 * gallery renders ten items, and priming five hundred to read ten would be the same mistake
 	 * pointing the other way.
 	 *
-	 * @param Atelier_Item[] $items Items about to be read.
+	 * @param Lichtbild_Item[] $items Items about to be read.
 	 *
 	 * @return int Number of attachments primed.
 	 */
@@ -240,7 +240,7 @@ class Atelier_Gallery {
 	 *
 	 * @param string $tag Tag slug; an empty slug means every item.
 	 *
-	 * @return Atelier_Item[] Matching items in display order.
+	 * @return Lichtbild_Item[] Matching items in display order.
 	 */
 	public function filtered_items( $tag = '' ) {
 		if ( '' === $tag ) {
@@ -286,7 +286,7 @@ class Atelier_Gallery {
 	 * @param int    $page One-based page number.
 	 * @param string $tag  Tag slug currently applied.
 	 *
-	 * @return Atelier_Item[] Items on that page.
+	 * @return Lichtbild_Item[] Items on that page.
 	 */
 	public function page_items( $page, $tag = '' ) {
 		$items = $this->filtered_items( $tag );
@@ -346,9 +346,9 @@ class Atelier_Gallery {
 		 * Filters the EXIF fields a gallery displays.
 		 *
 		 * @param string[]       $fields  Enabled field keys.
-		 * @param Atelier_Gallery $gallery The gallery being rendered.
+		 * @param Lichtbild_Gallery $gallery The gallery being rendered.
 		 */
-		return (array) apply_filters( 'atelier_exif_enabled_fields', $this->settings['exif_fields'], $this );
+		return (array) apply_filters( 'lichtbild_exif_enabled_fields', $this->settings['exif_fields'], $this );
 	}
 
 	/**
@@ -379,9 +379,9 @@ class Atelier_Gallery {
 		 * Filters the sharing networks offered in the lightbox.
 		 *
 		 * @param string[]       $networks Network slugs.
-		 * @param Atelier_Gallery $gallery  The gallery being rendered.
+		 * @param Lichtbild_Gallery $gallery  The gallery being rendered.
 		 */
-		return (array) apply_filters( 'atelier_social_networks', $this->settings['social_networks'], $this );
+		return (array) apply_filters( 'lichtbild_social_networks', $this->settings['social_networks'], $this );
 	}
 
 	/**
@@ -443,14 +443,14 @@ class Atelier_Gallery {
 	 *
 	 * Stored per gallery and translated by the site owner rather than by a language pack —
 	 * it is `Alle` on every gallery this was built against — so the stored string wins over
-	 * Atelier's own translation.
+	 * Lichtbild's own translation.
 	 *
 	 * @return string Button label.
 	 */
 	public function tags_all_label() {
 		$label = trim( (string) $this->settings['tags_all_label'] );
 
-		return '' !== $label ? $label : __( 'All', 'atelier' );
+		return '' !== $label ? $label : __( 'All', 'lichtbild-gallery' );
 	}
 
 	/**

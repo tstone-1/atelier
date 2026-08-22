@@ -1,7 +1,7 @@
 /**
  * Editor-only styling for the two blocks.
  *
- * Loaded as the blocks' `editorStyle`, which depends on `atelier` — so the preview inside the
+ * Loaded as the blocks' `editorStyle`, which depends on `lichtbild` — so the preview inside the
  * editor is laid out by exactly the stylesheet a visitor gets, and this file only has to say
  * how that preview behaves differently from a page.
  */
@@ -9,14 +9,14 @@
 /**
  * The preview is a picture of the gallery, not the gallery.
  *
- * `atelier.js` is not loaded in the editor, so every grid image is what it is without it: a
+ * `lichtbild.js` is not loaded in the editor, so every grid image is what it is without it: a
  * plain link to the image file. Clicking one would navigate the editor away mid-post. Making
  * the preview inert is the whole reason this file exists.
  *
  * `user-select` goes with it: a drag that starts on a caption should move the block, which is
  * what the editor does with a selection it is not given.
  */
-.atelier-block-preview {
+.lichtbild-block-preview {
 	pointer-events: none;
 	-webkit-user-select: none;
 	user-select: none;
@@ -25,7 +25,7 @@
 /* Pagination and the tag bar are controls with nothing behind them here. Shown rather than
    hidden, because they are part of what the page will look like, and hiding them would make
    the preview a worse picture of it. */
-.atelier-block-preview .atelier-pagination,
-.atelier-block-preview .atelier-tags {
+.lichtbild-block-preview .lichtbild-pagination,
+.lichtbild-block-preview .lichtbild-tags {
 	opacity: 0.65;
 }

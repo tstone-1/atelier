@@ -1,4 +1,4 @@
-# Atelier
+# Lichtbild Gallery
 
 A WordPress gallery plugin that replaces Envira Gallery Pro on `timo-stein.com`, so the
 site stops depending on a ~100 EUR/year licence it no longer pays for and is running an old
@@ -19,13 +19,16 @@ what being publishable makes non-negotiable rather than tidy:
   comparison rather than by assertion: every source file here against all 481 Envira PHP, JS and
   CSS files, and not one pair of lines in common.
 
-> **Called Tivira through 26.8.15, renamed to Atelier in 26.8.16.** The old name was one letter
-> from Envira's in the same product category, which a disclaimer cannot cure. This file, the
-> changelog and the deploy records name everything by its *current* identifiers throughout,
-> including in entries describing releases that shipped under the former name — the alternative
-> is documentation that cannot be grepped against the code it documents. Read a class or file
-> name in an old entry as "the thing now called that". Dates, counts and measured numbers are
-> untouched. The rename itself is recorded in `CHANGELOG.md` and `docs/deploys.md`.
+> **This plugin has been called three things: Tivira through 26.8.15, Atelier from 26.8.16 to
+> 26.8.23, and Lichtbild Gallery from 26.8.24.** Tivira went because it was one letter from
+> Envira's in the same product category; Atelier went because wordpress.org pended the
+> submission over it, three published plugins in that directory already leading with the word.
+> This paragraph is the only place the former names appear as themselves. Everywhere else —
+> this file, the changelog, the deploy records — names everything by its *current* identifiers,
+> including in entries describing releases that shipped under a former name, because the
+> alternative is documentation that cannot be grepped against the code it documents. Read a
+> class or file name in an old entry as "the thing now called that". Dates, counts and measured
+> numbers are untouched. Both renames are recorded in `CHANGELOG.md`.
 
 > **This file is the index; `docs/lessons.md` is the corpus.** It is read in full before
 > every task and it only grows, so an entry that is worth keeping and is only worth reading
@@ -45,12 +48,12 @@ what being publishable makes non-negotiable rather than tidy:
 **v1 is a drop-in reader.** It renders Envira's own rows in place, changing nothing. That is
 still how an un-migrated site behaves, and it is what makes the switch reversible.
 
-**v2 owns the data.** `Atelier_Config` defines twenty-six normalised settings and converts
-Envira's ~281 keys into them; `Atelier_Migration` renames the post types in place and writes
+**v2 owns the data.** `Lichtbild_Config` defines twenty-six normalised settings and converts
+Envira's ~281 keys into them; `Lichtbild_Migration` renames the post types in place and writes
 the converted record alongside the original. After that the reader contains no Envira
 knowledge at all — which is the difference between a migration and a rename.
 
-`Atelier_Repository` reads either shape: on a migrated site a `_atelier_gallery` record wins,
+`Lichtbild_Repository` reads either shape: on a migrated site a `_lichtbild_gallery` record wins,
 otherwise `_eg_gallery_data` is converted on the fly. So the two generations coexist, and the
 migration is not a cliff. **The "on a migrated site" is load-bearing** — see *What the second
 review changed, on the write path* in [`docs/lessons.md`](docs/lessons.md) for what it cost
@@ -67,16 +70,16 @@ and a custom type exists only while a plugin registers it. Envira owns three liv
 | `/envira_album/<slug>/` | album permalinks |
 | `/envira-tag/<slug>/` | tag archives |
 
-Delete Envira without replacing those registrations and all of it 404s. `Atelier_Post_Types`
+Delete Envira without replacing those registrations and all of it 404s. `Lichtbild_Post_Types`
 takes them over, and **the type names change at migration while the URLs never do** —
 `rewrite['slug']` stays pinned either way.
 
 **Since 26.8.17 those paths are Envira's only on a site that has an Envira history.** A site with
 none serves `/gallery/`, `/album/` and `/gallery-tag/`, and since 26.8.18 it also starts already
-on Atelier's own post types rather than registering names it has no reason to carry. Both answers
+on Lichtbild's own post types rather than registering names it has no reason to carry. Both answers
 are decided from one observation and recorded once, never re-derived — a site's Envira history
 changes when its old records are deleted, and its published URLs must not change with it.
-`atelier_url_slugs` filters the paths on top of that.
+`lichtbild_url_slugs` filters the paths on top of that.
 
 ### Migration invariants
 
@@ -102,11 +105,11 @@ changes when its old records are deleted, and its published URLs must not change
   wrong; and `(int)` on `$wpdb->update()` turns a failed statement into "nothing needed doing".
 - *Registration must not defer to Envira once the data has moved* — `register_types()` standing
   aside while Envira is active is right up to the migration and wrong after it — nothing else
-  registers `atelier_gallery`. The guard is `! $migrated && ...`.
+  registers `lichtbild_gallery`. The guard is `! $migrated && ...`.
 
 ## The editor, and why it requires the migration
 
-`Atelier_Editor` is the last thing that kept Envira installed for **galleries**. Everything else
+`Lichtbild_Editor` is the last thing that kept Envira installed for **galleries**. Everything else
 about a gallery had moved across; the only way to *change* one was still Envira's screen. Albums
 followed two releases later — see *And the album editor, since 26.8.4* in
 [`docs/lessons.md`](docs/lessons.md), which is this class's twin and had to wait for albums
@@ -121,7 +124,7 @@ says what to do instead of pretending to work.
 
 That also settles the order of operations, which was not obvious before the editor existed:
 **deactivate Envira, migrate, and only then is the site editable.** There is no window
-without an editor, because the migration is what turns Atelier's on.
+without an editor, because the migration is what turns Lichtbild's on.
 
 **That whole paragraph describes a site migrating from Envira, and until 26.8.18 the code applied
 it to every site.** A fresh install has no Envira storage to still be on, so it now starts
@@ -133,14 +136,14 @@ Three properties of the save path are load-bearing:
 
 - **An absent nonce field means the request is not ours, and the response is to do nothing —
   silently.** `save_post` fires for quick edit, bulk edit, status changes and autosaves, none
-  of which carry the images; reading a missing `atelier_items` as "the user removed every
+  of which carry the images; reading a missing `lichtbild_items` as "the user removed every
   image" would empty a gallery on a quick-edit of its title. Note that removing this guard
   does *not* actually let such a request through — the nonce verification two statements
   later refuses an absent nonce as readily as a wrong one, and a mutation of the first
   survived until the check also asserted **no PHP warning**. That is the property only the
   first guard has, and `save_post` fires often enough that a warning per quick edit is a log
   nobody can read.
-- **Order is submitted explicitly, in `atelier_order`, not inferred from the field order.**
+- **Order is submitted explicitly, in `lichtbild_order`, not inferred from the field order.**
   The browser serialises in DOM order and PHP preserves it, so it would usually be right —
   and "usually" is the wrong standard for the one property a drag-and-drop editor exists to
   set. Rows the order does not name are dropped, which is also how removal works.
@@ -152,13 +155,13 @@ Three properties of the save path are load-bearing:
 row created from the media library would otherwise submit an empty tag field, and an empty
 field that means "unchanged" is indistinguishable at the server from one that means "remove
 them all" — so the fix is that the field is never blank by accident.
-`Atelier_Editor::attachment_tags()` puts them in `wp_prepare_attachment_for_js`, gated on the
+`Lichtbild_Editor::attachment_tags()` puts them in `wp_prepare_attachment_for_js`, gated on the
 frame having been opened from one of our galleries because it costs a term lookup per
 attachment and the media library is used all over the admin. The server also treats a row
 with **no** `tags` key as "leave them alone", which is the belt to that brace and is checked
 directly.
 
-**`Atelier_Config::sanitize()` is not `fill()` with sanitising bolted on**, and confusing the
+**`Lichtbild_Config::sanitize()` is not `fill()` with sanitising bolted on**, and confusing the
 two is a silent bug in the interesting direction. They answer opposite questions about an
 absent key: a *stored* record is missing one because the version that wrote it predated it,
 so the default is right; a *submitted form* is missing one because an unchecked checkbox
@@ -186,38 +189,38 @@ is the whole argument for reviewing before running it. Full text in
 
 ## The original v1 decision: a drop-in, not a migration
 
-Atelier does not own its data. Galleries stay exactly where Envira put them — post type
-`envira`, post meta `_eg_gallery_data` — and Atelier reads them in place. Nothing is
+Lichtbild does not own its data. Galleries stay exactly where Envira put them — post type
+`envira`, post meta `_eg_gallery_data` — and Lichtbild reads them in place. Nothing is
 migrated, nothing is written back, and no gallery is edited to make the switch.
 
 That buys the property that matters on a live site: **switching is a plugin toggle in both
-directions.** Deactivate Envira and Atelier takes over `[envira-gallery]`; reactivate Envira
+directions.** Deactivate Envira and Lichtbild takes over `[envira-gallery]`; reactivate Envira
 and it takes it back. Comparing the two is a page refresh, and backing out costs nothing.
 
-The takeover is a setting (Settings -> Atelier), defaulting to `auto`:
+The takeover is a setting (Settings -> Lichtbild), defaulting to `auto`:
 
 | mode | behaviour |
 |---|---|
 | `auto` | handle `[envira-gallery]` only while Envira is inactive (default) |
 | `always` | handle it even when Envira is active — for A/B on one page |
-| `never` | only `[atelier-gallery]` renders through Atelier |
+| `never` | only `[lichtbild-gallery]` renders through Lichtbild |
 
-`[atelier-gallery id="N"]` always renders through Atelier regardless of the setting.
+`[lichtbild-gallery id="N"]` always renders through Lichtbild regardless of the setting.
 
 **Since 26.8.23 every row above is additionally conditional on the site having an Envira
 history**, so `always` does not mean always: on a site whose recorded slug scheme is `generic`,
-Atelier claims neither Envira tag under any mode. That reads like a setting quietly not working,
+Lichtbild claims neither Envira tag under any mode. That reads like a setting quietly not working,
 and it is worth stating why it is not one — `always` exists to render `[envira-gallery]` while
 Envira is active, and a site where Envira is active with galleries *has* an Envira history by
 definition, so the case the setting was built for is untouched. What it can no longer do is claim
 the tag on a site that has no Envira records at all, where there is nothing for it to render and
-nothing to compare against. `Atelier_Settings::claims_envira_shortcodes()` is the predicate; the
+nothing to compare against. `Lichtbild_Settings::claims_envira_shortcodes()` is the predicate; the
 wordpress.org round that asked for it is recorded below.
 
 **The one state this gives up, stated because it is the only behavioural loss in the change:** a
 site recorded `generic` and *later* gaining Envira records keeps that answer forever, because
 `initialise()` returns immediately once a scheme is stored and never re-derives it. Install
-Atelier on a clean site, then adopt Envira, then deactivate it, and `[envira-gallery]` stops
+Lichtbild on a clean site, then adopt Envira, then deactivate it, and `[envira-gallery]` stops
 resolving where before 26.8.23 it would have. That permanence is the point of the scheme rather
 than an oversight — it is what stops a site's published URLs moving when Envira's rows are deleted
 years later — and re-deriving it here would couple the shortcode to a question the permalinks
@@ -225,9 +228,9 @@ deliberately answer once. It reaches nobody who installs this plugin for what it
 recorded rather than fixed, and there is no `readme.txt` upgrade notice for it.
 
 Consequence worth stating: **on an un-migrated site the admin UI is still Envira's.** In v1
-Atelier had no editor at all, so editing a gallery meant keeping Envira installed — an
+Lichtbild had no editor at all, so editing a gallery meant keeping Envira installed — an
 accepted trade, since the site's galleries are years old and rarely edited. That is still
-the situation before the migration; afterwards `Atelier_Editor` takes over, and the section
+the situation before the migration; afterwards `Lichtbild_Editor` takes over, and the section
 above explains why it cannot take over any earlier.
 
 ## What the site actually uses
@@ -262,25 +265,25 @@ Of the 18 active Envira plugins, about six carry real weight.
   single gallery is an outlier.
 - **Envira serialises booleans inconsistently** — `1`, `'1'`, `'True'`, `true` all appear,
   and `keyboard` is literally split between `'1'` (32 galleries) and `'True'` (20).
-  `Atelier_Config::flag()` exists for this; never compare a config value directly.
+  `Lichtbild_Config::flag()` exists for this; never compare a config value directly.
 - Envira keeps its **site-wide defaults in a gallery of its own**, marked `config.type =
-  'defaults'`. `Atelier_Repository` skips it, or it renders as an empty grid.
+  'defaults'`. `Lichtbild_Repository` skips it, or it renders as an empty grid.
 - **Per-image tags are not in the item record.** The Tags addon migrated them into the
   `envira-tag` taxonomy on the attachment — the `_processed_tag_upgrade` meta on 51
   galleries records that having happened — and the item's own `tags` key is now empty
   everywhere. Read the taxonomy, not the item.
 - **16 galleries carry hand-written `custom_css` in ENVIRA's record, keyed on
-  `#envira-gallery-<id>`; 20 carry it in Atelier's own.** Both numbers are right and they answer
+  `#envira-gallery-<id>`; 20 carry it in Lichtbild's own.** Both numbers are right and they answer
   different questions, so say which one you mean — the 16 is what the original survey counted and
-  it is the wrong figure for anything about what Atelier renders. The 26.8.22 record was written
+  it is the wrong figure for anything about what Lichtbild renders. The 26.8.22 record was written
   with 16 and had to be corrected: the live site carried 50 inline blocks across 41 pages, which
   is 1 front page + 20 permalinks + 20 embedding posts. `tools/export-custom-css.py` reports the
   count it actually found, and is the thing to ask.
-  **Atelier no longer reads it** — see *The wordpress.org review, and the feature it cost* below.
-  It survives in **two** records that can disagree — Envira's permanently, Atelier's own only
+  **Lichtbild no longer reads it** — see *The wordpress.org review, and the feature it cost* below.
+  It survives in **two** records that can disagree — Envira's permanently, Lichtbild's own only
   until that gallery is next saved — and the exporter reads both.
   **On this site every declaration in all 20 blocks is commented out**, so the element it emitted
-  was `#atelier-2423 { }` and removing it changed no pixel. Nothing is waiting to be pasted into
+  was `#lichtbild-2423 { }` and removing it changed no pixel. Nothing is waiting to be pasted into
   Additional CSS; a reader who assumes otherwise will restore styling that never existed.
 
 ## Security posture
@@ -292,11 +295,11 @@ that review changed, all of which had looked fine:
 - **Escaping a value into an HTML attribute does not sanitize it.** The caption travels to
   the browser through an `esc_attr`-escaped data attribute and is then inserted with
   `innerHTML` — and `getAttribute()` hands back the original string, so the escaping that
-  made the attribute safe does nothing for the parse that follows. `Atelier_Item::caption()`
+  made the attribute safe does nothing for the parse that follows. `Lichtbild_Item::caption()`
   applies `wp_kses_post()` at the source instead.
 - **Envira's frozen `src`/`link` are database strings, not URLs.** They are used whenever an
   attachment has been deleted, and the JSON endpoint emits them without `esc_url()`. Both
-  now go through `Atelier_Item::safe_url()`, which allows only `http`/`https`.
+  now go through `Lichtbild_Item::safe_url()`, which allows only `http`/`https`.
 - **Items with unknown dimensions are kept out of the lightbox**, rather than handed to
   PhotoSwipe as `0x0` slides for its zoom arithmetic to divide by. They stay in the grid as
   ordinary links that open the file.
@@ -307,7 +310,7 @@ twelve hours later, while a full-page cache serves pages generated days ago — 
 break pagination and filtering on cached sites at an unpredictable hour, with no error the owner
 could act on. It costs nothing because both endpoints are reads that change no state and return
 JSON no cross-origin script can read: the authorization is `is_viewable()`, which had to hold on
-its own anyway. `Atelier_Album_Editor::handle_covers()` is an admin path, is never cached, and
+its own anyway. `Lichtbild_Album_Editor::handle_covers()` is an admin path, is never cached, and
 does still refuse.
 
 **Deeper entries — full text in [`docs/lessons.md`](docs/lessons.md):**
@@ -318,7 +321,7 @@ does still refuse.
 - *There are three places that publish a gallery, and the rule was copied into two of them* —
   an album published a protected gallery's cover while its own permalink and both AJAX
   endpoints correctly refused. Count the publish paths, not the fixes.
-- *The rule is `Atelier_Repository::is_viewable()`, and extracting it found two more gaps* — one
+- *The rule is `Lichtbild_Repository::is_viewable()`, and extracting it found two more gaps* — one
   predicate would otherwise mean one mutation, so they split into three that delete a **call
   site** and two that break a **leg** — and a stub answering for one of two post types will
   invent a status for the other.
@@ -329,11 +332,11 @@ does still refuse.
   fields.** Across all 52 galleries `exif_lightbox_make`, `_model` and `_capture_time` are
   `0` while aperture, shutter speed, focal length and ISO are `1`. A renderer that prints
   everything WordPress can parse therefore prints the camera body on every gallery whose
-  settings say not to. `Atelier_Exif::fields()` takes the enabled set; it does not decide.
+  settings say not to. `Lichtbild_Exif::fields()` takes the enabled set; it does not decide.
 - **`tags_all` is a per-gallery, site-owner-translated string** — it is `Alle` on every
   gallery here, not `All`. The stored label wins over the plugin's own translation.
 - **Deep links name the image, not its position.** The fragment is
-  `#atelier-<galleryId>-i<attachmentId>`. An index is only meaningful together with the filter
+  `#lichtbild-<galleryId>-i<attachmentId>`. An index is only meaningful together with the filter
   and page it was taken under, neither of which is in the URL, so an index-based fragment
   opens a different photograph for anyone whose filter differs — including the same visitor
   after a reload. Resolving one fetches the unfiltered item list, because the linked image
@@ -341,7 +344,7 @@ does still refuse.
 - **A tag filter has to span the whole gallery, not the rendered page.** The filter bar
   lists every tag in the gallery while the grid shows one page, so 17 of 40 buttons on the
   test gallery filtered a paginated grid down to nothing. Filtering is therefore server-side
-  (`Atelier_Gallery::filtered_items()`, and `page_count()`/`page_items()` both take the tag),
+  (`Lichtbild_Gallery::filtered_items()`, and `page_count()`/`page_items()` both take the tag),
   and the AJAX response re-renders the pagination nav because the server is the side that
   knows how many pages the filter leaves. A DOM-hiding filter cannot be made correct here.
 - **WordPress already has the EXIF.** It parses it at upload and stores it in
@@ -360,7 +363,7 @@ does still refuse.
   Note the precise claim: **the geometry is in the CSS, not necessarily in the first paint.**
   Shortcodes run during `the_content`, after `wp_head`, so a stylesheet enqueued at render
   time is printed in the footer by `print_late_styles()` and the first paint can be unstyled.
-  `Atelier_Assets::maybe_enqueue_early()` looks for the shortcode in the post content during
+  `Lichtbild_Assets::maybe_enqueue_early()` looks for the shortcode in the post content during
   `wp_enqueue_scripts` to get the stylesheet into the head for the ordinary case; a gallery
   rendered from a widget or a template call still falls back to the late enqueue.
 - **Grid images are WordPress derivatives with a srcset**, not the original. Envira's
@@ -373,10 +376,10 @@ does still refuse.
 - **The caches are primed per gallery, not per image.** Reading an item touches three things
   WordPress caches per post — the attachment row (the title and excerpt an item falls back to),
   its meta (dimensions and registered sizes) and its terms (the tag filter). Unprimed that is
-  three queries per image, and `Atelier_Ajax::handle_items()` walks *every* item because the
+  three queries per image, and `Lichtbild_Ajax::handle_items()` walks *every* item because the
   lightbox spans pages on 47 of the 51 galleries: roughly fifteen hundred queries on the
   504-image gallery, in the request a visitor waits on to open the lightbox.
-  `Atelier_Gallery::prime()` reduces it to three.
+  `Lichtbild_Gallery::prime()` reduces it to three.
 
   Two details are load-bearing. It is called with **the set about to be walked**, not always
   with everything — a paginated gallery renders ten items, and priming five hundred to read ten
@@ -392,7 +395,7 @@ does still refuse.
 
 ## Testing
 
-There is no WordPress in the loop. `tests/wp-stubs.php` implements the ~25 functions Atelier
+There is no WordPress in the loop. `tests/wp-stubs.php` implements the ~25 functions Lichtbild
 calls, backed by a fixture exported from the live database, and `tests/render-test.php`
 renders **every gallery on the site** and asserts the markup.
 
@@ -456,7 +459,7 @@ bash tools/devenv.sh reset     # restore to the snapshot, in seconds
 bash tools/devenv.sh status    # what is running, and which post types the rows are under
 ```
 
-Lives at `~/Developer/wp-atelier`, outside this repo. WordPress **7.0.3** and PHP **8.2** to
+Lives at `~/Developer/wp-lichtbild`, outside this repo. WordPress **7.0.3** and PHP **8.2** to
 match the live site, MariaDB **10.11** to match its engine, and the plugin is symlinked in so
 an edit here is live there with nothing to sync.
 
@@ -493,7 +496,7 @@ forced on, one fixed-column — with pagination, filtering and the lightbox all 
 the preview server answers the two AJAX endpoints out of the fixture.
 
 ```sh
-ATELIER_FIXTURE=tests/fixture.json php -S 127.0.0.1:8765 -t . tests/preview-server.php
+LICHTBILD_FIXTURE=tests/fixture.json php -S 127.0.0.1:8765 -t . tests/preview-server.php
 open http://127.0.0.1:8765/
 ```
 
@@ -516,7 +519,7 @@ file reached the ceiling its own test guards.
     enqueue" is also what a scan matching nothing produces, so both directions are asserted.
   - *Closed in 26.8.6: the shortcode was the fourth publishing path* — a product decision blocked
     on an unknown cost is usually blocked on an unrun query.
-  - *And the fifth publishing path, added 26.8.14, which arrived already asking* — `Atelier_Block`
+  - *And the fifth publishing path, added 26.8.14, which arrived already asking* — `Lichtbild_Block`
     renders nothing itself and hands to the shortcode, so the visibility rule has no second
     implementation to drift from — and the coverage does **not** follow from the design, which
     measurement said rather than reasoning.
@@ -585,7 +588,7 @@ on exit, so it never reaches an argument list, a log line, or a transcript.
 - **A failed transfer leaves a file of the wrong length on the server, not no file.** Three
   PHP files landed at **0 bytes** and one JavaScript file at exactly **16,384** — a block
   boundary, which is the tell that a stream was cut rather than refused. A 0-byte
-  `class-atelier-config.php` is invisible until someone activates the plugin, and then it is a
+  `class-lichtbild-config.php` is invisible until someone activates the plugin, and then it is a
   fatal error on a public site.
 - So: **never trust curl's exit code.** The exit code was right that first time, but only
   because the abort happened to be reported.
@@ -644,7 +647,7 @@ publishes its own deployment target has done an attacker's first hour of work.
 
 They live in two gitignored places instead, both machine-local:
 
-- `tools/deploy.env` — `ATELIER_DEPLOY_HOST` and `ATELIER_DEPLOY_USER`, read by `tools/deploy.sh`.
+- `tools/deploy.env` — `LICHTBILD_DEPLOY_HOST` and `LICHTBILD_DEPLOY_USER`, read by `tools/deploy.sh`.
   Everything else in that script is parameterised off those two, the keychain lookup included, so
   there was exactly one place to change.
 - `tests/.db.json` — the database connection for `tools/live-urls.py` and `tests/export-fixture.py`.
@@ -662,16 +665,17 @@ they describe one named site's hosting. What still has to be said here, because 
 makes sense with it: **there is no shell on the host**, which is why deployment is FTPS and why
 every uploaded file has to be verified by digest rather than by exit code or size.
 
-**If `deploy.sh` refuses with `set ATELIER_DEPLOY_HOST and ATELIER_DEPLOY_USER`, that is this
+**If `deploy.sh` refuses with `set LICHTBILD_DEPLOY_HOST and LICHTBILD_DEPLOY_USER`, that is this
 change working, not a broken script.** Recreate `tools/deploy.env` with those two lines.
 
-## Submitting to wordpress.org — submitted 2026-08-09, pended 2026-08-14, **round 2 on 2026-08-15**
+## Submitting to wordpress.org — submitted 2026-08-09, pended 2026-08-14, **round 3 on 2026-08-22 renamed the plugin**
 
-**26.8.21 was uploaded and the directory assigned the slug `atelier`**, confirming
-`https://wordpress.org/plugins/atelier/` as the eventual permalink. That URL is not live yet and
-will not be until a human approves the plugin: it currently 301s to
-`wordpress.org/plugins/search/atelier/`, which is worth knowing as the *expected* pre-approval
-shape — it is not a 404, so a 404 check would report the wrong thing.
+**26.8.21 was uploaded and the directory assigned the slug `atelier`.** That slug was
+surrendered on 2026-08-22 — see *Round 3 rejected the name, and nothing else* below — and a
+reservation for `lichtbild-gallery` requested in its place. While a submission is unapproved its
+directory URL 301s to `wordpress.org/plugins/search/<slug>/` rather than 404ing, which is the
+*expected* pre-approval shape: a 404 check would report the wrong thing about a healthy
+submission.
 
 **The submission was pended by an automated pre-review on 2026-08-14** (`AUTOPREREVIEW
 atelier/tstone1/14Aug26/T1`) — before any human read it, and it is a *reply* to that thread, not
@@ -695,6 +699,20 @@ review to answer than one that names a bug. Addressed in 26.8.23.
   a genuine hole and cost one argument; the Envira shortcode names and the Yoast option write are
   the plugin's purpose, and the answer to one of them was still a code change, because "correct on
   a migrating site" was being applied to every site.
+
+**Round 3 arrived on 2026-08-22** (`R ❗TRM atelier/tstone1/14Aug26/T4`) and pended the submission
+*without reading the code*: the display name and slug were too broad. It was right — the
+directory's own search returns three published plugins leading with the old word — so the plugin
+was renamed rather than defended, and 26.8.24 carries the new identity.
+
+- *Round 3 rejected the name, and nothing else* — measure a candidate name against the directory's
+  search API before choosing it, because the same call that convicts the old one clears the new
+  one. Holds the rename recipe and its `envira` count control, and four things this rename cost
+  that 26.8.16 did not: the text domain is **not** the identifier prefix (237 of 299 literals),
+  `class-atelier.php` ends in `atelier.php` and collapsed two files onto one name in a way no
+  inspection can undo, the `.mo` is a binary the substitution cannot reach and a stale one fails
+  silently, and the `sort()`-order literal went red a second consecutive rename — in the opposite
+  direction.
 
 That earlier note saying no reply was needed described the **submission confirmation**, and it
 stopped being true the moment this arrived: silence on a pended submission is a rejection after
@@ -723,19 +741,22 @@ kind of thing that gets assumed.
   right both times; the world moved. Worth stating because a fact recorded as "checked" carries a
   date for exactly this reason, and *account does not exist* is the one fact in this section that a
   single action by the user can invert overnight.
-- **The slug `atelier` is assigned, and it is permanent once approved.** It was derived from the
-  plugin's display name at submission. It can still be changed from the Plugin Submission page
-  **until a reviewer begins**, and never afterwards; the display name stays changeable either way.
-  `api.wordpress.org/plugins/info/1.2/` still 404s for it, which is correct for an unapproved
-  plugin rather than evidence of a problem — the control that the endpoint works is the same call
-  for `akismet`, which returns full data. Two unrelated "Atelier …" plugins by another author
-  already exist, which is not a conflict but does mean the name is not distinctive there.
+- **The slug is `lichtbild-gallery`, requested 2026-08-22, and it is permanent once approved.**
+  A slug can be changed from the Plugin Submission page **until a reviewer begins** and never
+  afterwards; the display name stays changeable either way. `api.wordpress.org/plugins/info/1.2/`
+  404s for it, which is correct for an unapproved plugin rather than evidence of a problem — the
+  control that the endpoint works is the same call for `akismet`, which returns full data.
+  **Measured before the name was chosen**, and this is the evidence the reply to round 3 quotes:
+  the directory's own search returns **0 results** for `lichtbild`, where a search for `atelier`
+  returns three published plugins leading with that word — `atelier-product-sorting-for-woocommerce`,
+  `atelier-scroll-top` and `atelier-create-cv`. Run the query rather than reasoning about the name:
+  `api.wordpress.org/plugins/info/1.2/?action=query_plugins&request[search]=<term>`.
 - **The four screenshots exist, in `.wordpress-org/`, and are not in the zip.** They go into an
   `assets/` directory at the root of the SVN checkout once there is one, as `screenshot-1` and so
   on, matching the order `readme.txt` describes. That directory is the SVN root's, **not the
   plugin's own `assets/`**, and confusing the two ships two megabytes of listing images to every
   installation.
-- **`Plugin URI` resolves.** `github.com/tstone-1/atelier` was made public on 2026-08-09, from a
+- **`Plugin URI` resolves.** `github.com/tstone-1/lichtbild-gallery` was made public on 2026-08-09, from a
   squashed root commit; the full pre-squash history is private in `tstone-1/atelier-history`. The
   two decisions were separate — wordpress.org requires neither of the other — and this one was
   taken for its own reasons.
@@ -746,8 +767,8 @@ kind of thing that gets assumed.
   now carries the justification in the code where a reviewer meets it.
 
 Two guidelines are worth knowing before a reviewer raises them, and both are now satisfied.
-**Guideline 17** forbids a trademark as the "sole or initial term of a plugin slug" — `atelier`
-is clear — and asks for "Dancing Sloths for Superbox" phrasing rather than the reverse. Neither
+**Guideline 17** forbids a trademark as the "sole or initial term of a plugin slug" — and it is
+what round 3 was decided under, so `lichtbild-gallery` was checked against it before being chosen — and asks for "Dancing Sloths for Superbox" phrasing rather than the reverse. Neither
 name leads with Envira: the plugin header's description opens "Responsive galleries for
 WordPress." and `readme.txt`'s short description does not mention Envira at all. The Envira
 sentence that follows is nominative use and permitted. **Guideline 4** wants documented access to
@@ -765,8 +786,8 @@ been exercised by a machine.
 
 ## Conventions
 
-- CalVer `YY.M.MICRO`, matching `screenpick`/`tpdf`. Version lives in the `atelier.php`
-  header and the `ATELIER_VERSION` constant — **both must agree**.
+- CalVer `YY.M.MICRO`, matching `screenpick`/`tpdf`. Version lives in the `lichtbild-gallery.php`
+  header and the `LICHTBILD_VERSION` constant — **both must agree**.
 - **`CHANGELOG.md` says what changed; this file says why.** The split is stated because two
   places describing one release is how prose drifts, and drift is this project's most expensive
   habit. A release note is a fact about behaviour and belongs in the changelog even when it is
@@ -776,7 +797,7 @@ been exercised by a machine.
   other: one line here, full text in [`docs/deploys.md`](docs/deploys.md).
 - WordPress coding standards: tabs, `snake_case`, Yoda conditions, full docblocks on every
   class, method and property.
-- Escape at output, never at assignment. `Atelier_Renderer::attributes()` is the one place
+- Escape at output, never at assignment. `Lichtbild_Renderer::attributes()` is the one place
   that decides between `esc_url` and `esc_attr`.
 - No build step. The JavaScript is a classic script that dynamically imports PhotoSwipe;
   there is deliberately no bundler, no npm dependency at runtime, and PhotoSwipe 5.4.4 is

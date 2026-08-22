@@ -35,7 +35,7 @@
 # Everything runs against a directory on disk -- no network, no credentials, no deployment
 # target -- which is why `audit --against` exists and why this can run in CI.
 #
-# @package Atelier\Tests
+# @package Lichtbild\Tests
 
 set -uo pipefail
 
@@ -45,8 +45,8 @@ trap 'chmod -R u+rwX "$TMP" 2>/dev/null; rm -rf "$TMP"' EXIT
 
 # Two ordinary shipped files, neither of them likely to be in any particular release's
 # UPLOAD_ORDER. Nothing below asserts against the real list -- case D hands in its own.
-VICTIM="includes/class-atelier-item.php"
-OTHER="includes/class-atelier-exif.php"
+VICTIM="includes/class-lichtbild-item.php"
+OTHER="includes/class-lichtbild-exif.php"
 
 pass=0
 fail=0
@@ -81,7 +81,7 @@ make_trees() {
 	# The server has never had these, and the audit is expected to say so rather than to treat
 	# them as missing. Removing them here is what makes case A's "2 of them expected" a fact
 	# about the classifier instead of a coincidence.
-	rm -f "$dir/ref/LICENSE" "$dir/ref/languages/atelier.pot"
+	rm -f "$dir/ref/LICENSE" "$dir/ref/languages/lichtbild-gallery.pot"
 
 	# ...and it has never had the development apparatus either. The deployed tree is a plugin
 	# directory, so anything .distignore excludes has no business in it; leaving it would still

@@ -2,27 +2,27 @@
 /**
  * Reads galleries and albums out of the database.
  *
- * @package Atelier
+ * @package Lichtbild
  */
 
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Loads the stored gallery and album records and turns them into Atelier objects.
+ * Loads the stored gallery and album records and turns them into Lichtbild objects.
  *
  * **What this class decides is which stored record is authoritative**, and it is the only one
- * that reads both shapes at query time. A migrated site's own `_atelier_gallery` record wins;
+ * that reads both shapes at query time. A migrated site's own `_lichtbild_gallery` record wins;
  * an un-migrated one — or a rolled-back one — falls back to converting `_eg_gallery_data` on
  * the fly. Which of those applies is the `$owns_data` question, and getting it wrong is not a
  * detail: see `build_gallery()` for the two sources of truth that answer differs between.
  *
  * It once claimed to be the only class that knew Envira's storage layout, and that stopped
- * being true the day the schema move it predicted actually happened. `Atelier_Config`,
- * `Atelier_Album_Config` and `Atelier_Migration::build_record()` all know that layout now, and
+ * being true the day the schema move it predicted actually happened. `Lichtbild_Config`,
+ * `Lichtbild_Album_Config` and `Lichtbild_Migration::build_record()` all know that layout now, and
  * deliberately: conversion is where the four spellings of true and the frozen titles are dealt
  * with once, rather than re-derived on every page load.
  */
-class Atelier_Repository {
+class Lichtbild_Repository {
 
 	/**
 	 * Post type holding galleries.
@@ -40,9 +40,9 @@ class Atelier_Repository {
 	const TAG_TAXONOMY = 'envira-tag';
 
 	/**
-	 * Post meta key holding a gallery record Atelier wrote.
+	 * Post meta key holding a gallery record Lichtbild wrote.
 	 */
-	const GALLERY_META_V2 = '_atelier_gallery';
+	const GALLERY_META_V2 = '_lichtbild_gallery';
 
 	/**
 	 * Post meta key holding a gallery record Envira wrote.
@@ -55,21 +55,21 @@ class Atelier_Repository {
 	const ALBUM_META = '_eg_album_data';
 
 	/**
-	 * Post meta key holding an album record Atelier wrote.
+	 * Post meta key holding an album record Lichtbild wrote.
 	 */
-	const ALBUM_META_V2 = '_atelier_album';
+	const ALBUM_META_V2 = '_lichtbild_album';
 
 	/**
 	 * Galleries already loaded this request, keyed by post ID.
 	 *
-	 * @var array<int,Atelier_Gallery|null>
+	 * @var array<int,Lichtbild_Gallery|null>
 	 */
 	private $galleries = array();
 
 	/**
 	 * Albums already loaded this request, keyed by post ID.
 	 *
-	 * @var array<int,Atelier_Album|null>
+	 * @var array<int,Lichtbild_Album|null>
 	 */
 	private $albums = array();
 
@@ -95,7 +95,7 @@ class Atelier_Repository {
 	private $tag_taxonomy;
 
 	/**
-	 * Whether Atelier's own records are authoritative.
+	 * Whether Lichtbild's own records are authoritative.
 	 *
 	 * @var bool
 	 */
@@ -111,7 +111,7 @@ class Atelier_Repository {
 	 * @param string $gallery_type Post type galleries are stored under.
 	 * @param string $album_type   Post type albums are stored under.
 	 * @param string $tag_taxonomy Taxonomy per-image tags are stored under.
-	 * @param bool   $owns_data    Whether Atelier's own gallery records are authoritative.
+	 * @param bool   $owns_data    Whether Lichtbild's own gallery records are authoritative.
 	 */
 	public function __construct(
 		$gallery_type = self::GALLERY_POST_TYPE,
@@ -130,7 +130,7 @@ class Atelier_Repository {
 	 *
 	 * @param int|string $id Gallery post ID, or a gallery slug.
 	 *
-	 * @return Atelier_Gallery|null The gallery, or null when it does not exist or is empty.
+	 * @return Lichtbild_Gallery|null The gallery, or null when it does not exist or is empty.
 	 */
 	public function gallery( $id ) {
 		$post_id = $this->resolve_id( $id, $this->gallery_type );
@@ -153,7 +153,7 @@ class Atelier_Repository {
 	 *
 	 * @param int|string $id Album post ID, or an album slug.
 	 *
-	 * @return Atelier_Album|null The album, or null when it does not exist.
+	 * @return Lichtbild_Album|null The album, or null when it does not exist.
 	 */
 	public function album( $id ) {
 		$post_id = $this->resolve_id( $id, $this->album_type );
@@ -184,15 +184,15 @@ class Atelier_Repository {
 	 * carries no password, so the password check alone lets *it* through. Both legs have a
 	 * mutation apiece for that reason.
 	 *
-	 * Neither gate is enforced anywhere upstream for the content Atelier publishes. WordPress
+	 * Neither gate is enforced anywhere upstream for the content Lichtbild publishes. WordPress
 	 * applies a post password by replacing `post_content`, and a gallery keeps its images in
-	 * post meta; `Atelier_Repository::resolve_id()` matches a numeric ID on post *type* alone,
+	 * post meta; `Lichtbild_Repository::resolve_id()` matches a numeric ID on post *type* alone,
 	 * so a draft or private gallery named by an album or a shortcode loads perfectly happily.
 	 *
 	 * **All five publishing paths consult this** — the standalone filter, both AJAX endpoints,
 	 * the album cover grid, the shortcode, and the two blocks. The shortcode was the last to
 	 * adopt it, and the argument for leaving it out was not a bad one; see the class docblock on
-	 * `Atelier_Shortcode` for what settled it. The blocks arrived already consulting it, because
+	 * `Lichtbild_Shortcode` for what settled it. The blocks arrived already consulting it, because
 	 * they render nothing themselves and hand to the shortcode instead — which is the cheapest
 	 * way to add a publishing path that cannot forget. Nothing here is optional, and a path that
 	 * stops asking is the defect this predicate exists to make impossible to reintroduce quietly.
@@ -220,7 +220,7 @@ class Atelier_Repository {
 	 * **The reader decides what is offerable, not the query**, and that is the point of routing
 	 * this through `gallery()` rather than returning what `get_posts()` found. Envira keeps its
 	 * site-wide defaults in a gallery of its own, the migration renames that row along with
-	 * every other, and afterwards it is an ordinary `atelier_gallery` post as far as any query is
+	 * every other, and afterwards it is an ordinary `lichtbild_gallery` post as far as any query is
 	 * concerned. A picker built from the raw rows offers "Envira Default Settings" as a choice
 	 * and hands back a member the renderer then declines to draw.
 	 *
@@ -241,7 +241,7 @@ class Atelier_Repository {
 			$title = (string) get_the_title( $post_id );
 
 			/* translators: %d: gallery post ID. */
-			$out[ $post_id ] = '' !== $title ? $title : sprintf( __( 'Gallery %d', 'atelier' ), $post_id );
+			$out[ $post_id ] = '' !== $title ? $title : sprintf( __( 'Gallery %d', 'lichtbild-gallery' ), $post_id );
 		}
 
 		return $out;
@@ -263,14 +263,14 @@ class Atelier_Repository {
 			$title = (string) get_the_title( $post_id );
 
 			/* translators: %d: album post ID. */
-			$out[ $post_id ] = '' !== $title ? $title : sprintf( __( 'Album %d', 'atelier' ), $post_id );
+			$out[ $post_id ] = '' !== $title ? $title : sprintf( __( 'Album %d', 'lichtbild-gallery' ), $post_id );
 		}
 
 		return $out;
 	}
 
 	/**
-	 * Returns every post ID of one of Atelier's types, whatever its status.
+	 * Returns every post ID of one of Lichtbild's types, whatever its status.
 	 *
 	 * The status list is explicit because `get_posts()` defaults to `publish` alone, and a
 	 * picker that silently omitted every draft would read as "this site has no galleries" to
@@ -300,16 +300,16 @@ class Atelier_Repository {
 	 *
 	 * @param int $post_id Gallery post ID.
 	 *
-	 * @return Atelier_Gallery|null The gallery, or null when the record is unusable.
+	 * @return Lichtbild_Gallery|null The gallery, or null when the record is unusable.
 	 */
 	private function build_gallery( $post_id ) {
-		// A record Atelier wrote wins over the one it was converted from — but only while the
+		// A record Lichtbild wrote wins over the one it was converted from — but only while the
 		// site is migrated, and that condition is the whole point rather than a detail.
 		//
 		// The migration leaves both records in place, so after a rollback the converted one is
 		// still sitting there. Preferring it unconditionally would mean a rollback restored
 		// Envira's post types without restoring Envira's *authority*: edit a gallery in Envira
-		// afterwards, switch back to Atelier, and Atelier would render the pre-rollback snapshot
+		// afterwards, switch back to Lichtbild, and Lichtbild would render the pre-rollback snapshot
 		// instead. Two sources of truth, silently disagreeing, in the state that exists
 		// precisely because someone wanted to undo the migration.
 		//
@@ -347,34 +347,34 @@ class Atelier_Repository {
 				continue;
 			}
 
-			$item = new Atelier_Item( is_numeric( $key ) ? (int) $key : 0, $record, $this->tag_taxonomy );
+			$item = new Lichtbild_Item( is_numeric( $key ) ? (int) $key : 0, $record, $this->tag_taxonomy );
 
 			if ( $item->is_active() ) {
 				$items[] = $item;
 			}
 		}
 
-		return new Atelier_Gallery(
+		return new Lichtbild_Gallery(
 			$post_id,
-			Atelier_Config::from_envira( $config, $post_id ),
+			Lichtbild_Config::from_envira( $config, $post_id ),
 			$this->filter_items( $items, $post_id )
 		);
 	}
 
 	/**
-	 * Builds a gallery from a record Atelier wrote.
+	 * Builds a gallery from a record Lichtbild wrote.
 	 *
 	 * @param int   $post_id Gallery post ID.
 	 * @param array $record  Stored record.
 	 *
-	 * @return Atelier_Gallery The gallery.
+	 * @return Lichtbild_Gallery The gallery.
 	 */
 	private function build_from_own( $post_id, array $record ) {
 		$settings = is_array( $record['settings'] ) ? $record['settings'] : array();
 		$entries  = isset( $record['items'] ) && is_array( $record['items'] ) ? $record['items'] : array();
 		$items    = array();
 
-		// Atelier stores an ordered list rather than a map keyed by attachment, so that the
+		// Lichtbild stores an ordered list rather than a map keyed by attachment, so that the
 		// same image can appear twice and so that order is the record's own property rather
 		// than an accident of array key order.
 		foreach ( $entries as $entry ) {
@@ -383,32 +383,32 @@ class Atelier_Repository {
 			}
 
 			$id   = isset( $entry['id'] ) ? (int) $entry['id'] : 0;
-			$item = new Atelier_Item( $id, $entry, $this->tag_taxonomy );
+			$item = new Lichtbild_Item( $id, $entry, $this->tag_taxonomy );
 
 			if ( $item->is_active() ) {
 				$items[] = $item;
 			}
 		}
 
-		return new Atelier_Gallery( $post_id, $settings, $this->filter_items( $items, $post_id ) );
+		return new Lichtbild_Gallery( $post_id, $settings, $this->filter_items( $items, $post_id ) );
 	}
 
 	/**
 	 * Applies the item filter and reindexes.
 	 *
-	 * @param Atelier_Item[] $items   Items to filter.
+	 * @param Lichtbild_Item[] $items   Items to filter.
 	 * @param int           $post_id Gallery post ID.
 	 *
-	 * @return Atelier_Item[] Filtered items.
+	 * @return Lichtbild_Item[] Filtered items.
 	 */
 	private function filter_items( array $items, $post_id ) {
 		/**
 		 * Filters the items of a gallery before it is rendered.
 		 *
-		 * @param Atelier_Item[] $items   Active items in display order.
+		 * @param Lichtbild_Item[] $items   Active items in display order.
 		 * @param int           $post_id Gallery post ID.
 		 */
-		$items = (array) apply_filters( 'atelier_gallery_items', $items, $post_id );
+		$items = (array) apply_filters( 'lichtbild_gallery_items', $items, $post_id );
 
 		return array_values( $items );
 	}
@@ -418,10 +418,10 @@ class Atelier_Repository {
 	 *
 	 * @param int $post_id Album post ID.
 	 *
-	 * @return Atelier_Album|null The album, or null when the record is unusable.
+	 * @return Lichtbild_Album|null The album, or null when the record is unusable.
 	 */
 	private function build_album( $post_id ) {
-		// The same rule as galleries, and for the same reason: Atelier's own record wins, but
+		// The same rule as galleries, and for the same reason: Lichtbild's own record wins, but
 		// only while the site is migrated. The migration leaves Envira's record in place, so
 		// preferring the converted one unconditionally would mean a rollback restored Envira's
 		// post types without restoring Envira's authority.
@@ -436,7 +436,7 @@ class Atelier_Repository {
 			if ( is_array( $own ) && isset( $own['settings'] ) && is_array( $own['settings'] ) ) {
 				$items = isset( $own['items'] ) && is_array( $own['items'] ) ? $own['items'] : array();
 
-				return new Atelier_Album( $post_id, $own['settings'], self::clean_album_items( $items ) );
+				return new Lichtbild_Album( $post_id, $own['settings'], self::clean_album_items( $items ) );
 			}
 		}
 
@@ -457,10 +457,10 @@ class Atelier_Repository {
 		$items = array();
 
 		foreach ( self::envira_album_entries( $data ) as $gallery_id => $entry ) {
-			$items[] = Atelier_Album_Config::item_from_envira( $gallery_id, is_array( $entry ) ? $entry : array() );
+			$items[] = Lichtbild_Album_Config::item_from_envira( $gallery_id, is_array( $entry ) ? $entry : array() );
 		}
 
-		return new Atelier_Album( $post_id, Atelier_Album_Config::from_envira( $config ), $items );
+		return new Lichtbild_Album( $post_id, Lichtbild_Album_Config::from_envira( $config ), $items );
 	}
 
 	/**

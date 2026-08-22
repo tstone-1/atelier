@@ -9,7 +9,7 @@ code that reads them. Two things therefore have to come from the server:
 - **The active theme.** Without one WordPress renders a zero-byte page, and a zero-byte page
   behind an HTTP 200 looks exactly like a working one.
 - **Envira and its addons.** Coexistence, the takeover setting and the duplicate-rewrite-slug
-  conflict are all claims about how Atelier behaves *next to* Envira. Modelling Envira is what
+  conflict are all claims about how Lichtbild behaves *next to* Envira. Modelling Envira is what
   the stub suite already does; the point of this environment is not to model it.
 
 Read-only in the strictest sense: it opens an FTPS connection, lists, and retrieves. There is
@@ -27,19 +27,19 @@ import sys
 
 # Read from the environment or the gitignored `tools/deploy.env`, never a literal: this
 # repository is public and an FTP hostname paired with its username is two thirds of a login.
-HOST = os.environ.get("ATELIER_DEPLOY_HOST", "")
+HOST = os.environ.get("LICHTBILD_DEPLOY_HOST", "")
 
 if not HOST:
     _env = pathlib.Path(__file__).with_name("deploy.env")
     if _env.exists():
         for _line in _env.read_text().splitlines():
-            if _line.startswith("ATELIER_DEPLOY_HOST="):
+            if _line.startswith("LICHTBILD_DEPLOY_HOST="):
                 HOST = _line.split("=", 1)[1].strip()
 
 if not HOST:
     sys.exit(
-        "[ERROR] set ATELIER_DEPLOY_HOST, or create tools/deploy.env with\n"
-        "        ATELIER_DEPLOY_HOST=ftp.example.com"
+        "[ERROR] set LICHTBILD_DEPLOY_HOST, or create tools/deploy.env with\n"
+        "        LICHTBILD_DEPLOY_HOST=ftp.example.com"
     )
 
 # Everything needed to render a gallery the way the live site does, and nothing else. The
@@ -125,7 +125,7 @@ def fetch_tree(ftp, remote, local, stats, dry_run):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dest", default=str(pathlib.Path.home() / "Developer/wp-atelier/wordpress"))
+    parser.add_argument("--dest", default=str(pathlib.Path.home() / "Developer/wp-lichtbild/wordpress"))
     parser.add_argument("--netrc", required=True, help="path to a .netrc holding the FTPS login")
     parser.add_argument("--dry-run", action="store_true", help="count what would be fetched")
     args = parser.parse_args()

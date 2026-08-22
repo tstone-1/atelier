@@ -1,5 +1,5 @@
 /**
- * Atelier front end.
+ * Lichtbild front end.
  *
  * PhotoSwipe is loaded with a dynamic import the first time a visitor actually opens an
  * image, so a page full of galleries costs nothing until someone clicks. The grid itself
@@ -9,7 +9,7 @@
 ( function () {
 	'use strict';
 
-	var settings = window.AtelierSettings || {};
+	var settings = window.LichtbildSettings || {};
 	var i18n = settings.i18n || {};
 	var photoSwipePromise = null;
 
@@ -25,7 +25,7 @@
 	 * Only reading is bilingual. Everything this writes uses the current prefix, so a legacy
 	 * link is upgraded in the address bar as soon as the lightbox it opened writes its own.
 	 */
-	var DEEP_LINK = /^#(?:atelier|tivira)-(\d+)-i(\d+)$/;
+	var DEEP_LINK = /^#(?:lichtbild|tivira)-(\d+)-i(\d+)$/;
 
 	/**
 	 * Loads the PhotoSwipe module once and reuses it thereafter.
@@ -83,11 +83,11 @@
 			width: parseInt( link.getAttribute( 'data-pswp-width' ), 10 ) || 0,
 			height: parseInt( link.getAttribute( 'data-pswp-height' ), 10 ) || 0,
 			alt: link.querySelector( 'img' ) ? link.querySelector( 'img' ).alt : '',
-			id: parseInt( link.getAttribute( 'data-atelier-item' ), 10 ) || 0,
-			title: link.getAttribute( 'data-atelier-title' ) || '',
-			caption: link.getAttribute( 'data-atelier-caption' ) || '',
-			exif: readJson( link, 'data-atelier-exif', null ),
-			download: link.getAttribute( 'data-atelier-download' ) || '',
+			id: parseInt( link.getAttribute( 'data-lichtbild-item' ), 10 ) || 0,
+			title: link.getAttribute( 'data-lichtbild-title' ) || '',
+			caption: link.getAttribute( 'data-lichtbild-caption' ) || '',
+			exif: readJson( link, 'data-lichtbild-exif', null ),
+			download: link.getAttribute( 'data-lichtbild-download' ) || '',
 			element: link
 		};
 	}
@@ -117,15 +117,15 @@
 	/**
 	 * One gallery on the page.
 	 *
-	 * @param {HTMLElement} root Element carrying the `atelier` class.
+	 * @param {HTMLElement} root Element carrying the `lichtbild` class.
 	 *
 	 * @class
 	 */
 	function Gallery( root ) {
 		this.root = root;
-		this.wrap = root.closest( '.atelier-wrap' ) || root.parentNode;
-		this.config = readJson( root, 'data-atelier-config', {} );
-		this.id = this.config.id || parseInt( root.getAttribute( 'data-atelier-id' ), 10 ) || 0;
+		this.wrap = root.closest( '.lichtbild-wrap' ) || root.parentNode;
+		this.config = readJson( root, 'data-lichtbild-config', {} );
+		this.id = this.config.id || parseInt( root.getAttribute( 'data-lichtbild-id' ), 10 ) || 0;
 		this.page = this.config.page || 1;
 		this.slideCache = {};
 		this.pending = false;
@@ -148,7 +148,7 @@
 		var self = this;
 
 		this.root.addEventListener( 'click', function ( event ) {
-			var link = event.target.closest ? event.target.closest( 'a.atelier-link' ) : null;
+			var link = event.target.closest ? event.target.closest( 'a.lichtbild-link' ) : null;
 
 			if ( ! link || ! self.root.contains( link ) ) {
 				return;
@@ -179,9 +179,9 @@
 	 */
 	Gallery.prototype.visibleLinks = function () {
 		return Array.prototype.filter.call(
-			this.root.querySelectorAll( 'a.atelier-link' ),
+			this.root.querySelectorAll( 'a.lichtbild-link' ),
 			function ( link ) {
-				var figure = link.closest( '.atelier-item' );
+				var figure = link.closest( '.lichtbild-item' );
 
 				return ! figure || ! figure.classList.contains( 'is-filtered' );
 			}
@@ -213,7 +213,7 @@
 			return Promise.resolve( this.slideCache[ tag ] );
 		}
 
-		return this.request( 'atelier_items', { tag: tag } ).then( function ( data ) {
+		return this.request( 'lichtbild_items', { tag: tag } ).then( function ( data ) {
 			self.slideCache[ tag ] = ( data.items || [] ).map( slideFromRecord );
 
 			return self.slideCache[ tag ];
@@ -232,7 +232,7 @@
 	 */
 	Gallery.prototype.open = function ( link ) {
 		var self = this;
-		var wantedId = parseInt( link.getAttribute( 'data-atelier-item' ), 10 ) || 0;
+		var wantedId = parseInt( link.getAttribute( 'data-lichtbild-item' ), 10 ) || 0;
 
 		Promise.all( [ loadPhotoSwipe(), this.slides() ] ).then( function ( results ) {
 			var PhotoSwipe = results[ 0 ];
@@ -274,7 +274,7 @@
 			arrowPrevTitle: i18n.previous || 'Previous',
 			arrowNextTitle: i18n.next || 'Next',
 			// Match the thumbnail so the open animation zooms from the right place.
-			thumbSelector: 'a.atelier-link'
+			thumbSelector: 'a.lichtbild-link'
 		} );
 
 		pswp.on( 'uiRegister', function () {
@@ -299,7 +299,7 @@
 
 		if ( 'dark' !== this.lightboxTheme() ) {
 			pswp.on( 'firstUpdate', function () {
-				pswp.element.classList.add( 'pswp--atelier-light' );
+				pswp.element.classList.add( 'pswp--lichtbild-light' );
 			} );
 		}
 
@@ -313,7 +313,7 @@
 	 * @return {string} Either `dark` or `light`.
 	 */
 	Gallery.prototype.lightboxTheme = function () {
-		return this.root.classList.contains( 'atelier-theme-light' ) ? 'light' : 'dark';
+		return this.root.classList.contains( 'lichtbild-theme-light' ) ? 'light' : 'dark';
 	};
 
 	/**
@@ -327,12 +327,12 @@
 		var self = this;
 
 		pswp.ui.registerElement( {
-			name: 'atelier-info',
+			name: 'lichtbild-info',
 			order: 9,
 			isButton: false,
 			appendTo: 'wrapper',
 			onInit: function ( element ) {
-				element.className = 'pswp__atelier-info';
+				element.className = 'pswp__lichtbild-info';
 
 				var render = function () {
 					var slide = pswp.currSlide && pswp.currSlide.data ? pswp.currSlide.data : null;
@@ -345,14 +345,14 @@
 
 					if ( slide.title ) {
 						var title = document.createElement( 'span' );
-						title.className = 'pswp__atelier-title';
+						title.className = 'pswp__lichtbild-title';
 						title.textContent = slide.title;
 						element.appendChild( title );
 					}
 
 					if ( slide.caption ) {
 						var caption = document.createElement( 'span' );
-						caption.className = 'pswp__atelier-caption';
+						caption.className = 'pswp__lichtbild-caption';
 						// Captions are authored in wp-admin and may carry inline markup,
 						// which is how they render in the post content too.
 						caption.innerHTML = slide.caption;
@@ -361,7 +361,7 @@
 
 					if ( self.config.exif && slide.exif && slide.exif.length ) {
 						var list = document.createElement( 'ul' );
-						list.className = 'pswp__atelier-exif';
+						list.className = 'pswp__lichtbild-exif';
 
 						slide.exif.forEach( function ( field ) {
 							var entry = document.createElement( 'li' );
@@ -393,17 +393,17 @@
 		var self = this;
 
 		pswp.ui.registerElement( {
-			name: 'atelier-share',
+			name: 'lichtbild-share',
 			order: 8,
 			isButton: true,
 			html: '<svg aria-hidden="true" class="pswp__icn" viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M18 16.1c-.8 0-1.5.3-2 .8l-7.1-4.2c.1-.2.1-.5.1-.7s0-.5-.1-.7L16 7.1c.5.5 1.2.8 2 .8 1.7 0 3-1.3 3-3s-1.3-3-3-3-3 1.3-3 3c0 .2 0 .5.1.7L8 9.8c-.5-.5-1.2-.8-2-.8-1.7 0-3 1.3-3 3s1.3 3 3 3c.8 0 1.5-.3 2-.8l7.1 4.2c0 .2-.1.4-.1.7 0 1.7 1.3 3 3 3s3-1.3 3-3-1.3-3-3-3z"/></svg>',
 			title: i18n.share || 'Share',
 			appendTo: 'bar',
 			onInit: function ( element ) {
-				element.classList.add( 'pswp__atelier-share' );
+				element.classList.add( 'pswp__lichtbild-share' );
 
 				var menu = document.createElement( 'ul' );
-				menu.className = 'pswp__atelier-share-menu';
+				menu.className = 'pswp__lichtbild-share-menu';
 				menu.hidden = true;
 				element.appendChild( menu );
 
@@ -453,7 +453,7 @@
 				};
 
 				element.addEventListener( 'click', function ( event ) {
-					if ( event.target.closest( '.pswp__atelier-share-menu' ) ) {
+					if ( event.target.closest( '.pswp__lichtbild-share-menu' ) ) {
 						return;
 					}
 
@@ -478,7 +478,7 @@
 	 */
 	Gallery.prototype.registerDownload = function ( pswp ) {
 		pswp.ui.registerElement( {
-			name: 'atelier-download',
+			name: 'lichtbild-download',
 			order: 7,
 			isButton: true,
 			tagName: 'a',
@@ -558,7 +558,7 @@
 	Gallery.prototype.hashFor = function ( slides, index ) {
 		var slide = slides && slides[ index ] ? slides[ index ] : null;
 
-		return 'atelier-' + this.id + '-i' + ( slide && slide.id ? slide.id : 0 );
+		return 'lichtbild-' + this.id + '-i' + ( slide && slide.id ? slide.id : 0 );
 	};
 
 	/**
@@ -621,7 +621,7 @@
 			return Promise.resolve( this.visibleLinks().map( slideFromLink ) );
 		}
 
-		return this.request( 'atelier_items', { tag: '' } ).then( function ( data ) {
+		return this.request( 'lichtbild_items', { tag: '' } ).then( function ( data ) {
 			self.slideCache[ '' ] = ( data.items || [] ).map( slideFromRecord );
 
 			return self.slideCache[ '' ];
@@ -643,7 +643,7 @@
 	 * @return {string} The string, or an empty string.
 	 */
 	Gallery.prototype.strings = function ( key ) {
-		var bag = window.AtelierSettings && window.AtelierSettings.strings;
+		var bag = window.LichtbildSettings && window.LichtbildSettings.strings;
 
 		return bag && bag[ key ] ? bag[ key ] : '';
 	};
@@ -665,7 +665,7 @@
 	 * @return {void}
 	 */
 	Gallery.prototype.announce = function ( message ) {
-		var node = this.wrap.querySelector( '.atelier-message' );
+		var node = this.wrap.querySelector( '.lichtbild-message' );
 
 		if ( ! message ) {
 			if ( node && node.parentNode ) {
@@ -677,7 +677,7 @@
 
 		if ( ! node ) {
 			node = document.createElement( 'p' );
-			node.className = 'atelier-message';
+			node.className = 'lichtbild-message';
 			node.setAttribute( 'role', 'status' );
 			node.setAttribute( 'aria-live', 'polite' );
 			this.wrap.appendChild( node );
@@ -717,7 +717,7 @@
 	 */
 	Gallery.prototype.bindPagination = function () {
 		var self = this;
-		var slot = this.wrap.querySelector( '.atelier-pagination-slot' );
+		var slot = this.wrap.querySelector( '.lichtbild-pagination-slot' );
 
 		if ( ! slot ) {
 			return;
@@ -728,13 +728,13 @@
 		// The slot survives a page change while the nav inside it is replaced, so the
 		// listener goes on the slot and keeps working without being rebound.
 		slot.addEventListener( 'click', function ( event ) {
-			var button = event.target.closest( 'button[data-atelier-page]' );
+			var button = event.target.closest( 'button[data-lichtbild-page]' );
 
 			if ( ! button || button.disabled ) {
 				return;
 			}
 
-			var page = parseInt( button.getAttribute( 'data-atelier-page' ), 10 );
+			var page = parseInt( button.getAttribute( 'data-lichtbild-page' ), 10 );
 
 			if ( page >= 1 && page <= ( self.config.pages || 1 ) && page !== self.page ) {
 				self.goToPage( page );
@@ -762,7 +762,7 @@
 		this.pending = true;
 		this.root.classList.add( 'is-loading' );
 
-		this.request( 'atelier_page', { page: page, tag: tag } ).then( function ( data ) {
+		this.request( 'lichtbild_page', { page: page, tag: tag } ).then( function ( data ) {
 			if ( ticket !== self.sequence ) {
 				return;
 			}
@@ -811,20 +811,20 @@
 	 */
 	Gallery.prototype.bindTags = function () {
 		var self = this;
-		var bar = this.wrap.querySelector( '.atelier-tags' );
+		var bar = this.wrap.querySelector( '.lichtbild-tags' );
 
 		if ( ! bar ) {
 			return;
 		}
 
 		bar.addEventListener( 'click', function ( event ) {
-			var button = event.target.closest( 'button[data-atelier-tag]' );
+			var button = event.target.closest( 'button[data-lichtbild-tag]' );
 
 			if ( ! button ) {
 				return;
 			}
 
-			var slug = button.getAttribute( 'data-atelier-tag' ) || '';
+			var slug = button.getAttribute( 'data-lichtbild-tag' ) || '';
 
 			if ( slug === self.activeTag ) {
 				return;
@@ -832,7 +832,7 @@
 
 			self.activeTag = slug;
 
-			Array.prototype.forEach.call( bar.querySelectorAll( '.atelier-tag' ), function ( tag ) {
+			Array.prototype.forEach.call( bar.querySelectorAll( '.lichtbild-tag' ), function ( tag ) {
 				tag.classList.toggle( 'is-current', tag === button );
 			} );
 
@@ -855,13 +855,13 @@
 	Gallery.prototype.applyTagFilter = function () {
 		var active = this.activeTag;
 
-		Array.prototype.forEach.call( this.root.querySelectorAll( '.atelier-item' ), function ( item ) {
+		Array.prototype.forEach.call( this.root.querySelectorAll( '.lichtbild-item' ), function ( item ) {
 			if ( '' === active ) {
 				item.classList.remove( 'is-filtered' );
 				return;
 			}
 
-			var tags = ( item.getAttribute( 'data-atelier-tags' ) || '' ).split( ' ' );
+			var tags = ( item.getAttribute( 'data-lichtbild-tags' ) || '' ).split( ' ' );
 
 			item.classList.toggle( 'is-filtered', -1 === tags.indexOf( active ) );
 		} );
@@ -881,7 +881,7 @@
 		}
 
 		this.root.addEventListener( 'contextmenu', function ( event ) {
-			if ( event.target.closest( '.atelier-item' ) ) {
+			if ( event.target.closest( '.lichtbild-item' ) ) {
 				event.preventDefault();
 			}
 		} );
@@ -935,9 +935,9 @@
 	 * @return {void}
 	 */
 	function init() {
-		Array.prototype.forEach.call( document.querySelectorAll( '.atelier' ), function ( root ) {
-			if ( ! root.atelierGallery ) {
-				root.atelierGallery = new Gallery( root );
+		Array.prototype.forEach.call( document.querySelectorAll( '.lichtbild' ), function ( root ) {
+			if ( ! root.lichtbildGallery ) {
+				root.lichtbildGallery = new Gallery( root );
 			}
 		} );
 	}
@@ -948,5 +948,5 @@
 		init();
 	}
 
-	window.Atelier = { init: init };
+	window.Lichtbild = { init: init };
 }() );

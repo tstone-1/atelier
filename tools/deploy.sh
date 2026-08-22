@@ -46,9 +46,9 @@ set -uo pipefail
 # carried the keychain lookup with it for free.
 [ -f "$(dirname "${BASH_SOURCE[0]}")/deploy.env" ] && . "$(dirname "${BASH_SOURCE[0]}")/deploy.env"
 
-HOST="${ATELIER_DEPLOY_HOST:-}"
-USER_NAME="${ATELIER_DEPLOY_USER:-}"
-REMOTE_DIR="${ATELIER_DEPLOY_DIR:-/wp-content/plugins/atelier}"
+HOST="${LICHTBILD_DEPLOY_HOST:-}"
+USER_NAME="${LICHTBILD_DEPLOY_USER:-}"
+REMOTE_DIR="${LICHTBILD_DEPLOY_DIR:-/wp-content/plugins/lichtbild-gallery}"
 
 # Two subcommands never open a connection, and neither may require a deployment target -- that
 # is not a convenience, it is what lets tests/deploy-order-test.sh and tests/deploy-audit-test.sh
@@ -66,9 +66,9 @@ case "${1:-}" in
 esac
 
 if [ "$NEEDS_TARGET" -eq 1 ] && { [ -z "$HOST" ] || [ -z "$USER_NAME" ]; }; then
-	echo "[ERROR] set ATELIER_DEPLOY_HOST and ATELIER_DEPLOY_USER, or create tools/deploy.env:" >&2
-	echo "          ATELIER_DEPLOY_HOST=ftp.example.com" >&2
-	echo "          ATELIER_DEPLOY_USER=account" >&2
+	echo "[ERROR] set LICHTBILD_DEPLOY_HOST and LICHTBILD_DEPLOY_USER, or create tools/deploy.env:" >&2
+	echo "          LICHTBILD_DEPLOY_HOST=ftp.example.com" >&2
+	echo "          LICHTBILD_DEPLOY_USER=account" >&2
 	echo "        The password is read from the macOS login keychain for that host and account," >&2
 	echo "        never from a file: security add-internet-password -s <host> -a <account> -w" >&2
 	exit 2
@@ -85,16 +85,16 @@ CHUNK=8192
 # loud one release after the only one that inverted: this release ADDS a method, so the
 # definition lands before its callers.
 #
-#   1. `Atelier_Settings::claims_envira_shortcodes()` is NEW, and BOTH
-#      `class-atelier-shortcode.php` and `class-atelier-assets.php` stop calling
+#   1. `Lichtbild_Settings::claims_envira_shortcodes()` is NEW, and BOTH
+#      `class-lichtbild-shortcode.php` and `class-lichtbild-assets.php` stop calling
 #      `should_take_over()` and call it instead. Land either caller before
-#      `class-atelier-settings.php` and every front-end request hits "Call to undefined method"
+#      `class-lichtbild-settings.php` and every front-end request hits "Call to undefined method"
 #      until the definition arrives -- `register_shortcodes()` runs on `init` and
 #      `maybe_enqueue_early()` on `wp_enqueue_scripts`, so that is every page on the site, not
 #      only the ones with a gallery. Settings first, then shortcode, then assets.
 #
-# `class-atelier-config.php` has no cross-file edge at all this release: it drops the second
-# argument it passes to the `atelier_config_sanitize` filter, and passing a hook fewer arguments
+# `class-lichtbild-config.php` has no cross-file edge at all this release: it drops the second
+# argument it passes to the `lichtbild_config_sanitize` filter, and passing a hook fewer arguments
 # than a callback declared is not an error in PHP. There is no third-party callback on this site
 # in any case. `readme.txt` is inert.
 #
@@ -105,11 +105,11 @@ CHUNK=8192
 # `plan` CAN see none of this either way. Its walk asks which requires are new and whether an
 # asset precedes the bootstrap; a method added to an existing class appears in neither question,
 # and the grep it runs looks for callers of a CLASS name rather than of a method -- and
-# `Atelier_Settings` was already required, already constructed, already there. It will print
+# `Lichtbild_Settings` was already required, already constructed, already there. It will print
 # "constraints: satisfied" over an order that is a fatal on every page. The order above is
 # derived from the diff by hand and the reasoning is written down here for the next reader.
 #
-# `atelier.php` is last for the usual reason: ATELIER_VERSION is the `?ver=` on the assets. No
+# `lichtbild-gallery.php` is last for the usual reason: LICHTBILD_VERSION is the `?ver=` on the assets. No
 # asset changed this release, so the window is harmless either way; the position costs nothing
 # and stating a rule once per release is cheaper than deciding whether it applies.
 #
@@ -119,17 +119,17 @@ CHUNK=8192
 # is run every release because the two times it was skipped the list was four releases stale.
 # Unlike 26.8.22, no unshipped commit turned up: the six are exactly what 26.8.23 touched.
 #
-# LICENSE, languages/atelier-de_DE.po and languages/atelier.pot are ABSENT from the server and
+# LICENSE, languages/lichtbild-gallery-de_DE.po and languages/lichtbild-gallery.pot are ABSENT from the server and
 # deliberately stay that way: none is read at runtime, none has ever been deployed, and each is
 # one more transfer that can fail for no behavioural gain. LICENSE ships in the wordpress.org
 # ZIP, which is a different artifact.
 UPLOAD_ORDER=(
-	"includes/class-atelier-settings.php"
-	"includes/class-atelier-shortcode.php"
-	"includes/class-atelier-assets.php"
-	"includes/class-atelier-config.php"
+	"includes/class-lichtbild-settings.php"
+	"includes/class-lichtbild-shortcode.php"
+	"includes/class-lichtbild-assets.php"
+	"includes/class-lichtbild-config.php"
 	"readme.txt"
-	"atelier.php"
+	"lichtbild-gallery.php"
 )
 
 # The order the checks below actually run against. It is UPLOAD_ORDER for every real invocation;
@@ -261,7 +261,7 @@ put_chunked() {
 #
 # Every ordering rule above is about a definition ARRIVING: land it before its caller, or the
 # caller is a fatal in the window between the two files. 26.8.22 was the first release to DELETE
-# one -- `Atelier_Gallery::custom_css()`, with `Atelier_Renderer` as the file that stops calling
+# one -- `Lichtbild_Gallery::custom_css()`, with `Lichtbild_Renderer` as the file that stops calling
 # it -- and the familiar rule gives exactly the wrong answer there. The caller has to go FIRST,
 # because it is the DEPLOYED caller, still on the server, that would be left naming a method the
 # new file no longer defines.
@@ -294,7 +294,7 @@ put_chunked() {
 #
 # Anchored at the start of the line so a CALL never matches: `public function custom_css(` is a
 # definition, `$gallery->custom_css(` is not, and the difference is entirely the anchor plus the
-# modifier prefix. A bare `function atelier_load_textdomain(` at column 0 is a definition too.
+# modifier prefix. A bare `function lichtbild_load_textdomain(` at column 0 is a definition too.
 php_defs() {
 	grep -oE '^[[:space:]]*((public|protected|private|static|abstract|final)[[:space:]]+)*function[[:space:]]+&?[A-Za-z_][A-Za-z0-9_]*' "$1" 2>/dev/null |
 		sed -E 's/.*function[[:space:]]+&?//' |
@@ -324,7 +324,7 @@ order_position() {
 
 # Every shipped PHP file in the local tree, which is where a surviving call would be.
 local_php() {
-	printf '%s\n' "$ROOT/atelier.php" "$ROOT/uninstall.php" "$ROOT"/includes/*.php
+	printf '%s\n' "$ROOT/lichtbild-gallery.php" "$ROOT/uninstall.php" "$ROOT"/includes/*.php
 }
 
 check_removed_methods() {
@@ -464,7 +464,7 @@ fetch_deployed() {
 # a file quietly excluded from the set is a file nothing will ever notice missing.
 SERVER_ABSENT=(
 	"LICENSE"
-	"languages/atelier.pot"
+	"languages/lichtbild-gallery.pot"
 )
 
 # The other direction, and it is not symmetric: files that go to THIS SITE but not into the
@@ -477,7 +477,7 @@ SERVER_ABSENT=(
 # `.distignore` alone would leave the one file whose absence is silent -- the strings quietly
 # revert to English -- as the one file the audit never asks about.
 SERVER_EXTRA=(
-	"languages/atelier-de_DE.mo"
+	"languages/lichtbild-gallery-de_DE.mo"
 )
 
 # The distributed file set, derived the way tools/build-zip.sh derives it: the TRACKED tree minus
@@ -741,13 +741,13 @@ cmd_plan() {
 	echo
 	echo "ordering constraints, derived rather than remembered:"
 
-	# Labelled "required by atelier.php", not "new" -- this is every require in the LOCAL
+	# Labelled "required by lichtbild-gallery.php", not "new" -- this is every require in the LOCAL
 	# bootstrap, and the new ones are worked out below by asking the server. The label used to
-	# say "new classes required by atelier.php" over a list of all nineteen, which reads exactly
+	# say "new classes required by lichtbild-gallery.php" over a list of all nineteen, which reads exactly
 	# like the server fetch having failed and every require having defaulted to new. It cost a
 	# detour through the fetch code on the 26.8.10 deploy to establish that nothing was wrong.
 	# A report that describes itself inaccurately is a defect in the report.
-	echo "  required by the local atelier.php:   $(cd "$ROOT" && grep -c "class-atelier-[a-z-]*\.php" atelier.php | tr -d ' ') classes"
+	echo "  required by the local lichtbild-gallery.php:   $(cd "$ROOT" && grep -c "class-lichtbild-[a-z-]*\.php" lichtbild-gallery.php | tr -d ' ') classes"
 	echo "  in this upload, absent on server:   $(for rel in "${UPLOAD_ORDER[@]}"; do [ "$(remote_size "$rel")" = "-1" ] && printf '%s ' "$rel"; done)"
 
 	local ok=1
@@ -781,13 +781,13 @@ cmd_plan() {
 	# one: an abstract class is never `new`ed, so the only edge that exists is the invisible one.
 	#
 	# It only binds when the require is NEW, and whether it is new is a fact about the server,
-	# not about this checkout. So the server's own atelier.php is fetched and read. Two releases
+	# not about this checkout. So the server's own lichtbild-gallery.php is fetched and read. Two releases
 	# running, the interesting answer came from asking the server rather than from remembering:
 	# 26.8.4's new class files legitimately preceded the gate because they did not yet exist
 	# there, and 26.8.5 has no constraint at all because the requires are already in place.
 	local gate server_bootstrap bootstrap_size
-	gate="$(position atelier.php)"
-	server_bootstrap="$(ftp "ftp://$HOST$REMOTE_DIR/atelier.php" 2>/dev/null)"
+	gate="$(position lichtbild-gallery.php)"
+	server_bootstrap="$(ftp "ftp://$HOST$REMOTE_DIR/lichtbild-gallery.php" 2>/dev/null)"
 
 	# An empty answer has TWO causes that mean opposite things, and this script's whole history is
 	# of empty answers being read as facts. So it is resolved by SIZE, which distinguishes them:
@@ -800,16 +800,16 @@ cmd_plan() {
 	#       before: "cannot tell which requires are new" is the one answer that must never be
 	#       delivered quietly, because every ordering guarantee below rests on having read it.
 	if [ -z "$server_bootstrap" ]; then
-		bootstrap_size="$(remote_size atelier.php)"
+		bootstrap_size="$(remote_size lichtbild-gallery.php)"
 
 		if [ "$bootstrap_size" != "-1" ]; then
-			echo "[ERROR] the deployed atelier.php is $bootstrap_size bytes but could not be read;" >&2
+			echo "[ERROR] the deployed lichtbild-gallery.php is $bootstrap_size bytes but could not be read;" >&2
 			echo "        cannot tell which requires are new, so the ordering check would cover nothing" >&2
 
 			return 1
 		fi
 
-		echo "  FIRST INSTALL: no atelier.php on the server, so this is a new plugin directory."
+		echo "  FIRST INSTALL: no lichtbild-gallery.php on the server, so this is a new plugin directory."
 		echo "  Ordering is moot: the directory is not in active_plugins, so PHP opens none of it"
 		echo "  while it uploads. Activate only after every file is digest-verified."
 		echo
@@ -859,16 +859,16 @@ cmd_plan() {
 		done < <(cd "$ROOT" && grep -l "${class_name}::\|new ${class_name}(\|extends ${class_name}" includes/*.php)
 
 		if [ "$(position "includes/$class_file")" -eq 0 ] || [ "$(position "includes/$class_file")" -ge "$gate" ]; then
-			echo "[ERROR] includes/$class_file is missing from the order, or ordered after atelier.php requires it" >&2
+			echo "[ERROR] includes/$class_file is missing from the order, or ordered after lichtbild-gallery.php requires it" >&2
 			ok=0
 		fi
-	done < <(cd "$ROOT" && grep -o "class-atelier-[a-z-]*\.php" atelier.php)
+	done < <(cd "$ROOT" && grep -o "class-lichtbild-[a-z-]*\.php" lichtbild-gallery.php)
 
 	[ "$new_requires" -eq 0 ] && echo "  new requires this release:          none, so nothing to sequence"
 
 	# The second constraint, which is not about PHP and which the walk above is structurally
-	# blind to: a stylesheet or script is cache-busted by `ATELIER_VERSION`, and that constant
-	# lives in atelier.php. Land the bootstrap first and a browser asking for `?ver=<new>` is
+	# blind to: a stylesheet or script is cache-busted by `LICHTBILD_VERSION`, and that constant
+	# lives in lichtbild-gallery.php. Land the bootstrap first and a browser asking for `?ver=<new>` is
 	# served the OLD asset and caches it under the new name -- where nothing corrects it until
 	# the next version bump, because the URL never changes again. No grep can see this edge:
 	# nothing in the code names the file, the dependency runs through a query argument.
@@ -878,7 +878,7 @@ cmd_plan() {
 	# a rule written as a caution gets nodded at while the same rule written as a line of code
 	# gets followed -- which is the argument this whole script was built on.
 	# Counted separately from the ones that pass, because a single tally cannot say which of two
-	# opposite things happened: with `atelier.php` ordered first, every asset FAILS the rule, and
+	# opposite things happened: with `lichtbild-gallery.php` ordered first, every asset FAILS the rule, and
 	# a pass-counter left at zero then prints "none in this upload" directly beneath the error
 	# saying otherwise. Same defect this script already fixed once in the requires label -- a
 	# report that describes itself inaccurately is a defect in the report.
@@ -892,7 +892,7 @@ cmd_plan() {
 					assets_seen=$((assets_seen + 1))
 
 					if [ "$(position "$rel")" -ge "$gate" ]; then
-						echo "[ERROR] $rel is ordered at or after atelier.php, which carries the ?ver= it is cached under" >&2
+						echo "[ERROR] $rel is ordered at or after lichtbild-gallery.php, which carries the ?ver= it is cached under" >&2
 						ok=0
 					else
 						assets_first=$((assets_first + 1))
@@ -965,7 +965,7 @@ cmd_push() {
 #   - A DEPLOY must not change a rendered byte, so `capture` hashes the whole page. That is the
 #     strongest possible statement and the right one when nothing about the markup should move.
 #   - A MIGRATION changes the post type, and WordPress puts the post type in its own body and
-#     post classes -- `single-envira` becomes `single-atelier_gallery` on every page. A byte hash
+#     post classes -- `single-envira` becomes `single-lichtbild_gallery` on every page. A byte hash
 #     therefore reports 100% changed and tells you nothing. Measured once: all 110 local URLs
 #     "changed", none of them meaningfully.
 #
@@ -973,7 +973,7 @@ cmd_push() {
 # photographs, in the same number, however they are wrapped". Upload filenames with their size
 # suffixes stripped answer exactly that, and the tile count stops a page that lost every image
 # from matching an empty one.
-atelier_semantic() {
+lichtbild_semantic() {
 	local page
 	page="$(cat)"
 
@@ -987,7 +987,7 @@ atelier_semantic() {
 		#
 		# A fingerprint exists to compare a page before a change against the same page after it,
 		# so anything in it that is spelled differently on the two sides reports a difference that
-		# is purely the instrument's. Counting only `atelier-item` against a pre-rename page finds
+		# is purely the instrument's. Counting only `lichtbild-item` against a pre-rename page finds
 		# zero and records `tiles:0`, so EVERY page carrying a gallery compares as changed -- 52 of
 		# 111 in the local rehearsal -- while the tag archives, having no tiles, compare as
 		# identical. That shape is the tell: a difference that tracks whether the page has any
@@ -999,7 +999,7 @@ atelier_semantic() {
 		#
 		# Safe to drop the `tivira` alternative once no capture predating 26.8.16 is still being
 		# compared against -- and harmless to leave, since a page cannot carry both.
-		printf 'tiles:%s\n' "$(printf '%s' "$page" | grep -oE '(atelier|tivira)-(album-)?item' | wc -l | tr -d ' ')"
+		printf 'tiles:%s\n' "$(printf '%s' "$page" | grep -oE '(lichtbild|tivira)-(album-)?item' | wc -l | tr -d ' ')"
 
 		# The document title, because the image set alone is blind on any page that has no
 		# images -- and 60 of this site's 159 URLs are exactly that: 58 tag archives, which
@@ -1029,7 +1029,7 @@ cmd_capture() {
 		local body code hash
 		body="$(curl -sS --max-time 30 -w '\n@@STATUS:%{http_code}' "$u" 2>/dev/null)"
 		code="$(printf '%s' "$body" | tail -1 | sed 's/^@@STATUS://')"
-		# ATELIER_VERSION reaches the asset query strings, so a version bump changes every page.
+		# LICHTBILD_VERSION reaches the asset query strings, so a version bump changes every page.
 		# Normalising ?ver= is what lets the rest be required to match exactly.
 		hash="$(printf '%s' "$body" | sed '$d' | sed 's/?ver=[0-9.]*//g' | shasum | cut -d' ' -f1)"
 
@@ -1057,7 +1057,7 @@ cmd_fingerprint() {
 		local body code hash
 		body="$(curl -sS --max-time 30 -w '\n@@STATUS:%{http_code}' "$u" 2>/dev/null)"
 		code="$(printf '%s' "$body" | tail -1 | sed 's/^@@STATUS://')"
-		hash="$(printf '%s' "$body" | sed '$d' | atelier_semantic)"
+		hash="$(printf '%s' "$body" | sed '$d' | lichtbild_semantic)"
 
 		printf '%s\t%s\t%s\n' "$u" "$hash" "$code" >> "$out"
 	done < "$urls"

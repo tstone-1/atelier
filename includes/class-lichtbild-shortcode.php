@@ -2,7 +2,7 @@
 /**
  * Shortcode handlers.
  *
- * @package Atelier
+ * @package Lichtbild
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -10,12 +10,12 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Registers the gallery and album shortcodes.
  *
- * `[atelier-gallery]` is always ours. `[envira-gallery]` is taken over according to the
+ * `[lichtbild-gallery]` is always ours. `[envira-gallery]` is taken over according to the
  * takeover setting, and the takeover happens late on `init` so that Envira — which
  * registers its own shortcode on `init` at the default priority — has already run and can
  * be displaced deterministically rather than by load order.
  *
- * **Since 26.8.6 this consults `Atelier_Repository::is_viewable()` like every other publishing
+ * **Since 26.8.6 this consults `Lichtbild_Repository::is_viewable()` like every other publishing
  * path, and the question it was left open for has an answer.** It was the fourth and last path
  * that did not. The argument for leaving it was that a shortcode is an author naming a specific
  * gallery in a specific post, which reads as intent to publish it *there* — the way WordPress
@@ -35,37 +35,37 @@ defined( 'ABSPATH' ) || exit;
  * The album handler checks the **album's** own visibility; the renderer separately checks each
  * member gallery. Both are needed and neither implies the other.
  */
-class Atelier_Shortcode {
+class Lichtbild_Shortcode {
 
 	/**
 	 * Gallery repository.
 	 *
-	 * @var Atelier_Repository
+	 * @var Lichtbild_Repository
 	 */
 	private $repository;
 
 	/**
 	 * Renderer.
 	 *
-	 * @var Atelier_Renderer
+	 * @var Lichtbild_Renderer
 	 */
 	private $renderer;
 
 	/**
 	 * Plugin settings.
 	 *
-	 * @var Atelier_Settings
+	 * @var Lichtbild_Settings
 	 */
 	private $settings;
 
 	/**
 	 * Builds the handler.
 	 *
-	 * @param Atelier_Repository $repository Gallery repository.
-	 * @param Atelier_Renderer   $renderer   Renderer.
-	 * @param Atelier_Settings   $settings   Plugin settings.
+	 * @param Lichtbild_Repository $repository Gallery repository.
+	 * @param Lichtbild_Renderer   $renderer   Renderer.
+	 * @param Lichtbild_Settings   $settings   Plugin settings.
 	 */
-	public function __construct( Atelier_Repository $repository, Atelier_Renderer $renderer, Atelier_Settings $settings ) {
+	public function __construct( Lichtbild_Repository $repository, Lichtbild_Renderer $renderer, Lichtbild_Settings $settings ) {
 		$this->repository = $repository;
 		$this->renderer   = $renderer;
 		$this->settings   = $settings;
@@ -86,8 +86,8 @@ class Atelier_Shortcode {
 	 * @return void
 	 */
 	public function register_shortcodes() {
-		add_shortcode( 'atelier-gallery', array( $this, 'gallery' ) );
-		add_shortcode( 'atelier-album', array( $this, 'album' ) );
+		add_shortcode( 'lichtbild-gallery', array( $this, 'gallery' ) );
+		add_shortcode( 'lichtbild-album', array( $this, 'album' ) );
 
 		if ( $this->settings->claims_envira_shortcodes() ) {
 			remove_shortcode( 'envira-gallery' );
@@ -113,7 +113,7 @@ class Atelier_Shortcode {
 				'page' => 1,
 			),
 			is_array( $atts ) ? $atts : array(),
-			'atelier-gallery'
+			'lichtbild-gallery'
 		);
 
 		$reference = '' !== $atts['id'] ? $atts['id'] : $atts['slug'];
@@ -145,7 +145,7 @@ class Atelier_Shortcode {
 				'slug' => '',
 			),
 			is_array( $atts ) ? $atts : array(),
-			'atelier-album'
+			'lichtbild-album'
 		);
 
 		$reference = '' !== $atts['id'] ? $atts['id'] : $atts['slug'];

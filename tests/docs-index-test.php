@@ -25,7 +25,7 @@
  * that silently examines nothing is indistinguishable from one that passes, so an index with no
  * entries is reported as a failure rather than a clean run.
  *
- * @package Atelier\Tests
+ * @package Lichtbild\Tests
  */
 
 // phpcs:disable WordPress.NamingConventions.PrefixAllGlobals
@@ -116,7 +116,7 @@ foreach ( $corpus as $rel ) {
  * @param string $text AGENTS.md.
  * @return string[] Entry titles, in the order they appear.
  */
-function atelier_index_titles( $text ) {
+function lichtbild_index_titles( $text ) {
 	$lines  = explode( "\n", $text );
 	$blocks = array();
 	$cur    = null;
@@ -161,7 +161,7 @@ function atelier_index_titles( $text ) {
 	return $titles;
 }
 
-$titles = atelier_index_titles( $text );
+$titles = lichtbild_index_titles( $text );
 
 printf( "index entries:       %d\n", count( $titles ) );
 
@@ -209,7 +209,7 @@ foreach ( $titles as $title ) {
 $self_indexed = 0;
 
 foreach ( $bodies as $rel => $body ) {
-	$titles = atelier_index_titles( $body );
+	$titles = lichtbild_index_titles( $body );
 
 	if ( empty( $titles ) ) {
 		continue;

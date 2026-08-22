@@ -2,17 +2,17 @@
 /**
  * Block editor registration.
  *
- * @package Atelier
+ * @package Lichtbild
  */
 
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Registers the `atelier/gallery` and `atelier/album` blocks.
+ * Registers the `lichtbild/gallery` and `lichtbild/album` blocks.
  *
  * **This is the fifth path that can put gallery content in front of a visitor, and it renders
- * none of it itself.** Both callbacks hand straight to `Atelier_Shortcode`, which already
- * consults `Atelier_Repository::is_viewable()`. That is deliberate and it is the whole design:
+ * none of it itself.** Both callbacks hand straight to `Lichtbild_Shortcode`, which already
+ * consults `Lichtbild_Repository::is_viewable()`. That is deliberate and it is the whole design:
  * the four earlier paths each grew their own copy of the visibility rule, one of them forgot
  * it, and a protected gallery's cover was published on a public album page for a week. A block
  * that assembled its own repository and renderer would be the fifth copy of a rule that has
@@ -25,11 +25,11 @@ defined( 'ABSPATH' ) || exit;
  * WHY THE PICKER IS PRINTED INTO THE PAGE RATHER THAN FETCHED
  * ==========================================================
  *
- * `Atelier_Post_Types` registers all three types with `show_in_rest => false`, because the
+ * `Lichtbild_Post_Types` registers all three types with `show_in_rest => false`, because the
  * editors are metaboxes on the classic post screen and nothing else needs them over REST.
- * A block editor therefore cannot query them: `useEntityRecords( 'postType', 'atelier_gallery' )`
+ * A block editor therefore cannot query them: `useEntityRecords( 'postType', 'lichtbild_gallery' )`
  * answers a 404, not an empty list. The choices are printed as an inline script instead, which
- * is the same shape `Atelier_Assets` already uses for the lightbox's strings.
+ * is the same shape `Lichtbild_Assets` already uses for the lightbox's strings.
  *
  * That is a constraint rather than a preference, and it is worth knowing before someone
  * "modernises" this into a fetch: turning `show_in_rest` on would expose every gallery record
@@ -39,40 +39,40 @@ defined( 'ABSPATH' ) || exit;
  * ==================================================
  *
  * The block's `editorStyle` pulls in the front-end stylesheet, so the preview is laid out
- * exactly as a visitor sees it. `atelier.js` is **not** loaded, so the preview has no lightbox
+ * exactly as a visitor sees it. `lichtbild.js` is **not** loaded, so the preview has no lightbox
  * and no AJAX pagination. Both would be actively wrong inside an editor — a click that opens a
  * full-screen viewer over the post you are writing, or a pagination request that replaces the
  * preview's markup behind the editor's back. `blocks.css` also makes the preview inert, so a
  * click on a photograph cannot navigate the editor away to an image file.
  */
-class Atelier_Block {
+class Lichtbild_Block {
 
 	/**
 	 * Handle shared by the editor script and the editor stylesheet.
 	 */
-	const HANDLE = 'atelier-blocks';
+	const HANDLE = 'lichtbild-blocks';
 
 	/**
 	 * The shortcode handler both render callbacks delegate to.
 	 *
-	 * @var Atelier_Shortcode
+	 * @var Lichtbild_Shortcode
 	 */
 	private $shortcode;
 
 	/**
 	 * Reads the galleries and albums the picker offers.
 	 *
-	 * @var Atelier_Repository
+	 * @var Lichtbild_Repository
 	 */
 	private $repository;
 
 	/**
 	 * Builds the block registrar.
 	 *
-	 * @param Atelier_Shortcode  $shortcode  Handler both blocks render through.
-	 * @param Atelier_Repository $repository Reader behind the picker.
+	 * @param Lichtbild_Shortcode  $shortcode  Handler both blocks render through.
+	 * @param Lichtbild_Repository $repository Reader behind the picker.
 	 */
-	public function __construct( Atelier_Shortcode $shortcode, Atelier_Repository $repository ) {
+	public function __construct( Lichtbild_Shortcode $shortcode, Lichtbild_Repository $repository ) {
 		$this->shortcode  = $shortcode;
 		$this->repository = $repository;
 	}
@@ -99,30 +99,30 @@ class Atelier_Block {
 
 		wp_register_script(
 			self::HANDLE,
-			ATELIER_URL . 'assets/js/blocks.js',
+			LICHTBILD_URL . 'assets/js/blocks.js',
 			array( 'wp-blocks', 'wp-element', 'wp-block-editor', 'wp-components', 'wp-server-side-render' ),
-			ATELIER_VERSION,
+			LICHTBILD_VERSION,
 			true
 		);
 
-		// Depends on `atelier`, so the preview is laid out by the same stylesheet the visitor
+		// Depends on `lichtbild`, so the preview is laid out by the same stylesheet the visitor
 		// gets. That handle is registered on `init` for exactly this reason — `wp_enqueue_scripts`
 		// never fires in the admin, so a dependency registered there is silently dropped here and
 		// the preview renders unstyled.
 		wp_register_style(
 			self::HANDLE,
-			ATELIER_URL . 'assets/css/blocks.css',
-			array( 'atelier' ),
-			ATELIER_VERSION
+			LICHTBILD_URL . 'assets/css/blocks.css',
+			array( 'lichtbild' ),
+			LICHTBILD_VERSION
 		);
 
 		register_block_type(
-			ATELIER_DIR . 'blocks/gallery',
+			LICHTBILD_DIR . 'blocks/gallery',
 			array( 'render_callback' => array( $this, 'render_gallery' ) )
 		);
 
 		register_block_type(
-			ATELIER_DIR . 'blocks/album',
+			LICHTBILD_DIR . 'blocks/album',
 			array( 'render_callback' => array( $this, 'render_album' ) )
 		);
 	}
@@ -141,7 +141,7 @@ class Atelier_Block {
 	 * Attaching the data after the script has already been enqueued is fine: `wp_add_inline_script`
 	 * appends to the registered handle, and the handle is printed later, in the footer.
 	 *
-	 * `before`, so `window.AtelierBlocks` exists by the time the script body runs. The strings
+	 * `before`, so `window.LichtbildBlocks` exists by the time the script body runs. The strings
 	 * travel with it rather than through `wp_set_script_translations()`: that route needs a
 	 * compiled JSON catalogue per script handle, generated by a build step this plugin
 	 * deliberately does not have, and `tests/i18n-test.php` could not see into it.
@@ -151,7 +151,7 @@ class Atelier_Block {
 	public function enqueue_editor_data() {
 		wp_add_inline_script(
 			self::HANDLE,
-			'window.AtelierBlocks = ' . wp_json_encode( $this->editor_data() ) . ';',
+			'window.LichtbildBlocks = ' . wp_json_encode( $this->editor_data() ) . ';',
 			'before'
 		);
 	}
@@ -205,19 +205,19 @@ class Atelier_Block {
 			'galleries' => $this->options( $this->repository->gallery_choices() ),
 			'albums'    => $this->options( $this->repository->album_choices() ),
 			'i18n'      => array(
-				'galleryTitle'        => __( 'Atelier Gallery', 'atelier' ),
-				'albumTitle'          => __( 'Atelier Album', 'atelier' ),
-				'chooseGallery'       => __( 'Choose a gallery', 'atelier' ),
-				'chooseAlbum'         => __( 'Choose an album', 'atelier' ),
-				'galleryInstructions' => __( 'Pick one of the galleries on this site. Edit its images and settings on the gallery itself, not here.', 'atelier' ),
-				'albumInstructions'   => __( 'Pick one of the albums on this site. Edit its galleries and settings on the album itself, not here.', 'atelier' ),
-				'settings'            => __( 'Gallery', 'atelier' ),
-				'albumSettings'       => __( 'Album', 'atelier' ),
-				'none'                => __( '— Select —', 'atelier' ),
-				'noGalleries'         => __( 'This site has no galleries yet.', 'atelier' ),
-				'noAlbums'            => __( 'This site has no albums yet.', 'atelier' ),
-				'emptyGallery'        => __( 'This gallery has nothing to show. It may be empty, a draft, or password-protected.', 'atelier' ),
-				'emptyAlbum'          => __( 'This album has nothing to show. It may be empty, a draft, or password-protected.', 'atelier' ),
+				'galleryTitle'        => __( 'Lichtbild Gallery', 'lichtbild-gallery' ),
+				'albumTitle'          => __( 'Lichtbild Album', 'lichtbild-gallery' ),
+				'chooseGallery'       => __( 'Choose a gallery', 'lichtbild-gallery' ),
+				'chooseAlbum'         => __( 'Choose an album', 'lichtbild-gallery' ),
+				'galleryInstructions' => __( 'Pick one of the galleries on this site. Edit its images and settings on the gallery itself, not here.', 'lichtbild-gallery' ),
+				'albumInstructions'   => __( 'Pick one of the albums on this site. Edit its galleries and settings on the album itself, not here.', 'lichtbild-gallery' ),
+				'settings'            => __( 'Gallery', 'lichtbild-gallery' ),
+				'albumSettings'       => __( 'Album', 'lichtbild-gallery' ),
+				'none'                => __( '— Select —', 'lichtbild-gallery' ),
+				'noGalleries'         => __( 'This site has no galleries yet.', 'lichtbild-gallery' ),
+				'noAlbums'            => __( 'This site has no albums yet.', 'lichtbild-gallery' ),
+				'emptyGallery'        => __( 'This gallery has nothing to show. It may be empty, a draft, or password-protected.', 'lichtbild-gallery' ),
+				'emptyAlbum'          => __( 'This album has nothing to show. It may be empty, a draft, or password-protected.', 'lichtbild-gallery' ),
 			),
 		);
 	}

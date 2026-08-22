@@ -2,7 +2,7 @@
 /**
  * The normalised gallery settings schema, and the translation into it from Envira's.
  *
- * @package Atelier
+ * @package Lichtbild
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -15,14 +15,14 @@ defined( 'ABSPATH' ) || exit;
  * them decide what a visitor sees. This class is the boundary between those two facts: it
  * owns the short list, and it is the only place that has to understand the long one.
  *
- * Putting the translation here rather than in `Atelier_Gallery` matters for two reasons.
+ * Putting the translation here rather than in `Lichtbild_Gallery` matters for two reasons.
  * Reading a v2 gallery then involves no Envira knowledge at all, which is what makes the
  * migration meaningful rather than cosmetic. And the messy parts of Envira's format — the
  * four spellings of true, the two generations of EXIF toggles, the CSS keyed on the old
  * plugin's element ids — are handled once, at the point of conversion, instead of being
  * re-derived on every page load forever.
  */
-class Atelier_Config {
+class Lichtbild_Config {
 
 	/**
 	 * Schema version written into converted records.
@@ -46,7 +46,7 @@ class Atelier_Config {
 	 * Anything a gallery needs beyond the settings here belongs in the theme or in
 	 * Appearance -> Customize -> Additional CSS, where WordPress's own editor validates it.
 	 * The element ids are stable and documented for exactly that purpose: a gallery is
-	 * `#atelier-<id>` and its wrapper `#atelier-<id>-wrap`.
+	 * `#lichtbild-<id>` and its wrapper `#lichtbild-<id>-wrap`.
 	 *
 	 * @return array Normalised settings.
 	 */
@@ -84,7 +84,7 @@ class Atelier_Config {
 	 * Converts one Envira config array into normalised settings.
 	 *
 	 * @param array $envira Envira's config array.
-	 * @param int   $id     Gallery post ID, passed on to the `atelier_config_from_envira` filter.
+	 * @param int   $id     Gallery post ID, passed on to the `lichtbild_config_from_envira` filter.
 	 *
 	 * @return array Normalised settings.
 	 */
@@ -142,7 +142,7 @@ class Atelier_Config {
 		// noticed; `prefer()` makes the code do what the sentence above claims.
 		$settings['exif'] = self::prefer( $envira, 'exif_lightbox', 'exif', false );
 
-		foreach ( Atelier_Exif::SUPPORTED as $field ) {
+		foreach ( Lichtbild_Exif::SUPPORTED as $field ) {
 			if ( self::prefer( $envira, 'exif_lightbox_' . $field, 'exif_' . $field, false ) ) {
 				$settings['exif_fields'][] = $field;
 			}
@@ -183,7 +183,7 @@ class Atelier_Config {
 		 * @param array $envira   The Envira config they came from.
 		 * @param int   $id       Gallery post ID.
 		 */
-		return (array) apply_filters( 'atelier_config_from_envira', $settings, $envira, $id );
+		return (array) apply_filters( 'lichtbild_config_from_envira', $settings, $envira, $id );
 	}
 
 	/**
@@ -281,7 +281,7 @@ class Atelier_Config {
 			$out['pagination'] = false;
 		}
 
-		$out['exif_fields']     = self::subset( $input, 'exif_fields', Atelier_Exif::SUPPORTED );
+		$out['exif_fields']     = self::subset( $input, 'exif_fields', Lichtbild_Exif::SUPPORTED );
 		$out['social_networks'] = self::subset( $input, 'social_networks', array( 'facebook', 'twitter', 'pinterest', 'email' ) );
 
 		// A submitted `custom_css` is dropped rather than sanitised. The form no longer offers
@@ -299,7 +299,7 @@ class Atelier_Config {
 		 *
 		 * @param array $out Sanitised settings.
 		 */
-		return (array) apply_filters( 'atelier_config_sanitize', $out );
+		return (array) apply_filters( 'lichtbild_config_sanitize', $out );
 	}
 
 	/**

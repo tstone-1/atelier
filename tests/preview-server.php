@@ -11,31 +11,31 @@
  * across-pages lightbox all behave as they would on the site. Images are loaded from the
  * live site, so the page needs a network connection but touches nothing on the server.
  *
- * @package Atelier\Tests
+ * @package Lichtbild\Tests
  */
 
 // phpcs:disable WordPress.NamingConventions.PrefixAllGlobals
 
 define( 'ABSPATH', __DIR__ );
-define( 'ATELIER_VERSION', 'preview' );
-define( 'ATELIER_FILE', dirname( __DIR__ ) . '/atelier.php' );
-define( 'ATELIER_DIR', dirname( __DIR__ ) . '/' );
-define( 'ATELIER_URL', '/' );
+define( 'LICHTBILD_VERSION', 'preview' );
+define( 'LICHTBILD_FILE', dirname( __DIR__ ) . '/lichtbild-gallery.php' );
+define( 'LICHTBILD_DIR', dirname( __DIR__ ) . '/' );
+define( 'LICHTBILD_URL', '/' );
 
 require __DIR__ . '/wp-stubs.php';
-require ATELIER_DIR . 'includes/class-atelier-settings.php';
-require ATELIER_DIR . 'includes/class-atelier-assets.php';
-require ATELIER_DIR . 'includes/class-atelier-config.php';
-require ATELIER_DIR . 'includes/class-atelier-album-config.php';
-require ATELIER_DIR . 'includes/class-atelier-item.php';
-require ATELIER_DIR . 'includes/class-atelier-gallery.php';
-require ATELIER_DIR . 'includes/class-atelier-album.php';
-require ATELIER_DIR . 'includes/class-atelier-repository.php';
-require ATELIER_DIR . 'includes/class-atelier-exif.php';
-require ATELIER_DIR . 'includes/class-atelier-renderer.php';
-require ATELIER_DIR . 'includes/class-atelier-ajax.php';
+require LICHTBILD_DIR . 'includes/class-lichtbild-settings.php';
+require LICHTBILD_DIR . 'includes/class-lichtbild-assets.php';
+require LICHTBILD_DIR . 'includes/class-lichtbild-config.php';
+require LICHTBILD_DIR . 'includes/class-lichtbild-album-config.php';
+require LICHTBILD_DIR . 'includes/class-lichtbild-item.php';
+require LICHTBILD_DIR . 'includes/class-lichtbild-gallery.php';
+require LICHTBILD_DIR . 'includes/class-lichtbild-album.php';
+require LICHTBILD_DIR . 'includes/class-lichtbild-repository.php';
+require LICHTBILD_DIR . 'includes/class-lichtbild-exif.php';
+require LICHTBILD_DIR . 'includes/class-lichtbild-renderer.php';
+require LICHTBILD_DIR . 'includes/class-lichtbild-ajax.php';
 
-$fixture = getenv( 'ATELIER_FIXTURE' );
+$fixture = getenv( 'LICHTBILD_FIXTURE' );
 $fixture = $fixture ? $fixture : __DIR__ . '/fixture.json';
 
 if ( ! is_readable( $fixture ) ) {
@@ -44,21 +44,21 @@ if ( ! is_readable( $fixture ) ) {
 	exit;
 }
 
-Atelier_Test_Site::load( $fixture );
+Lichtbild_Test_Site::load( $fixture );
 
 $path = parse_url( $_SERVER['REQUEST_URI'], PHP_URL_PATH );
 
 // Let the built-in server deliver anything that exists on disk.
-if ( '/' !== $path && file_exists( ATELIER_DIR . ltrim( $path, '/' ) ) ) {
+if ( '/' !== $path && file_exists( LICHTBILD_DIR . ltrim( $path, '/' ) ) ) {
 	return false;
 }
 
-$repository = new Atelier_Repository();
-$assets     = new Atelier_Assets( new Atelier_Settings() );
-$renderer   = new Atelier_Renderer( $assets );
+$repository = new Lichtbild_Repository();
+$assets     = new Lichtbild_Assets( new Lichtbild_Settings() );
+$renderer   = new Lichtbild_Renderer( $assets );
 
 if ( '/wp-admin/admin-ajax.php' === $path ) {
-	$ajax = new Atelier_Ajax( $repository, $renderer );
+	$ajax = new Lichtbild_Ajax( $repository, $renderer );
 
 	/*
 	 * `wp_send_json_*()` ends the request in WordPress; the stub cannot call `exit` because the
@@ -68,12 +68,12 @@ if ( '/wp-admin/admin-ajax.php' === $path ) {
 	 * do nothing at all. The endpoint was correct throughout; only the harness around it lied.
 	 */
 	try {
-		if ( isset( $_REQUEST['action'] ) && 'atelier_items' === $_REQUEST['action'] ) {
+		if ( isset( $_REQUEST['action'] ) && 'lichtbild_items' === $_REQUEST['action'] ) {
 			$ajax->handle_items();
 		}
 
 		$ajax->handle_page();
-	} catch ( Atelier_Test_Halt $halt ) {
+	} catch ( Lichtbild_Test_Halt $halt ) {
 		// The response has already been written; this only stands in for the exit.
 	}
 
@@ -114,9 +114,9 @@ $showcase = array(
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Atelier preview</title>
+<title>Lichtbild preview</title>
 <link rel="stylesheet" href="/assets/vendor/photoswipe/photoswipe.css">
-<link rel="stylesheet" href="/assets/css/atelier.css">
+<link rel="stylesheet" href="/assets/css/lichtbild.css">
 <style>
 	body { margin: 0; font: 16px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 		color: #1a1a1a; background: #fff; }
@@ -139,8 +139,8 @@ $showcase = array(
 <body>
 <main>
 <header class="page">
-	<h1>Atelier preview</h1>
-	<p class="lede">Real galleries from timo-stein.com, rendered by Atelier. Pagination, tag
+	<h1>Lichtbild preview</h1>
+	<p class="lede">Real galleries from timo-stein.com, rendered by Lichtbild. Pagination, tag
 		filtering and the lightbox are live; images load from the site itself.</p>
 </header>
 
@@ -153,7 +153,7 @@ $showcase = array(
 	}
 
 	if ( ! empty( $entry['force'] ) ) {
-		$gallery = new Atelier_Gallery(
+		$gallery = new Lichtbild_Gallery(
 			$gallery->id(),
 			array_merge( $gallery->settings(), $entry['force'] ),
 			$gallery->items()
@@ -177,7 +177,7 @@ $showcase = array(
 </main>
 
 <script>
-window.AtelierSettings = {
+window.LichtbildSettings = {
 	ajaxUrl: '/wp-admin/admin-ajax.php',
 	nonce: 'preview',
 	photoswipe: '/assets/vendor/photoswipe/photoswipe.esm.min.js',
@@ -188,6 +188,6 @@ window.AtelierSettings = {
 	}
 };
 </script>
-<script src="/assets/js/atelier.js"></script>
+<script src="/assets/js/lichtbild.js"></script>
 </body>
 </html>

@@ -2,7 +2,7 @@
 /**
  * The migration section of the settings screen, and the actions behind it.
  *
- * @package Atelier
+ * @package Lichtbild
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -10,7 +10,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Presents the migration and performs it on request.
  *
- * Separate from `Atelier_Settings` because it is a different kind of thing: the settings
+ * Separate from `Lichtbild_Settings` because it is a different kind of thing: the settings
  * screen edits an option through the Settings API, while this runs a one-way action that
  * writes to `wp_posts`. Mixing them would put an irreversible-looking button inside a form
  * whose other control is a radio group, which is a poor place for it.
@@ -28,44 +28,44 @@ defined( 'ABSPATH' ) || exit;
  *   passed through query arguments, so the counts shown are the ones the migration returned
  *   rather than numbers reconstructed from a second look at the database.
  */
-class Atelier_Migration_Screen {
+class Lichtbild_Migration_Screen {
 
 	/**
 	 * Action name for performing the migration.
 	 */
-	const ACTION_MIGRATE = 'atelier_migrate';
+	const ACTION_MIGRATE = 'lichtbild_migrate';
 
 	/**
 	 * Action name for reversing it.
 	 */
-	const ACTION_ROLLBACK = 'atelier_rollback';
+	const ACTION_ROLLBACK = 'lichtbild_rollback';
 
 	/**
 	 * Transient prefix holding the outcome across the redirect.
 	 */
-	const RESULT = 'atelier_migration_result_';
+	const RESULT = 'lichtbild_migration_result_';
 
 	/**
 	 * The migrator.
 	 *
-	 * @var Atelier_Migration
+	 * @var Lichtbild_Migration
 	 */
 	private $migration;
 
 	/**
 	 * Plugin settings.
 	 *
-	 * @var Atelier_Settings
+	 * @var Lichtbild_Settings
 	 */
 	private $settings;
 
 	/**
 	 * Builds the screen.
 	 *
-	 * @param Atelier_Migration $migration The migrator.
-	 * @param Atelier_Settings  $settings  Plugin settings.
+	 * @param Lichtbild_Migration $migration The migrator.
+	 * @param Lichtbild_Settings  $settings  Plugin settings.
 	 */
-	public function __construct( Atelier_Migration $migration, Atelier_Settings $settings ) {
+	public function __construct( Lichtbild_Migration $migration, Lichtbild_Settings $settings ) {
 		$this->migration = $migration;
 		$this->settings  = $settings;
 	}
@@ -91,10 +91,10 @@ class Atelier_Migration_Screen {
 		// Enforced here rather than left to the `required` attribute on the checkbox. A form
 		// control is a hint to a browser, not a guard: the same request can be replayed, typed
 		// by hand, or bookmarked, and none of those carry the box.
-		if ( empty( $_POST['atelier_confirm'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		if ( empty( $_POST['lichtbild_confirm'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			$this->remember(
 				'migrate',
-				array( 'errors' => array( __( 'Confirm that you have a database backup before migrating.', 'atelier' ) ) )
+				array( 'errors' => array( __( 'Confirm that you have a database backup before migrating.', 'lichtbild-gallery' ) ) )
 			);
 			$this->go_back();
 		}
@@ -130,11 +130,11 @@ class Atelier_Migration_Screen {
 		// POST only. `admin_post_<action>` fires for GET too, and a state-changing action
 		// reachable by GET is one a prefetcher, a link checker or a bookmark can trigger.
 		if ( 'POST' !== strtoupper( isset( $_SERVER['REQUEST_METHOD'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_METHOD'] ) ) : '' ) ) {
-			wp_die( esc_html__( 'This action must be submitted from the settings screen.', 'atelier' ), '', array( 'response' => 405 ) );
+			wp_die( esc_html__( 'This action must be submitted from the settings screen.', 'lichtbild-gallery' ), '', array( 'response' => 405 ) );
 		}
 
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_die( esc_html__( 'You are not allowed to migrate galleries.', 'atelier' ), '', array( 'response' => 403 ) );
+			wp_die( esc_html__( 'You are not allowed to migrate galleries.', 'lichtbild-gallery' ), '', array( 'response' => 403 ) );
 		}
 
 		check_admin_referer( $action );
@@ -162,7 +162,7 @@ class Atelier_Migration_Screen {
 	 * @return void
 	 */
 	private function go_back() {
-		wp_safe_redirect( admin_url( 'options-general.php?page=atelier' ) );
+		wp_safe_redirect( admin_url( 'options-general.php?page=lichtbild' ) );
 		exit;
 	}
 
@@ -198,7 +198,7 @@ class Atelier_Migration_Screen {
 
 		$plan = $this->migration->plan();
 
-		echo '<h2>' . esc_html__( 'Storage', 'atelier' ) . '</h2>';
+		echo '<h2>' . esc_html__( 'Storage', 'lichtbild-gallery' ) . '</h2>';
 
 		// A mixed state is reported before anything else and always offers the rollback, even
 		// when the schema option says the site was never migrated. That combination is exactly
@@ -222,7 +222,7 @@ class Atelier_Migration_Screen {
 	/**
 	 * Renders the recovery state left behind by an interrupted migration.
 	 *
-	 * @param array $plan Output of `Atelier_Migration::plan()`.
+	 * @param array $plan Output of `Lichtbild_Migration::plan()`.
 	 *
 	 * @return void
 	 */
@@ -230,22 +230,22 @@ class Atelier_Migration_Screen {
 		?>
 		<div class="notice notice-error inline">
 			<p>
-				<strong><?php esc_html_e( 'The migration did not finish.', 'atelier' ); ?></strong>
+				<strong><?php esc_html_e( 'The migration did not finish.', 'lichtbild-gallery' ); ?></strong>
 				<?php
 				printf(
 					/* translators: %d: number of rows under the other set of names. */
-					esc_html( _n( '%d row is stored under the other set of names, so some galleries are unreachable.', '%d rows are stored under the other set of names, so some galleries are unreachable.', (int) $plan['stranded'], 'atelier' ) ),
+					esc_html( _n( '%d row is stored under the other set of names, so some galleries are unreachable.', '%d rows are stored under the other set of names, so some galleries are unreachable.', (int) $plan['stranded'], 'lichtbild-gallery' ) ),
 					(int) $plan['stranded']
 				);
 				?>
 			</p>
-			<p><?php esc_html_e( 'Roll back to put everything on Envira\'s types, then migrate again. Nothing was deleted, so this is safe to repeat.', 'atelier' ); ?></p>
+			<p><?php esc_html_e( 'Roll back to put everything on Envira\'s types, then migrate again. Nothing was deleted, so this is safe to repeat.', 'lichtbild-gallery' ); ?></p>
 		</div>
 
 		<form action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" method="post">
 			<input type="hidden" name="action" value="<?php echo esc_attr( self::ACTION_ROLLBACK ); ?>" />
 			<?php wp_nonce_field( self::ACTION_ROLLBACK ); ?>
-			<?php submit_button( __( 'Roll back to Envira\'s storage', 'atelier' ), 'primary', 'submit', true ); ?>
+			<?php submit_button( __( 'Roll back to Envira\'s storage', 'lichtbild-gallery' ), 'primary', 'submit', true ); ?>
 		</form>
 		<?php
 	}
@@ -292,7 +292,7 @@ class Atelier_Migration_Screen {
 		$message = 'rollback' === $result['action']
 			? sprintf(
 				/* translators: 1: galleries, 2: albums, 3: tags. */
-				__( 'Rolled back. %1$d galleries, %2$d albums and %3$d image tags are back on Envira\'s types.', 'atelier' ),
+				__( 'Rolled back. %1$d galleries, %2$d albums and %3$d image tags are back on Envira\'s types.', 'lichtbild-gallery' ),
 				(int) $result['galleries'],
 				(int) $result['albums'],
 				(int) $result['terms']
@@ -305,7 +305,7 @@ class Atelier_Migration_Screen {
 			// success notice cannot otherwise tell either of them happened.
 			: sprintf(
 				/* translators: 1: galleries, 2: albums, 3: tags, 4: gallery records, 5: album records, 6: SEO settings. */
-				__( 'Migrated. %1$d galleries, %2$d albums and %3$d image tags now belong to Atelier. %4$d gallery records and %5$d album records were converted, and %6$d Yoast SEO settings were carried onto the new names.', 'atelier' ),
+				__( 'Migrated. %1$d galleries, %2$d albums and %3$d image tags now belong to Lichtbild. %4$d gallery records and %5$d album records were converted, and %6$d Yoast SEO settings were carried onto the new names.', 'lichtbild-gallery' ),
 				(int) $result['galleries'],
 				(int) $result['albums'],
 				(int) $result['terms'],
@@ -320,7 +320,7 @@ class Atelier_Migration_Screen {
 	/**
 	 * Renders the state before migration, with the confirmation form.
 	 *
-	 * @param array $plan Output of `Atelier_Migration::plan()`.
+	 * @param array $plan Output of `Lichtbild_Migration::plan()`.
 	 *
 	 * @return void
 	 */
@@ -329,17 +329,17 @@ class Atelier_Migration_Screen {
 
 		?>
 		<p>
-			<?php esc_html_e( 'Galleries are still stored the way Envira wrote them. Atelier reads them in place, so nothing needs to change — but while that is true, uninstalling Envira would take the gallery, album and tag URLs off the site along with it.', 'atelier' ); ?>
+			<?php esc_html_e( 'Galleries are still stored the way Envira wrote them. Lichtbild reads them in place, so nothing needs to change — but while that is true, uninstalling Envira would take the gallery, album and tag URLs off the site along with it.', 'lichtbild-gallery' ); ?>
 		</p>
 
-		<p><?php esc_html_e( 'Migrating moves the galleries onto Atelier\'s own post types. What it does:', 'atelier' ); ?></p>
+		<p><?php esc_html_e( 'Migrating moves the galleries onto Lichtbild\'s own post types. What it does:', 'lichtbild-gallery' ); ?></p>
 
 		<ul class="ul-disc">
 			<li>
 				<?php
 				printf(
 					/* translators: 1: galleries, 2: albums, 3: image tags. */
-					esc_html__( 'Renames %1$d galleries, %2$d albums and %3$d image tags to Atelier\'s types, in place. Post IDs do not change, so every [envira-gallery id="…"] shortcode keeps working.', 'atelier' ),
+					esc_html__( 'Renames %1$d galleries, %2$d albums and %3$d image tags to Lichtbild\'s types, in place. Post IDs do not change, so every [envira-gallery id="…"] shortcode keeps working.', 'lichtbild-gallery' ),
 					(int) $plan['galleries'],
 					(int) $plan['albums'],
 					(int) $plan['terms']
@@ -350,14 +350,14 @@ class Atelier_Migration_Screen {
 				<?php
 				printf(
 					/* translators: 1: convertible galleries, 2: Envira's defaults record count. */
-					esc_html__( 'Converts %1$d gallery records into Atelier\'s own format. %2$d are Envira\'s stored defaults rather than galleries and are skipped.', 'atelier' ),
+					esc_html__( 'Converts %1$d gallery records into Lichtbild\'s own format. %2$d are Envira\'s stored defaults rather than galleries and are skipped.', 'lichtbild-gallery' ),
 					(int) $plan['convertible'],
 					(int) $plan['defaults']
 				);
 				?>
 			</li>
-			<li><?php esc_html_e( 'Keeps every URL exactly as it is. /envira/, /envira_album/ and /envira-tag/ continue to work and are still canonical.', 'atelier' ); ?></li>
-			<li><?php esc_html_e( 'Leaves Envira\'s own records untouched, so this can be reversed from this screen.', 'atelier' ); ?></li>
+			<li><?php esc_html_e( 'Keeps every URL exactly as it is. /envira/, /envira_album/ and /envira-tag/ continue to work and are still canonical.', 'lichtbild-gallery' ); ?></li>
+			<li><?php esc_html_e( 'Leaves Envira\'s own records untouched, so this can be reversed from this screen.', 'lichtbild-gallery' ); ?></li>
 		</ul>
 
 		<?php if ( (int) $plan['unreadable'] > 0 ) : ?>
@@ -365,7 +365,7 @@ class Atelier_Migration_Screen {
 				<?php
 				printf(
 					/* translators: %d: number of galleries with no readable record. */
-					esc_html( _n( '%d gallery has no readable record. It will be renamed but not converted, and will render as empty.', '%d galleries have no readable record. They will be renamed but not converted, and will render as empty.', (int) $plan['unreadable'], 'atelier' ) ),
+					esc_html( _n( '%d gallery has no readable record. It will be renamed but not converted, and will render as empty.', '%d galleries have no readable record. They will be renamed but not converted, and will render as empty.', (int) $plan['unreadable'], 'lichtbild-gallery' ) ),
 					(int) $plan['unreadable']
 				);
 				?>
@@ -375,8 +375,8 @@ class Atelier_Migration_Screen {
 		<?php if ( $blocked ) : ?>
 			<div class="notice notice-warning inline">
 				<p>
-					<strong><?php esc_html_e( 'Deactivate Envira Gallery first.', 'atelier' ); ?></strong>
-					<?php esc_html_e( 'Migrating renames the rows out from under it, which would leave its screens empty and its shortcodes rendering nothing.', 'atelier' ); ?>
+					<strong><?php esc_html_e( 'Deactivate Envira Gallery first.', 'lichtbild-gallery' ); ?></strong>
+					<?php esc_html_e( 'Migrating renames the rows out from under it, which would leave its screens empty and its shortcodes rendering nothing.', 'lichtbild-gallery' ); ?>
 				</p>
 			</div>
 		<?php endif; ?>
@@ -387,14 +387,14 @@ class Atelier_Migration_Screen {
 
 			<p>
 				<label>
-					<input type="checkbox" name="atelier_confirm" value="1" required <?php disabled( $blocked ); ?> />
-					<?php esc_html_e( 'I have a current backup of the database.', 'atelier' ); ?>
+					<input type="checkbox" name="lichtbild_confirm" value="1" required <?php disabled( $blocked ); ?> />
+					<?php esc_html_e( 'I have a current backup of the database.', 'lichtbild-gallery' ); ?>
 				</label>
 			</p>
 
 			<?php
 			submit_button(
-				__( 'Migrate galleries to Atelier', 'atelier' ),
+				__( 'Migrate galleries to Lichtbild', 'lichtbild-gallery' ),
 				'primary',
 				'submit',
 				true,
@@ -408,18 +408,18 @@ class Atelier_Migration_Screen {
 	/**
 	 * Renders the state after migration, with the rollback form.
 	 *
-	 * @param array $plan Output of `Atelier_Migration::plan()`.
+	 * @param array $plan Output of `Lichtbild_Migration::plan()`.
 	 *
 	 * @return void
 	 */
 	private function render_migrated( array $plan ) {
 		?>
 		<p>
-			<strong><?php esc_html_e( 'Galleries belong to Atelier.', 'atelier' ); ?></strong>
+			<strong><?php esc_html_e( 'Galleries belong to Lichtbild.', 'lichtbild-gallery' ); ?></strong>
 			<?php
 			printf(
 				/* translators: 1: galleries, 2: albums, 3: image tags. */
-				esc_html__( '%1$d galleries, %2$d albums and %3$d image tags are stored under Atelier\'s own types. Envira Gallery can be uninstalled without taking any URL off the site.', 'atelier' ),
+				esc_html__( '%1$d galleries, %2$d albums and %3$d image tags are stored under Lichtbild\'s own types. Envira Gallery can be uninstalled without taking any URL off the site.', 'lichtbild-gallery' ),
 				(int) $plan['galleries'],
 				(int) $plan['albums'],
 				(int) $plan['terms']
@@ -428,13 +428,13 @@ class Atelier_Migration_Screen {
 		</p>
 
 		<p class="description">
-			<?php esc_html_e( 'Envira\'s original records were left in place, so rolling back restores exactly what was there rather than reconstructing it.', 'atelier' ); ?>
+			<?php esc_html_e( 'Envira\'s original records were left in place, so rolling back restores exactly what was there rather than reconstructing it.', 'lichtbild-gallery' ); ?>
 		</p>
 
 		<form action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" method="post">
 			<input type="hidden" name="action" value="<?php echo esc_attr( self::ACTION_ROLLBACK ); ?>" />
 			<?php wp_nonce_field( self::ACTION_ROLLBACK ); ?>
-			<?php submit_button( __( 'Roll back to Envira\'s storage', 'atelier' ), 'secondary', 'submit', true ); ?>
+			<?php submit_button( __( 'Roll back to Envira\'s storage', 'lichtbild-gallery' ), 'secondary', 'submit', true ); ?>
 		</form>
 		<?php
 	}

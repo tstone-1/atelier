@@ -2,16 +2,16 @@
 /**
  * An album: an ordered set of galleries shown as a grid of covers.
  *
- * @package Atelier
+ * @package Lichtbild
  */
 
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Wraps one album, in Atelier's own shape.
+ * Wraps one album, in Lichtbild's own shape.
  *
- * Like `Atelier_Gallery`, this reads normalised settings and an ordered item list and knows
- * nothing about Envira. `Atelier_Album_Config` is where the translation happens, so an album read
+ * Like `Lichtbild_Gallery`, this reads normalised settings and an ordered item list and knows
+ * nothing about Envira. `Lichtbild_Album_Config` is where the translation happens, so an album read
  * on a migrated site involves no Envira knowledge at all — which is what makes the migration
  * meaningful for albums rather than a rename of their rows.
  *
@@ -19,7 +19,7 @@ defined( 'ABSPATH' ) || exit;
  * makes order an accident of array-key order and makes the same gallery impossible to list twice;
  * the gallery side moved off that shape for the same two reasons.
  */
-class Atelier_Album {
+class Lichtbild_Album {
 
 	/**
 	 * Post ID of the album.
@@ -51,7 +51,7 @@ class Atelier_Album {
 	 */
 	public function __construct( $id, array $settings, array $items ) {
 		$this->id       = (int) $id;
-		$this->settings = Atelier_Album_Config::fill( $settings );
+		$this->settings = Lichtbild_Album_Config::fill( $settings );
 		$this->items    = array_values( $items );
 	}
 
@@ -67,7 +67,7 @@ class Atelier_Album {
 	/**
 	 * Returns the album title.
 	 *
-	 * The post's own title, and never a copy stored in the record. See `Atelier_Album_Config`
+	 * The post's own title, and never a copy stored in the record. See `Lichtbild_Album_Config`
 	 * for why the stored one was dropped rather than merely left unread: it was an override,
 	 * so a rename of the album post would have had no effect on anything that called this.
 	 *

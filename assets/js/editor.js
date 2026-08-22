@@ -22,7 +22,7 @@
 	function syncOrder() {
 		var keys = [];
 
-		$( '#atelier-editor-items .atelier-editor__item' ).each( function () {
+		$( '#lichtbild-editor-items .lichtbild-editor__item' ).each( function () {
 			var key = $( this ).attr( 'data-key' );
 
 			if ( key ) {
@@ -30,8 +30,8 @@
 			}
 		} );
 
-		$( '#atelier-editor-order' ).val( keys.join( ',' ) );
-		$( '#atelier-editor-empty' ).toggle( 0 === keys.length );
+		$( '#lichtbild-editor-order' ).val( keys.join( ',' ) );
+		$( '#lichtbild-editor-empty' ).toggle( 0 === keys.length );
 	}
 
 	/**
@@ -58,11 +58,11 @@
 	 * @param {Object} data Attachment JSON from the media frame.
 	 */
 	function addItem( data ) {
-		var template = wp.template( 'atelier-editor-item' );
+		var template = wp.template( 'lichtbild-editor-item' );
 
 		counter += 1;
 
-		$( '#atelier-editor-items' ).append(
+		$( '#lichtbild-editor-items' ).append(
 			template( {
 				key: 'n' + counter,
 				id: data.id,
@@ -77,7 +77,7 @@
 				// Supplied by the server through wp_prepare_attachment_for_js. Without it a
 				// newly added image would submit an empty tag field and clear the tags it
 				// already had — everywhere it appears, not just here.
-				tags: data.atelierTags || ''
+				tags: data.lichtbildTags || ''
 			} )
 		);
 
@@ -95,8 +95,8 @@
 		}
 
 		frame = wp.media( {
-			title: AtelierEditor.i18n.chooseImages,
-			button: { text: AtelierEditor.i18n.useImages },
+			title: LichtbildEditor.i18n.chooseImages,
+			button: { text: LichtbildEditor.i18n.useImages },
 			library: { type: 'image' },
 			multiple: 'add'
 		} );
@@ -111,24 +111,24 @@
 	}
 
 	$( function () {
-		var list = $( '#atelier-editor-items' );
+		var list = $( '#lichtbild-editor-items' );
 
 		if ( ! list.length ) {
 			return;
 		}
 
 		list.sortable( {
-			items: '> .atelier-editor__item',
-			placeholder: 'atelier-editor__placeholder',
+			items: '> .lichtbild-editor__item',
+			placeholder: 'lichtbild-editor__placeholder',
 			forcePlaceholderSize: true,
 			tolerance: 'pointer',
 			update: syncOrder
 		} );
 
-		$( '#atelier-add-images' ).on( 'click', openPicker );
+		$( '#lichtbild-add-images' ).on( 'click', openPicker );
 
-		list.on( 'click', '.atelier-editor__remove', function () {
-			$( this ).closest( '.atelier-editor__item' ).remove();
+		list.on( 'click', '.lichtbild-editor__remove', function () {
+			$( this ).closest( '.lichtbild-editor__item' ).remove();
 			syncOrder();
 		} );
 

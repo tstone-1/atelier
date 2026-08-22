@@ -55,7 +55,7 @@ the diagnostic cascade that inflated a dozen red sets.
 
   What would generalise is an audit rather than another fix: for each check, ask what the
   helper it reads from returns when it finds nothing, and whether the assertion can tell that
-  from a pass. `atelier_render_found()` answers `''`, `atelier_album_found()` answers an empty
+  from a pass. `lichtbild_render_found()` answers `''`, `lichtbild_album_found()` answers an empty
   album, and the stubs answer `false` for an unknown ID — three known sources of a
   plausible-looking wrong answer. Doing that sweep properly means reading all 220 checks against
   those three, which is a session's work and worth more than it sounds.
@@ -86,13 +86,13 @@ the diagnostic cascade that inflated a dozen red sets.
 
 ## Code
 
-- **`Atelier_Config::from_envira()`'s `$id` now exists solely to be passed to the
-  `atelier_config_from_envira` filter.** That is a legitimate seam, but it is a thinner
+- **`Lichtbild_Config::from_envira()`'s `$id` now exists solely to be passed to the
+  `lichtbild_config_from_envira` filter.** That is a legitimate seam, but it is a thinner
   justification than the parameter's presence suggests, and the docblock that claimed it was used
   for the CSS rewrite was wrong for months. Worth a look the next time that function is opened.
 
-- **`Atelier_Settings::render_page()` calls into `Atelier_Post_Types` while `Atelier_Post_Types`
-  holds a `Atelier_Settings`.** A static-level cycle, harmless today, and worth not deepening: it
+- **`Lichtbild_Settings::render_page()` calls into `Lichtbild_Post_Types` while `Lichtbild_Post_Types`
+  holds a `Lichtbild_Settings`.** A static-level cycle, harmless today, and worth not deepening: it
   means the options store renders UI that knows about the type registrar.
 
 - **`render_result()` assumes every element of `$errors` is a string.** A non-string would warn
@@ -104,9 +104,9 @@ the diagnostic cascade that inflated a dozen red sets.
 **Closed 2026-08-14, and the answer was better than the task.** This section opened with "move the
 sixteen galleries' custom CSS into the Customizer before 26.8.22 reaches the site". `tools/export-custom-css.py`
 ran against the live database — its first real run, the SQL and unserialise paths having been
-unexercised — and exited clean: Envira's copy and Atelier's agreed everywhere, so nothing was
+unexercised — and exited clean: Envira's copy and Lichtbild's agreed everywhere, so nothing was
 lost when the feature went. Reading the 145 lines it produced is what mattered: **every
-declaration in all twenty blocks is commented out**, and 16 of the 20 target `#atelier-2423`
+declaration in all twenty blocks is commented out**, and 16 of the 20 target `#lichtbild-2423`
 whichever gallery holds them. The browser parsed an empty rule; the removal changed no pixel;
 there is nothing to paste. Full account in [`docs/deploys.md`](docs/deploys.md).
 
@@ -114,10 +114,10 @@ there is nothing to paste. Full account in [`docs/deploys.md`](docs/deploys.md).
 which is gitignored** — it is a list of one deployment's leftover rows, terms and cron events,
 and it says nothing about the plugin. Nothing here depends on it.
 
-One item in it generalises and stays, because it is a fact about Atelier's own code rather than
-about any site: **on a site with an Envira history, `Atelier_Settings::standalone()` falls back to
-Envira's `envira_gallery_standalone_enabled` option when `atelier_standalone` is unset.** So a
-tidy-up that deletes Envira's leftover options from such a site, without Atelier's own option
+One item in it generalises and stays, because it is a fact about Lichtbild's own code rather than
+about any site: **on a site with an Envira history, `Lichtbild_Settings::standalone()` falls back to
+Envira's `envira_gallery_standalone_enabled` option when `lichtbild_standalone` is unset.** So a
+tidy-up that deletes Envira's leftover options from such a site, without Lichtbild's own option
 being set, turns every gallery permalink into an empty page with no error anywhere. The dependency
 is invisible from the options table, which is exactly why it is written down rather than left to
 be rediscovered.

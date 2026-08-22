@@ -2,7 +2,7 @@
 /**
  * What the two metabox editors do identically.
  *
- * @package Atelier
+ * @package Lichtbild
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -28,29 +28,29 @@ defined( 'ABSPATH' ) || exit;
  * subclass that forgot one is a fatal error rather than a save authorising against the wrong
  * action.
  */
-abstract class Atelier_Metabox_Editor {
+abstract class Lichtbild_Metabox_Editor {
 
 	/**
-	 * Plugin settings, consulted for whether Atelier owns the data.
+	 * Plugin settings, consulted for whether Lichtbild owns the data.
 	 *
-	 * @var Atelier_Settings
+	 * @var Lichtbild_Settings
 	 */
 	protected $settings;
 
 	/**
 	 * Repository, which is what knows which record is authoritative.
 	 *
-	 * @var Atelier_Repository
+	 * @var Lichtbild_Repository
 	 */
 	protected $repository;
 
 	/**
 	 * Builds the editor.
 	 *
-	 * @param Atelier_Settings   $settings   Plugin settings.
-	 * @param Atelier_Repository $repository Gallery and album repository.
+	 * @param Lichtbild_Settings   $settings   Plugin settings.
+	 * @param Lichtbild_Repository $repository Gallery and album repository.
 	 */
-	public function __construct( Atelier_Settings $settings, Atelier_Repository $repository ) {
+	public function __construct( Lichtbild_Settings $settings, Lichtbild_Repository $repository ) {
 		$this->settings   = $settings;
 		$this->repository = $repository;
 	}
@@ -175,8 +175,8 @@ abstract class Atelier_Metabox_Editor {
 	protected function render_unavailable( $summary, $explanation ) {
 		echo '<p><strong>' . esc_html( $summary ) . '</strong></p>';
 		echo '<p>' . esc_html( $explanation ) . '</p>';
-		echo '<p><a class="button" href="' . esc_url( admin_url( 'options-general.php?page=atelier' ) ) . '">' .
-			esc_html__( 'Go to Settings > Atelier', 'atelier' ) . '</a></p>';
+		echo '<p><a class="button" href="' . esc_url( admin_url( 'options-general.php?page=lichtbild' ) ) . '">' .
+			esc_html__( 'Go to Settings > Lichtbild', 'lichtbild-gallery' ) . '</a></p>';
 	}
 
 	/**

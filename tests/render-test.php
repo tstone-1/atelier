@@ -10,7 +10,7 @@
  * Each assertion is reported by name with the population it examined, so a check that
  * silently stopped matching anything reads as `0 examined` rather than as a pass.
  *
- * @package Atelier\Tests
+ * @package Lichtbild\Tests
  */
 
 // phpcs:disable WordPress.NamingConventions.PrefixAllGlobals
@@ -34,33 +34,33 @@
 ini_set( 'display_errors', 'stderr' );
 
 define( 'ABSPATH', __DIR__ );
-define( 'ATELIER_VERSION', 'test' );
-define( 'ATELIER_FILE', dirname( __DIR__ ) . '/atelier.php' );
-define( 'ATELIER_DIR', dirname( __DIR__ ) . '/' );
-define( 'ATELIER_URL', 'https://example.com/wp-content/plugins/atelier/' );
+define( 'LICHTBILD_VERSION', 'test' );
+define( 'LICHTBILD_FILE', dirname( __DIR__ ) . '/lichtbild-gallery.php' );
+define( 'LICHTBILD_DIR', dirname( __DIR__ ) . '/' );
+define( 'LICHTBILD_URL', 'https://example.com/wp-content/plugins/lichtbild-gallery/' );
 
 require __DIR__ . '/wp-stubs.php';
-require ATELIER_DIR . 'includes/class-atelier-assets.php';
-require ATELIER_DIR . 'includes/class-atelier-config.php';
-require ATELIER_DIR . 'includes/class-atelier-album-config.php';
-require ATELIER_DIR . 'includes/class-atelier-item.php';
-require ATELIER_DIR . 'includes/class-atelier-gallery.php';
-require ATELIER_DIR . 'includes/class-atelier-album.php';
-require ATELIER_DIR . 'includes/class-atelier-repository.php';
-require ATELIER_DIR . 'includes/class-atelier-exif.php';
-require ATELIER_DIR . 'includes/class-atelier-renderer.php';
-require ATELIER_DIR . 'includes/class-atelier-post-types.php';
-require ATELIER_DIR . 'includes/class-atelier-settings.php';
-require ATELIER_DIR . 'includes/class-atelier-migration.php';
-require ATELIER_DIR . 'includes/class-atelier-migration-screen.php';
-require ATELIER_DIR . 'includes/class-atelier-metabox-editor.php';
-require ATELIER_DIR . 'includes/class-atelier-editor.php';
-require ATELIER_DIR . 'includes/class-atelier-album-editor.php';
-require ATELIER_DIR . 'includes/class-atelier-standalone.php';
-require ATELIER_DIR . 'includes/class-atelier-ajax.php';
-require ATELIER_DIR . 'includes/class-atelier-shortcode.php';
-require ATELIER_DIR . 'includes/class-atelier-block.php';
-require ATELIER_DIR . 'includes/class-atelier.php';
+require LICHTBILD_DIR . 'includes/class-lichtbild-assets.php';
+require LICHTBILD_DIR . 'includes/class-lichtbild-config.php';
+require LICHTBILD_DIR . 'includes/class-lichtbild-album-config.php';
+require LICHTBILD_DIR . 'includes/class-lichtbild-item.php';
+require LICHTBILD_DIR . 'includes/class-lichtbild-gallery.php';
+require LICHTBILD_DIR . 'includes/class-lichtbild-album.php';
+require LICHTBILD_DIR . 'includes/class-lichtbild-repository.php';
+require LICHTBILD_DIR . 'includes/class-lichtbild-exif.php';
+require LICHTBILD_DIR . 'includes/class-lichtbild-renderer.php';
+require LICHTBILD_DIR . 'includes/class-lichtbild-post-types.php';
+require LICHTBILD_DIR . 'includes/class-lichtbild-settings.php';
+require LICHTBILD_DIR . 'includes/class-lichtbild-migration.php';
+require LICHTBILD_DIR . 'includes/class-lichtbild-migration-screen.php';
+require LICHTBILD_DIR . 'includes/class-lichtbild-metabox-editor.php';
+require LICHTBILD_DIR . 'includes/class-lichtbild-editor.php';
+require LICHTBILD_DIR . 'includes/class-lichtbild-album-editor.php';
+require LICHTBILD_DIR . 'includes/class-lichtbild-standalone.php';
+require LICHTBILD_DIR . 'includes/class-lichtbild-ajax.php';
+require LICHTBILD_DIR . 'includes/class-lichtbild-shortcode.php';
+require LICHTBILD_DIR . 'includes/class-lichtbild-block.php';
+require LICHTBILD_DIR . 'includes/class-lichtbild.php';
 
 defined( 'MINUTE_IN_SECONDS' ) || define( 'MINUTE_IN_SECONDS', 60 );
 
@@ -70,7 +70,7 @@ defined( 'MINUTE_IN_SECONDS' ) || define( 'MINUTE_IN_SECONDS', 60 );
  * Subclassing the production class rather than substituting a stand-in keeps the
  * renderer's type hint honest and means `need_gallery()`'s own guard is what is exercised.
  */
-class Atelier_Test_Assets extends Atelier_Assets {
+class Lichtbild_Test_Assets extends Lichtbild_Assets {
 
 	/**
 	 * Number of times assets were actually enqueued.
@@ -203,7 +203,7 @@ class Checks {
 /**
  * Renders a gallery the repository has just returned, without fataling when it returned none.
  *
- * `Atelier_Renderer::gallery()` takes a `Atelier_Gallery`, so handing it the `null` a repository
+ * `Lichtbild_Renderer::gallery()` takes a `Lichtbild_Gallery`, so handing it the `null` a repository
  * returns for a row it cannot find is a TypeError. These call sites sit a hundred lines below the
  * checks that handle a missing row correctly, so that fatal pre-empted the whole report — and a
  * suite that produces no report produces no failures either, which is why the mutations that hit
@@ -214,14 +214,14 @@ class Checks {
  * mutated here at all, which is the single most important thing a migration's reader does.
  *
  * @param Checks              $checks   Check recorder.
- * @param Atelier_Renderer     $renderer Renderer under test.
- * @param Atelier_Gallery|null $gallery  Whatever the repository returned.
+ * @param Lichtbild_Renderer     $renderer Renderer under test.
+ * @param Lichtbild_Gallery|null $gallery  Whatever the repository returned.
  * @param string              $label    Context printed when the row was not found.
  *
  * @return string Rendered markup, or '' when the row was not found.
  */
-function atelier_render_found( Checks $checks, Atelier_Renderer $renderer, $gallery, $label ) {
-	if ( ! $checks->assert( 'the reader finds the row it is asked for', $gallery instanceof Atelier_Gallery, $label ) ) {
+function lichtbild_render_found( Checks $checks, Lichtbild_Renderer $renderer, $gallery, $label ) {
+	if ( ! $checks->assert( 'the reader finds the row it is asked for', $gallery instanceof Lichtbild_Gallery, $label ) ) {
 		return '';
 	}
 
@@ -229,24 +229,24 @@ function atelier_render_found( Checks $checks, Atelier_Renderer $renderer, $gall
 }
 
 /**
- * The album twin of `atelier_render_found()`, for the identical reason.
+ * The album twin of `lichtbild_render_found()`, for the identical reason.
  *
- * `Atelier_Renderer::album()` is typed the same way, and there were twelve unguarded album call
+ * `Lichtbild_Renderer::album()` is typed the same way, and there were twelve unguarded album call
  * sites against one unguarded gallery site — the gallery one was found because a mutation hit it,
  * and the album ones only because the sweep was widened afterwards. A defect that has been
  * described once and left standing in twelve places is the shape this project has paid for
  * before.
  *
  * @param Checks             $checks     Check recorder.
- * @param Atelier_Renderer    $renderer   Renderer under test.
- * @param Atelier_Album|null  $album      Whatever the repository returned.
- * @param Atelier_Repository  $repository Reader the renderer resolves members through.
+ * @param Lichtbild_Renderer    $renderer   Renderer under test.
+ * @param Lichtbild_Album|null  $album      Whatever the repository returned.
+ * @param Lichtbild_Repository  $repository Reader the renderer resolves members through.
  * @param string             $label      Context printed when the row was not found.
  *
  * @return string Rendered markup, or '' when the row was not found.
  */
-function atelier_render_album_found( Checks $checks, Atelier_Renderer $renderer, $album, Atelier_Repository $repository, $label ) {
-	if ( ! $checks->assert( 'the reader finds the album it is asked for', $album instanceof Atelier_Album, $label ) ) {
+function lichtbild_render_album_found( Checks $checks, Lichtbild_Renderer $renderer, $album, Lichtbild_Repository $repository, $label ) {
+	if ( ! $checks->assert( 'the reader finds the album it is asked for', $album instanceof Lichtbild_Album, $label ) ) {
 		return '';
 	}
 
@@ -270,9 +270,9 @@ function atelier_render_album_found( Checks $checks, Atelier_Renderer $renderer,
  * nothing.
  *
  * The cover and caption checks used to be in that category and no longer are. They read
- * `Atelier_Album::cover_id( $id )`, which answers 0 for a gallery the album does not contain —
+ * `Lichtbild_Album::cover_id( $id )`, which answers 0 for a gallery the album does not contain —
  * indistinguishable from a cover that was correctly refused, which is exactly what
- * `a cover outside its gallery is refused` asserts. They go through `atelier_album_member()`
+ * `a cover outside its gallery is refused` asserts. They go through `lichtbild_album_member()`
  * now, which returns null for an absent member, so "the album has no such row" and "the row
  * stores 0" are different answers and only the second one passes.
  *
@@ -281,23 +281,23 @@ function atelier_render_album_found( Checks $checks, Atelier_Renderer $renderer,
  * the populations below it as suspect rather than as results.
  *
  * @param Checks            $checks Check recorder.
- * @param Atelier_Album|null $album  Whatever the repository returned.
+ * @param Lichtbild_Album|null $album  Whatever the repository returned.
  * @param string            $label  Context printed when the row was not found.
  *
- * @return Atelier_Album The album, or an empty stand-in.
+ * @return Lichtbild_Album The album, or an empty stand-in.
  */
-function atelier_album_found( Checks $checks, $album, $label ) {
-	if ( $checks->assert( 'the reader finds the album it is asked for', $album instanceof Atelier_Album, $label ) ) {
+function lichtbild_album_found( Checks $checks, $album, $label ) {
+	if ( $checks->assert( 'the reader finds the album it is asked for', $album instanceof Lichtbild_Album, $label ) ) {
 		return $album;
 	}
 
-	return new Atelier_Album( 0, array(), array() );
+	return new Lichtbild_Album( 0, array(), array() );
 }
 
 /**
  * Returns one album member's stored record, or null when the album does not contain it.
  *
- * `Atelier_Album` used to carry `cover_id( $id )` and `caption( $id )` for this, with no
+ * `Lichtbild_Album` used to carry `cover_id( $id )` and `caption( $id )` for this, with no
  * production caller: the renderer was moved off them in 26.8.5 because looking a member up by
  * ID returns the first match for every position, and an album may legitimately list a gallery
  * twice. What kept them alive afterwards was this file and one mutation, which is not a reason
@@ -309,12 +309,12 @@ function atelier_album_found( Checks $checks, $album, $label ) {
  * point: `a cover outside its gallery is refused` asserts the stored cover is 0, and 0 is also
  * what the old accessor answered for a gallery the album had never heard of.
  *
- * @param Atelier_Album $album      The album.
+ * @param Lichtbild_Album $album      The album.
  * @param int          $gallery_id Member gallery post ID.
  *
  * @return array|null The member record, or null when it is not in this album.
  */
-function atelier_album_member( Atelier_Album $album, $gallery_id ) {
+function lichtbild_album_member( Lichtbild_Album $album, $gallery_id ) {
 	foreach ( $album->items() as $item ) {
 		if ( (int) $item['id'] === (int) $gallery_id ) {
 			return $item;
@@ -335,15 +335,15 @@ if ( ! is_readable( $fixture ) ) {
 	exit( 2 );
 }
 
-$site       = Atelier_Test_Site::load( $fixture );
+$site       = Lichtbild_Test_Site::load( $fixture );
 // ============================================================================
 // Does this harness load the whole plugin?
 //
-// The require list above duplicates the one in `atelier.php`, and it has to: that file also
+// The require list above duplicates the one in `lichtbild-gallery.php`, and it has to: that file also
 // defines constants and registers hooks. So a new class has to be added in three places, and
 // forgetting one here means the suite silently covers less of the plugin than it appears to --
 // or, if the class is reached, dies with a fatal that reads as a code bug rather than a harness
-// one. Adding `Atelier_Album_Config` did exactly that.
+// one. Adding `Lichtbild_Album_Config` did exactly that.
 //
 // Reported before any check runs, and as a hard exit rather than a check, because a harness
 // that is not loading the code under test cannot report anything trustworthy about it.
@@ -351,7 +351,7 @@ $site       = Atelier_Test_Site::load( $fixture );
 
 $declared = array();
 
-foreach ( (array) glob( ATELIER_DIR . 'includes/class-*.php' ) as $path ) {
+foreach ( (array) glob( LICHTBILD_DIR . 'includes/class-*.php' ) as $path ) {
 	$declared[] = basename( $path );
 }
 
@@ -376,9 +376,9 @@ if ( ! empty( $missing ) ) {
 	exit( 2 );
 }
 
-$assets     = new Atelier_Test_Assets( new Atelier_Settings() );
-$repository = new Atelier_Repository();
-$renderer   = new Atelier_Renderer( $assets );
+$assets     = new Lichtbild_Test_Assets( new Lichtbild_Settings() );
+$repository = new Lichtbild_Repository();
+$renderer   = new Lichtbild_Renderer( $assets );
 $checks     = new Checks();
 
 // Declared up front: these live inside conditional branches, and a branch that stops being
@@ -513,7 +513,7 @@ foreach ( array_keys( $site->galleries ) as $gallery_id ) {
 
 	// --- item count ------------------------------------------------------------
 
-	$figures  = $xpath->query( '//figure[contains(@class,"atelier-item")]' );
+	$figures  = $xpath->query( '//figure[contains(@class,"lichtbild-item")]' );
 	$expected = count( $gallery->page_items( 1 ) );
 
 	$checks->assert(
@@ -565,7 +565,7 @@ foreach ( array_keys( $site->galleries ) as $gallery_id ) {
 
 	$dimensionless = 0;
 
-	foreach ( $xpath->query( '//a[contains(@class,"atelier-link")]' ) as $grid_link ) {
+	foreach ( $xpath->query( '//a[contains(@class,"lichtbild-link")]' ) as $grid_link ) {
 		if ( '' === $grid_link->getAttribute( 'data-pswp-width' ) ) {
 			$dimensionless++;
 		}
@@ -586,7 +586,7 @@ foreach ( array_keys( $site->galleries ) as $gallery_id ) {
 		$style  = $figure->getAttribute( 'style' );
 		$aspect = 0.0;
 
-		if ( preg_match( '/--atelier-aspect:\s*([0-9.]+)/', $style, $match ) ) {
+		if ( preg_match( '/--lichtbild-aspect:\s*([0-9.]+)/', $style, $match ) ) {
 			$aspect = (float) $match[1];
 		}
 
@@ -596,7 +596,7 @@ foreach ( array_keys( $site->galleries ) as $gallery_id ) {
 			$label . " aspect={$aspect}"
 		);
 
-		$link = $xpath->query( './/a[contains(@class,"atelier-link")]', $figure )->item( 0 );
+		$link = $xpath->query( './/a[contains(@class,"lichtbild-link")]', $figure )->item( 0 );
 
 		if ( ! $checks->assert( 'item has a link', null !== $link, $label ) ) {
 			continue;
@@ -623,14 +623,14 @@ foreach ( array_keys( $site->galleries ) as $gallery_id ) {
 		// The population does not move on the real corpus, where nothing is orphaned. What
 		// replaces the lost coverage is the per-gallery equality below, which states the rule
 		// the renderer actually implements rather than the accident this corpus happens to be.
-		$item_meta   = wp_get_attachment_metadata( (int) $link->getAttribute( 'data-atelier-item' ) );
+		$item_meta   = wp_get_attachment_metadata( (int) $link->getAttribute( 'data-lichtbild-item' ) );
 		$measurable  = is_array( $item_meta ) && ! empty( $item_meta['file'] );
 
 		if ( $measurable ) {
 			$checks->assert(
 				'lightbox dimensions are known',
 				$width > 0 && $height > 0,
-				$label . " {$width}x{$height} for " . $link->getAttribute( 'data-atelier-item' )
+				$label . " {$width}x{$height} for " . $link->getAttribute( 'data-lichtbild-item' )
 			);
 		}
 
@@ -748,8 +748,8 @@ foreach ( array_keys( $site->galleries ) as $gallery_id ) {
 
 		$seen_any = false;
 
-		foreach ( $xpath->query( '//a[@data-atelier-exif]' ) as $link ) {
-			$exif = json_decode( $link->getAttribute( 'data-atelier-exif' ), true );
+		foreach ( $xpath->query( '//a[@data-lichtbild-exif]' ) as $link ) {
+			$exif = json_decode( $link->getAttribute( 'data-lichtbild-exif' ), true );
 
 			if ( ! is_array( $exif ) ) {
 				$checks->assert( 'exif payload is valid JSON', false, $label );
@@ -773,11 +773,11 @@ foreach ( array_keys( $site->galleries ) as $gallery_id ) {
 
 	// --- gallery-level markup --------------------------------------------------
 
-	$root = $xpath->query( '//div[contains(@class,"atelier ")or contains(@class," atelier")or @class="atelier"]' )->item( 0 );
-	$root = null !== $root ? $root : $xpath->query( '//div[@data-atelier-id]' )->item( 0 );
+	$root = $xpath->query( '//div[contains(@class,"lichtbild ")or contains(@class," lichtbild")or @class="lichtbild"]' )->item( 0 );
+	$root = null !== $root ? $root : $xpath->query( '//div[@data-lichtbild-id]' )->item( 0 );
 
 	if ( $checks->assert( 'grid element present', null !== $root, $label ) ) {
-		$config = json_decode( $root->getAttribute( 'data-atelier-config' ), true );
+		$config = json_decode( $root->getAttribute( 'data-lichtbild-config' ), true );
 
 		$checks->assert( 'client config is valid JSON', is_array( $config ), $label );
 
@@ -802,7 +802,7 @@ foreach ( array_keys( $site->galleries ) as $gallery_id ) {
 		);
 
 		if ( $expected_pages > 1 ) {
-			$buttons = $xpath->query( '//nav[contains(@class,"atelier-pagination")]//span[contains(@class,"atelier-page-list")]/button' );
+			$buttons = $xpath->query( '//nav[contains(@class,"lichtbild-pagination")]//span[contains(@class,"lichtbild-page-list")]/button' );
 
 			$checks->assert(
 				'one button per page',
@@ -897,10 +897,10 @@ $checks->assert(
 // need_gallery() guards against repeat work, so many galleries must still enqueue once.
 $checks->assert(
 	'assets enqueued exactly once',
-	isset( $GLOBALS['atelier_test_enqueued']['style:atelier'] ) &&
-		1 === $GLOBALS['atelier_test_enqueued']['style:atelier'] &&
-		1 === $GLOBALS['atelier_test_enqueued']['script:atelier'],
-	'enqueued: ' . wp_json_encode( $GLOBALS['atelier_test_enqueued'] )
+	isset( $GLOBALS['lichtbild_test_enqueued']['style:lichtbild'] ) &&
+		1 === $GLOBALS['lichtbild_test_enqueued']['style:lichtbild'] &&
+		1 === $GLOBALS['lichtbild_test_enqueued']['script:lichtbild'],
+	'enqueued: ' . wp_json_encode( $GLOBALS['lichtbild_test_enqueued'] )
 );
 
 // A run that examined nothing prints an unbroken column of [OK]; require a population.
@@ -913,7 +913,7 @@ $checks->assert(
 // --- synthetic edge cases ------------------------------------------------------
 
 // An item whose attachment was deleted from the media library: no metadata, no sizes.
-$orphan = new Atelier_Item(
+$orphan = new Lichtbild_Item(
 	999999999,
 	array(
 		'status'  => 'active',
@@ -930,13 +930,13 @@ $checks->assert( 'orphan item keeps a usable url', '' !== $orphan->url( 'medium_
 $checks->assert( 'orphan item falls back to a sane aspect', abs( $orphan->aspect() - 1.5 ) < 0.001, 'aspect=' . $orphan->aspect() );
 $checks->assert( 'orphan item is still active', $orphan->is_active(), 'orphan inactive' );
 
-$pending = new Atelier_Item( 1, array( 'status' => 'pending', 'src' => 'x' ) );
+$pending = new Lichtbild_Item( 1, array( 'status' => 'pending', 'src' => 'x' ) );
 $checks->assert( 'pending items are excluded', ! $pending->is_active(), 'pending item reported active' );
 
 // An orphan has no dimensions, so it must reach the grid as an ordinary link and must NOT
 // reach the lightbox carrying zeroes — PhotoSwipe divides by those. Rendering it is the
 // point: asserting on the item object alone never exercised the markup.
-$orphan_gallery = new Atelier_Gallery( 424242, array( 'layout' => 'justified' ), array( $orphan ) );
+$orphan_gallery = new Lichtbild_Gallery( 424242, array( 'layout' => 'justified' ), array( $orphan ) );
 $orphan_html = $renderer->gallery( $orphan_gallery, 1 );
 
 $dom = new DOMDocument();
@@ -944,7 +944,7 @@ libxml_use_internal_errors( true );
 $dom->loadHTML( '<?xml encoding="UTF-8"><div>' . $orphan_html . '</div>', LIBXML_NOWARNING | LIBXML_NOERROR );
 libxml_clear_errors();
 $xpath       = new DOMXPath( $dom );
-$orphan_link = $xpath->query( '//a[contains(@class,"atelier-link")]' )->item( 0 );
+$orphan_link = $xpath->query( '//a[contains(@class,"lichtbild-link")]' )->item( 0 );
 
 $checks->assert( 'orphan item still renders in the grid', null !== $orphan_link, 'no link rendered' );
 
@@ -963,8 +963,8 @@ if ( null !== $orphan_link ) {
 // happens — every one of the 2,264 items carries a src — so 'every renderable item became a
 // figure' agrees with 'item count matches page' on all 51 galleries and neither can tell the
 // two apart. This pair is where they part company: one item usable, one not, one figure.
-$srcless = new Atelier_Item( 999999998, array( 'status' => 'active' ) );
-$usable  = new Atelier_Item(
+$srcless = new Lichtbild_Item( 999999998, array( 'status' => 'active' ) );
+$usable  = new Lichtbild_Item(
 	999999997,
 	array(
 		'status' => 'active',
@@ -975,7 +975,7 @@ $usable  = new Atelier_Item(
 $checks->assert( 'an item with no src has no url', '' === $srcless->url( 'medium_large' ), 'url=' . $srcless->url( 'medium_large' ) );
 
 $mixed_html = $renderer->gallery(
-	new Atelier_Gallery( 424243, array( 'layout' => 'justified' ), array( $usable, $srcless ) ),
+	new Lichtbild_Gallery( 424243, array( 'layout' => 'justified' ), array( $usable, $srcless ) ),
 	1
 );
 
@@ -983,7 +983,7 @@ $dom = new DOMDocument();
 libxml_use_internal_errors( true );
 $dom->loadHTML( '<?xml encoding="UTF-8"><div>' . $mixed_html . '</div>', LIBXML_NOWARNING | LIBXML_NOERROR );
 libxml_clear_errors();
-$mixed_figures = ( new DOMXPath( $dom ) )->query( '//figure[contains(@class,"atelier-item")]' );
+$mixed_figures = ( new DOMXPath( $dom ) )->query( '//figure[contains(@class,"lichtbild-item")]' );
 
 $checks->assert(
 	'every renderable item became a figure',
@@ -994,7 +994,7 @@ $checks->assert(
 // The control. Without it the check above is satisfied by a renderer that drops the usable item
 // instead of the src-less one, and by one that renders nothing at all whenever it sees a gap.
 $both_html = $renderer->gallery(
-	new Atelier_Gallery( 424244, array( 'layout' => 'justified' ), array( $usable, $usable ) ),
+	new Lichtbild_Gallery( 424244, array( 'layout' => 'justified' ), array( $usable, $usable ) ),
 	1
 );
 
@@ -1005,7 +1005,7 @@ libxml_clear_errors();
 
 $checks->assert(
 	'every renderable item became a figure',
-	2 === ( new DOMXPath( $dom ) )->query( '//figure[contains(@class,"atelier-item")]' )->length,
+	2 === ( new DOMXPath( $dom ) )->query( '//figure[contains(@class,"lichtbild-item")]' )->length,
 	'both items carry a usable src but the grid did not render two figures'
 );
 
@@ -1016,7 +1016,7 @@ $checks->assert(
 // showing up in the one direction nobody watches for.
 $checks->assert(
 	'empty gallery renders nothing',
-	'' === $renderer->gallery( new Atelier_Gallery( 424245, array( 'layout' => 'justified' ), array() ), 1 ),
+	'' === $renderer->gallery( new Lichtbild_Gallery( 424245, array( 'layout' => 'justified' ), array() ), 1 ),
 	'a gallery with no items emitted markup'
 );
 
@@ -1032,7 +1032,7 @@ $hostile_schemes = array(
 );
 
 foreach ( $hostile_schemes as $hostile ) {
-	$evil = new Atelier_Item(
+	$evil = new Lichtbild_Item(
 		0,
 		array( 'status' => 'active', 'src' => $hostile, 'link' => $hostile, 'title' => 'x' )
 	);
@@ -1054,7 +1054,7 @@ foreach ( $hostile_schemes as $hostile ) {
 
 // The control: an ordinary URL must survive the same path untouched, or the check above
 // would pass just as well on a method that rejected everything.
-$benign = new Atelier_Item(
+$benign = new Lichtbild_Item(
 	0,
 	array(
 		'status' => 'active',
@@ -1079,7 +1079,7 @@ $payloads = array(
 );
 
 foreach ( $payloads as $payload => $forbidden ) {
-	$dirty = new Atelier_Item(
+	$dirty = new Lichtbild_Item(
 		0,
 		array( 'status' => 'active', 'src' => 'https://example.com/a.jpg', 'caption' => $payload )
 	);
@@ -1093,7 +1093,7 @@ foreach ( $payloads as $payload => $forbidden ) {
 
 // Control: legitimate inline markup must survive, or the filter is just strip_tags and the
 // feature it exists to support is gone.
-$rich = new Atelier_Item(
+$rich = new Lichtbild_Item(
 	0,
 	array( 'status' => 'active', 'src' => 'https://example.com/a.jpg', 'caption' => 'a <em>b</em> c' )
 );
@@ -1108,7 +1108,7 @@ $checks->assert(
 // a real setting, so the check follows the value all the way to what a reader would see
 // rather than testing a helper in isolation.
 foreach ( array( 1, '1', 'True', 'true', true, 'YES', 'on' ) as $truthy ) {
-	$converted = Atelier_Config::from_envira( array( 'protection' => $truthy ) );
+	$converted = Lichtbild_Config::from_envira( array( 'protection' => $truthy ) );
 
 	$checks->assert(
 		'truthy config spellings read as true',
@@ -1118,7 +1118,7 @@ foreach ( array( 1, '1', 'True', 'true', true, 'YES', 'on' ) as $truthy ) {
 }
 
 foreach ( array( 0, '0', 'False', 'false', false, '', 'off', 'nonsense' ) as $falsy ) {
-	$converted = Atelier_Config::from_envira( array( 'protection' => $falsy ) );
+	$converted = Lichtbild_Config::from_envira( array( 'protection' => $falsy ) );
 
 	$checks->assert(
 		'falsy config spellings read as false',
@@ -1128,9 +1128,9 @@ foreach ( array( 0, '0', 'False', 'false', false, '', 'off', 'nonsense' ) as $fa
 }
 
 // An absent key must take the documented default, not whatever the last branch returned.
-$empty_conversion = Atelier_Config::from_envira( array() );
+$empty_conversion = Lichtbild_Config::from_envira( array() );
 
-foreach ( Atelier_Config::defaults() as $key => $default ) {
+foreach ( Lichtbild_Config::defaults() as $key => $default ) {
 	$checks->assert(
 		'an empty envira config yields the defaults',
 		$empty_conversion[ $key ] === $default,
@@ -1139,11 +1139,11 @@ foreach ( Atelier_Config::defaults() as $key => $default ) {
 }
 
 // Every stored record must come back with every key, however old the writer was.
-$sparse = Atelier_Config::fill( array( 'layout' => 'columns' ) );
+$sparse = Lichtbild_Config::fill( array( 'layout' => 'columns' ) );
 
 $checks->assert(
 	'sparse settings are filled',
-	count( $sparse ) === count( Atelier_Config::defaults() ) && 'columns' === $sparse['layout'],
+	count( $sparse ) === count( Lichtbild_Config::defaults() ) && 'columns' === $sparse['layout'],
 	'filled to ' . count( $sparse ) . ' keys'
 );
 
@@ -1166,15 +1166,15 @@ foreach ( array_keys( $site->galleries ) as $gallery_id ) {
 
 	// Convert, hand it back to the stub as WordPress would store it, and read it again
 	// through the repository's own v2 path rather than by constructing a gallery by hand.
-	$site->galleries[ $gallery_id ]['atelier'] = Atelier_Migration::build_record(
+	$site->galleries[ $gallery_id ]['lichtbild'] = Lichtbild_Migration::build_record(
 		$site->galleries[ $gallery_id ]['data'],
 		$gallery_id
 	);
 
-	$after = atelier_render_found(
+	$after = lichtbild_render_found(
 		$checks,
 		$renderer,
-		( new Atelier_Repository( Atelier_Repository::GALLERY_POST_TYPE, Atelier_Repository::ALBUM_POST_TYPE, Atelier_Repository::TAG_TAXONOMY, true ) )->gallery( $gallery_id ),
+		( new Lichtbild_Repository( Lichtbild_Repository::GALLERY_POST_TYPE, Lichtbild_Repository::ALBUM_POST_TYPE, Lichtbild_Repository::TAG_TAXONOMY, true ) )->gallery( $gallery_id ),
 		"#{$gallery_id} unreadable through the v2 path after conversion"
 	);
 
@@ -1185,7 +1185,7 @@ foreach ( array_keys( $site->galleries ) as $gallery_id ) {
 	);
 
 	// Leave the fixture as it was so later checks still exercise the Envira path.
-	unset( $site->galleries[ $gallery_id ]['atelier'] );
+	unset( $site->galleries[ $gallery_id ]['lichtbild'] );
 }
 
 // --- the same property, for albums ----------------------------------------------------
@@ -1209,11 +1209,11 @@ foreach ( array_keys( $site->albums ) as $album_id ) {
 	}
 
 	$before = $renderer->album( $from_envira, $repository );
-	$record = Atelier_Migration::build_album_record( $site->albums[ $album_id ]['data'], $album_id );
+	$record = Lichtbild_Migration::build_album_record( $site->albums[ $album_id ]['data'], $album_id );
 
 	$checks->assert(
 		'album settings carry every key',
-		count( $record['settings'] ) === count( Atelier_Album_Config::defaults() ),
+		count( $record['settings'] ) === count( Lichtbild_Album_Config::defaults() ),
 		"#{$album_id} has " . count( $record['settings'] ) . ' settings'
 	);
 
@@ -1223,16 +1223,16 @@ foreach ( array_keys( $site->albums ) as $album_id ) {
 		"#{$album_id} " . $from_envira->count() . ' members became ' . count( $record['items'] )
 	);
 
-	$site->albums[ $album_id ]['atelier'] = $record;
+	$site->albums[ $album_id ]['lichtbild'] = $record;
 
-	$owning = new Atelier_Repository(
-		Atelier_Repository::GALLERY_POST_TYPE,
-		Atelier_Repository::ALBUM_POST_TYPE,
-		Atelier_Repository::TAG_TAXONOMY,
+	$owning = new Lichtbild_Repository(
+		Lichtbild_Repository::GALLERY_POST_TYPE,
+		Lichtbild_Repository::ALBUM_POST_TYPE,
+		Lichtbild_Repository::TAG_TAXONOMY,
 		true
 	);
 
-	$after = atelier_render_album_found( $checks, $renderer, $owning->album( $album_id ), $owning, "album #{$album_id} unreadable after conversion" );
+	$after = lichtbild_render_album_found( $checks, $renderer, $owning->album( $album_id ), $owning, "album #{$album_id} unreadable after conversion" );
 
 	$checks->assert(
 		'converted album renders identically',
@@ -1241,7 +1241,7 @@ foreach ( array_keys( $site->albums ) as $album_id ) {
 	);
 
 	// Leave the fixture as it was so later checks still exercise the Envira path.
-	unset( $site->albums[ $album_id ]['atelier'] );
+	unset( $site->albums[ $album_id ]['lichtbild'] );
 }
 
 // --- envira's own album defaults row is not an album -------------------------------------
@@ -1273,7 +1273,7 @@ foreach ( $site->albums as $album_id => $record ) {
 if ( $defaults_album > 0 ) {
 	$checks->assert(
 		'the album defaults row is not an album',
-		null === ( new Atelier_Repository() )->album( $defaults_album ),
+		null === ( new Lichtbild_Repository() )->album( $defaults_album ),
 		"album {$defaults_album} is Envira's defaults row and loaded as a real album"
 	);
 }
@@ -1282,7 +1282,7 @@ if ( $defaults_album > 0 ) {
 // produces, which is exactly what a mutation gutting `build_album()` would look like.
 $checks->assert(
 	'a real album still loads',
-	$real_album > 0 && null !== ( new Atelier_Repository() )->album( $real_album ),
+	$real_album > 0 && null !== ( new Lichtbild_Repository() )->album( $real_album ),
 	"album {$real_album} did not load, so the defaults check above proves nothing"
 );
 
@@ -1303,53 +1303,53 @@ $caption_album = array_key_first(
 );
 
 if ( null !== $caption_album ) {
-	$owning_caption = new Atelier_Repository(
-		Atelier_Repository::GALLERY_POST_TYPE,
-		Atelier_Repository::ALBUM_POST_TYPE,
-		Atelier_Repository::TAG_TAXONOMY,
+	$owning_caption = new Lichtbild_Repository(
+		Lichtbild_Repository::GALLERY_POST_TYPE,
+		Lichtbild_Repository::ALBUM_POST_TYPE,
+		Lichtbild_Repository::TAG_TAXONOMY,
 		true
 	);
 
-	$base = Atelier_Migration::build_album_record( $site->albums[ $caption_album ]['data'], $caption_album );
+	$base = Lichtbild_Migration::build_album_record( $site->albums[ $caption_album ]['data'], $caption_album );
 
-	$site->albums[ $caption_album ]['atelier'] = $base;
-	$shown                                    = atelier_render_album_found( $checks, $renderer, $owning_caption->album( $caption_album ), $owning_caption, "album #{$caption_album} unreadable while owning its data" );
+	$site->albums[ $caption_album ]['lichtbild'] = $base;
+	$shown                                    = lichtbild_render_album_found( $checks, $renderer, $owning_caption->album( $caption_album ), $owning_caption, "album #{$caption_album} unreadable while owning its data" );
 
 	$checks->assert(
 		'an album shows titles and counts by default',
-		false !== strpos( $shown, 'atelier-album-title' ) && false !== strpos( $shown, 'atelier-album-count' ),
+		false !== strpos( $shown, 'lichtbild-album-title' ) && false !== strpos( $shown, 'lichtbild-album-count' ),
 		'the control rendered neither a title nor a count, so the check below is untested'
 	);
 
 	$base['settings']['show_titles'] = false;
 	$base['settings']['show_counts'] = false;
 
-	$site->albums[ $caption_album ]['atelier'] = $base;
+	$site->albums[ $caption_album ]['lichtbild'] = $base;
 
 	// A fresh repository: the one above cached the album from its first read.
-	$owning_caption = new Atelier_Repository(
-		Atelier_Repository::GALLERY_POST_TYPE,
-		Atelier_Repository::ALBUM_POST_TYPE,
-		Atelier_Repository::TAG_TAXONOMY,
+	$owning_caption = new Lichtbild_Repository(
+		Lichtbild_Repository::GALLERY_POST_TYPE,
+		Lichtbild_Repository::ALBUM_POST_TYPE,
+		Lichtbild_Repository::TAG_TAXONOMY,
 		true
 	);
 
-	$hidden = atelier_render_album_found( $checks, $renderer, $owning_caption->album( $caption_album ), $owning_caption, "album #{$caption_album} unreadable while owning its data" );
+	$hidden = lichtbild_render_album_found( $checks, $renderer, $owning_caption->album( $caption_album ), $owning_caption, "album #{$caption_album} unreadable while owning its data" );
 
 	$checks->assert(
 		'album settings switch the caption parts off',
-		false === strpos( $hidden, 'atelier-album-title' ) && false === strpos( $hidden, 'atelier-album-count' )
-			&& false !== strpos( $hidden, 'atelier-album-item' ),
+		false === strpos( $hidden, 'lichtbild-album-title' ) && false === strpos( $hidden, 'lichtbild-album-count' )
+			&& false !== strpos( $hidden, 'lichtbild-album-item' ),
 		'switching both off changed ' . ( strlen( $shown ) - strlen( $hidden ) ) . ' bytes'
 	);
 
-	unset( $site->albums[ $caption_album ]['atelier'] );
+	unset( $site->albums[ $caption_album ]['lichtbild'] );
 }
 
 // --- the album converter, directly -----------------------------------------------------
 //
 // The equivalence check above cannot see a *symmetric* converter bug. Both the Envira path and
-// the v2 path now run through `Atelier_Album_Config::from_envira()`, so a mutation that makes it
+// the v2 path now run through `Lichtbild_Album_Config::from_envira()`, so a mutation that makes it
 // wrong makes both sides wrong in the same way and the byte comparison still passes. The gallery
 // schema has the same shape and the same answer: check the converter against crafted input.
 $checks->expect(
@@ -1359,7 +1359,7 @@ $checks->expect(
 	'an unchecked album box switches its setting off'
 );
 
-$off = Atelier_Album_Config::from_envira(
+$off = Lichtbild_Album_Config::from_envira(
 	array(
 		'title'               => '  Spaced  ',
 		'columns'             => '4',
@@ -1368,7 +1368,7 @@ $off = Atelier_Album_Config::from_envira(
 	)
 );
 
-$on = Atelier_Album_Config::from_envira(
+$on = Lichtbild_Album_Config::from_envira(
 	array(
 		'columns'             => 'nonsense',
 		'display_titles'      => 'below',
@@ -1408,7 +1408,7 @@ set_error_handler(
 	}
 );
 
-$unreadable = Atelier_Album_Config::from_envira(
+$unreadable = Lichtbild_Album_Config::from_envira(
 	array(
 		'columns'             => '2',
 		'display_image_count' => array( 'nonsense' ),
@@ -1426,8 +1426,8 @@ $checks->assert(
 // `id` in an album entry is the **gallery's** ID. The old cover lookup fell back to it, which
 // could only ever name the wrong attachment; it was masked because every real entry sets
 // `cover_image_id` and because a gallery ID handed to the image lookup returns nothing.
-$with_cover = Atelier_Album_Config::item_from_envira( 951, array( 'id' => '951', 'cover_image_id' => '952', 'caption' => 'c' ) );
-$no_cover   = Atelier_Album_Config::item_from_envira( 951, array( 'id' => '951' ) );
+$with_cover = Lichtbild_Album_Config::item_from_envira( 951, array( 'id' => '951', 'cover_image_id' => '952', 'caption' => 'c' ) );
+$no_cover   = Lichtbild_Album_Config::item_from_envira( 951, array( 'id' => '951' ) );
 
 $checks->assert(
 	'an album cover is the cover, never the gallery id',
@@ -1444,9 +1444,9 @@ $checks->assert(
 // The album's title is the post's, and never a copy inside the record. Nothing in the plugin
 // renders it today, which is exactly why it is asserted: an untested accessor that prefers a
 // frozen copy is how renaming an album post comes to have no visible effect. Envira stored one
-// and `Atelier_Album_Config` drops it; this is the reading half of that decision.
+// and `Lichtbild_Album_Config` drops it; this is the reading half of that decision.
 if ( $real_album > 0 ) {
-	$titled = ( new Atelier_Repository() )->album( $real_album );
+	$titled = ( new Lichtbild_Repository() )->album( $real_album );
 
 	$checks->assert(
 		'an album titles itself from its post',
@@ -1458,8 +1458,8 @@ if ( $real_album > 0 ) {
 
 // `sanitize()` is not `fill()` with sanitising bolted on: an absent key means the default to one
 // and an unchecked checkbox to the other, and defaulting a checkbox to true makes it unswitchable.
-$submitted = Atelier_Album_Config::sanitize( array( 'columns' => '5' ) );
-$stored    = Atelier_Album_Config::fill( array( 'columns' => 5 ) );
+$submitted = Lichtbild_Album_Config::sanitize( array( 'columns' => '5' ) );
+$stored    = Lichtbild_Album_Config::fill( array( 'columns' => 5 ) );
 
 $checks->assert(
 	'an unchecked album box switches its setting off',
@@ -1471,7 +1471,7 @@ $checks->assert(
 // The conversion must not silently drop images.
 foreach ( array_keys( $site->galleries ) as $gallery_id ) {
 	$data   = $site->galleries[ $gallery_id ]['data'];
-	$record = Atelier_Migration::build_record( $data, $gallery_id );
+	$record = Lichtbild_Migration::build_record( $data, $gallery_id );
 
 	// Envira's defaults row now returns null from the builder rather than being filtered out by
 	// the migration loop, so that galleries and albums can share one walker. It is not a gallery
@@ -1490,7 +1490,7 @@ foreach ( array_keys( $site->galleries ) as $gallery_id ) {
 
 	$checks->assert(
 		'converted settings carry every key',
-		count( $record['settings'] ) === count( Atelier_Config::defaults() ),
+		count( $record['settings'] ) === count( Lichtbild_Config::defaults() ),
 		"#{$gallery_id} has " . count( $record['settings'] ) . ' settings'
 	);
 }
@@ -1535,10 +1535,10 @@ if ( null !== $carrier ) {
 	// The stub answers post types from its own rows, so a gallery added after load needs one.
 	$site->build_tables();
 
-	$synthetic_before = atelier_render_found(
+	$synthetic_before = lichtbild_render_found(
 		$checks,
 		$renderer,
-		( new Atelier_Repository() )->gallery( $synthetic_id ),
+		( new Lichtbild_Repository() )->gallery( $synthetic_id ),
 		"#{$synthetic_id} synthetic gallery unreadable through the envira path"
 	);
 
@@ -1556,15 +1556,15 @@ if ( null !== $carrier ) {
 		'alt absent from rendered output'
 	);
 
-	$site->galleries[ $synthetic_id ]['atelier'] = Atelier_Migration::build_record(
+	$site->galleries[ $synthetic_id ]['lichtbild'] = Lichtbild_Migration::build_record(
 		$site->galleries[ $synthetic_id ]['data'],
 		$synthetic_id
 	);
 
-	$synthetic_after = atelier_render_found(
+	$synthetic_after = lichtbild_render_found(
 		$checks,
 		$renderer,
-		( new Atelier_Repository( Atelier_Repository::GALLERY_POST_TYPE, Atelier_Repository::ALBUM_POST_TYPE, Atelier_Repository::TAG_TAXONOMY, true ) )->gallery( $synthetic_id ),
+		( new Lichtbild_Repository( Lichtbild_Repository::GALLERY_POST_TYPE, Lichtbild_Repository::ALBUM_POST_TYPE, Lichtbild_Repository::TAG_TAXONOMY, true ) )->gallery( $synthetic_id ),
 		"#{$synthetic_id} synthetic gallery unreadable through the v2 path"
 	);
 
@@ -1618,7 +1618,7 @@ if ( null !== $tagged_source ) {
 	$tag_config['tags_all_enabled'] = true;
 	$tag_config['tags_position']    = 'above';
 
-	$tagged = new Atelier_Gallery( $tagged_source->id(), $tag_config, $tagged_source->items() );
+	$tagged = new Lichtbild_Gallery( $tagged_source->id(), $tag_config, $tagged_source->items() );
 	$html   = $renderer->gallery( $tagged, 1 );
 
 	$dom = new DOMDocument();
@@ -1627,7 +1627,7 @@ if ( null !== $tagged_source ) {
 	libxml_clear_errors();
 	$xpath = new DOMXPath( $dom );
 
-	$buttons = $xpath->query( '//div[contains(@class,"atelier-tags")]/button' );
+	$buttons = $xpath->query( '//div[contains(@class,"lichtbild-tags")]/button' );
 
 	$checks->assert( 'tag bar renders buttons', $buttons->length > 1, 'buttons=' . $buttons->length );
 	$checks->assert(
@@ -1636,18 +1636,18 @@ if ( null !== $tagged_source ) {
 		'first button was "' . ( $buttons->length ? $buttons->item( 0 )->textContent : '' ) . '"'
 	);
 
-	$tagged_items = $xpath->query( '//figure[@data-atelier-tags]' );
+	$tagged_items = $xpath->query( '//figure[@data-lichtbild-tags]' );
 
 	$checks->assert(
 		'tagged items carry their tag slugs',
 		$tagged_items->length > 0,
-		'no figure carried data-atelier-tags'
+		'no figure carried data-lichtbild-tags'
 	);
 
 	// One copy, on the figure, which is the only one the filter reads. It was emitted on the
 	// anchor as well: the same list twice on every tagged image of every page, and two places
 	// that have to stay identical for as long as anyone remembers they both exist.
-	$tag_attributes = substr_count( $html, 'data-atelier-tags=' );
+	$tag_attributes = substr_count( $html, 'data-lichtbild-tags=' );
 
 	$checks->assert(
 		'the tag list is emitted once per item',
@@ -1660,7 +1660,7 @@ if ( null !== $tagged_source ) {
 	// filtered set has to be non-empty, or the button leads to a blank grid. Checking the
 	// rendered page instead would have passed while doing exactly that.
 	foreach ( $buttons as $button ) {
-		$slug = $button->getAttribute( 'data-atelier-tag' );
+		$slug = $button->getAttribute( 'data-lichtbild-tag' );
 
 		if ( '' === $slug ) {
 			continue;
@@ -1730,7 +1730,7 @@ if ( null !== $tagged_source ) {
 	}
 
 	foreach ( $buttons as $button ) {
-		$bar_slug = $button->getAttribute( 'data-atelier-tag' );
+		$bar_slug = $button->getAttribute( 'data-lichtbild-tag' );
 
 		if ( '' !== $bar_slug ) {
 			$button_slugs[ $bar_slug ] = true;
@@ -1756,7 +1756,7 @@ if ( null !== $tagged_source ) {
 
 	// And the "all" button can be switched off.
 	$tag_config['tags_all_enabled'] = 0;
-	$without_all                    = new Atelier_Gallery( $tagged_source->id(), $tag_config, $tagged_source->items() );
+	$without_all                    = new Lichtbild_Gallery( $tagged_source->id(), $tag_config, $tagged_source->items() );
 
 	$checks->assert(
 		'all button can be disabled',
@@ -1770,7 +1770,7 @@ if ( null !== $tagged_source ) {
 // newer toggle explicitly switched off can never override an older one left on — which is the
 // only case where the precedence is load-bearing at all. No gallery in the fixture is in that
 // state, so nothing above would notice.
-$precedence = Atelier_Config::from_envira(
+$precedence = Lichtbild_Config::from_envira(
 	array(
 		'exif'                     => 1,
 		'exif_lightbox'            => 0,
@@ -1795,7 +1795,7 @@ $checks->assert(
 );
 
 // The control, in the other direction: with the newer key absent, the older one still decides.
-$fallback = Atelier_Config::from_envira(
+$fallback = Lichtbild_Config::from_envira(
 	array(
 		'exif'            => 1,
 		'exif_model'      => 1,
@@ -1818,8 +1818,8 @@ $checks->assert(
 //
 // Envira's own record still holds `custom_css` on the galleries that had it, and that is
 // deliberate: nothing was destroyed, and `tools/export-custom-css.py` is how it comes back out
-// for pasting into the Customizer. What must not happen is Atelier reading it again.
-$styled = Atelier_Config::from_envira(
+// for pasting into the Customizer. What must not happen is Lichtbild reading it again.
+$styled = Lichtbild_Config::from_envira(
 	array( 'custom_css' => '#envira-gallery-2423 { margin: 0 } #envira-gallery-wrap-2423 { padding: 0 }' ),
 	2423
 );
@@ -1834,18 +1834,18 @@ $checks->assert(
 // asserts the allowlist has no entry rather than that some stripping ran.
 //
 // The recorder is cleared first, and the honest description of why is narrower than it looks.
-// `$GLOBALS['atelier_test_filters']` is written by whatever called the hook last, so a check
+// `$GLOBALS['lichtbild_test_filters']` is written by whatever called the hook last, so a check
 // reading it afterwards cannot tell "this call passed two arguments" from "this call never
 // reached `apply_filters()` and I am reading an older call's value". Today no earlier call
 // writes this key, so the check already fails when the filter is deleted outright — mutation
 // `B99` is killed with this line and without it, measured both ways rather than reasoned about.
 // The line is here so that the property holds BY CONSTRUCTION rather than by the accident of
-// this being the first `Atelier_Config::sanitize()` call in the file, which the next check
+// this being the first `Lichtbild_Config::sanitize()` call in the file, which the next check
 // inserted above it would quietly end.
-unset( $GLOBALS['atelier_test_filters']['atelier_config_sanitize'] );
+unset( $GLOBALS['lichtbild_test_filters']['lichtbild_config_sanitize'] );
 
-$css_in = Atelier_Config::sanitize(
-	array( 'custom_css' => '#atelier-1 > figure { color: red } </style><script>alert(1)</script>' )
+$css_in = Lichtbild_Config::sanitize(
+	array( 'custom_css' => '#lichtbild-1 > figure { color: red } </style><script>alert(1)</script>' )
 );
 
 $checks->assert(
@@ -1854,7 +1854,7 @@ $checks->assert(
 	'sanitised keys: ' . implode( ', ', array_keys( $css_in ) )
 );
 
-// A sanitising function must not offer a way around itself. `atelier_config_sanitize` used to
+// A sanitising function must not offer a way around itself. `lichtbild_config_sanitize` used to
 // receive the raw submission as a second argument, for context, which hands every callback on
 // the hook an unsanitised `$_POST` array and a reason to reach for it — the wordpress.org
 // review is what named it. Removing it changes no return value, so this is the only shape of
@@ -1863,12 +1863,12 @@ $checks->assert(
 //
 // The count comes from the call `$css_in` just made, which is why this sits here rather than
 // with the other filter-adjacent checks.
-$sanitize_filter_args = $GLOBALS['atelier_test_filters']['atelier_config_sanitize'] ?? 0;
+$sanitize_filter_args = $GLOBALS['lichtbild_test_filters']['lichtbild_config_sanitize'] ?? 0;
 
 $checks->assert(
 	'the config sanitize filter is handed no raw input',
 	2 === $sanitize_filter_args,
-	sprintf( 'apply_filters( "atelier_config_sanitize", ... ) received %d arguments', $sanitize_filter_args )
+	sprintf( 'apply_filters( "lichtbild_config_sanitize", ... ) received %d arguments', $sanitize_filter_args )
 );
 
 // The editor must no longer offer the field either; that check lives beside the schema/form
@@ -1925,8 +1925,8 @@ $checks->expect(
 	'a rollback needs no inverse of that'
 );
 
-$settings  = new Atelier_Settings();
-$migration = new Atelier_Migration( $settings );
+$settings  = new Lichtbild_Settings();
+$migration = new Lichtbild_Migration( $settings );
 
 // A backslash, put into a real gallery before anything is rendered or converted.
 //
@@ -1951,7 +1951,7 @@ $checks->expect( 'a backslash survives the migration' );
 
 // Yoast's option, in the shape the live site actually had it: settings keyed on the post type
 // and taxonomy NAMES, which this migration is about to rename out from under them. The two
-// `envira-category` keys are the trap -- a different Envira taxonomy that Atelier never
+// `envira-category` keys are the trap -- a different Envira taxonomy that Lichtbild never
 // registered, so a substring match would invent settings describing an archive that no longer
 // exists. That mistake was made by hand on the real site and caught only by printing the list.
 $site->options['wpseo_titles'] = array(
@@ -1977,7 +1977,7 @@ $pre_migration = array();
 // edit made to the fixture since -- which is exactly what the backslash injection above is. The
 // symptom was three equivalence checks failing while the value they disagreed about was
 // demonstrably correct on both sides.
-$pre_migration_reader = new Atelier_Repository();
+$pre_migration_reader = new Lichtbild_Repository();
 
 foreach ( array_keys( $site->galleries ) as $gallery_id ) {
 	$gallery = $pre_migration_reader->gallery( $gallery_id );
@@ -2082,10 +2082,10 @@ $checks->assert(
 // that nothing had moved as far as the reader was concerned. Gutting `build_from_own()`
 // left this check green. The conversion checks above cover that function directly; what
 // nothing covered was that the *post-migration* reader is wired to prefer its own record.
-$migrated_repository = new Atelier_Repository(
-	Atelier_Post_Types::gallery_type( $settings ),
-	Atelier_Post_Types::album_type( $settings ),
-	Atelier_Post_Types::tag_taxonomy( $settings ),
+$migrated_repository = new Lichtbild_Repository(
+	Lichtbild_Post_Types::gallery_type( $settings ),
+	Lichtbild_Post_Types::album_type( $settings ),
+	Lichtbild_Post_Types::tag_taxonomy( $settings ),
 	$settings->has_migrated()
 );
 
@@ -2124,12 +2124,12 @@ $seo_after = $site->options['wpseo_titles'];
 $checks->assert(
 	'the migration carries seo settings onto the new names',
 	7 === $migrated['seo_keys']
-		&& '%%term_title%% Archive %%sep%% %%sitename%%' === $seo_after['title-tax-' . Atelier_Post_Types::TAG ]
-		&& '%%title%% %%sep%% %%sitename%%' === $seo_after['title-' . Atelier_Post_Types::GALLERY ]
-		&& '%%title%% %%sep%% %%sitename%%' === $seo_after['title-' . Atelier_Post_Types::ALBUM ]
-		&& false === $seo_after['noindex-' . Atelier_Post_Types::GALLERY ]
-		&& 0 === $seo_after[ 'taxonomy-' . Atelier_Post_Types::TAG . '-ptparent' ]
-		&& 0 === $seo_after[ 'post_types-' . Atelier_Post_Types::GALLERY . '-maintax' ],
+		&& '%%term_title%% Archive %%sep%% %%sitename%%' === $seo_after['title-tax-' . Lichtbild_Post_Types::TAG ]
+		&& '%%title%% %%sep%% %%sitename%%' === $seo_after['title-' . Lichtbild_Post_Types::GALLERY ]
+		&& '%%title%% %%sep%% %%sitename%%' === $seo_after['title-' . Lichtbild_Post_Types::ALBUM ]
+		&& false === $seo_after['noindex-' . Lichtbild_Post_Types::GALLERY ]
+		&& 0 === $seo_after[ 'taxonomy-' . Lichtbild_Post_Types::TAG . '-ptparent' ]
+		&& 0 === $seo_after[ 'post_types-' . Lichtbild_Post_Types::GALLERY . '-maintax' ],
 	'reported ' . $migrated['seo_keys'] . ' keys; option now holds ' . count( $seo_after )
 );
 
@@ -2138,19 +2138,19 @@ $checks->assert(
 // database. Nothing keyed on `post` may move either.
 // Asserted as the EXACT set of added keys, not as the absence of the particular wrong ones.
 // Naming the keys a known mistake produced only catches that mistake: a mutation that invented
-// `title-tax-atelier_envira-category` instead sailed through a check written that way, which is
+// `title-tax-lichtbild_envira-category` instead sailed through a check written that way, which is
 // how this check was first written and why it is not any more.
 $seo_added = array_keys( array_diff_key( $seo_after, $seo_before ) );
 sort( $seo_added );
 
 $seo_expected = array(
-	'noindex-' . Atelier_Post_Types::GALLERY,
-	'noindex-tax-' . Atelier_Post_Types::TAG,
-	'post_types-' . Atelier_Post_Types::GALLERY . '-maintax',
-	'taxonomy-' . Atelier_Post_Types::TAG . '-ptparent',
-	'title-' . Atelier_Post_Types::ALBUM,
-	'title-' . Atelier_Post_Types::GALLERY,
-	'title-tax-' . Atelier_Post_Types::TAG,
+	'noindex-' . Lichtbild_Post_Types::GALLERY,
+	'noindex-tax-' . Lichtbild_Post_Types::TAG,
+	'post_types-' . Lichtbild_Post_Types::GALLERY . '-maintax',
+	'taxonomy-' . Lichtbild_Post_Types::TAG . '-ptparent',
+	'title-' . Lichtbild_Post_Types::ALBUM,
+	'title-' . Lichtbild_Post_Types::GALLERY,
+	'title-tax-' . Lichtbild_Post_Types::TAG,
 );
 sort( $seo_expected );
 
@@ -2165,7 +2165,7 @@ $checks->assert(
 );
 
 if ( $slash_gallery > 0 ) {
-	$slash_record_after = get_post_meta( $slash_gallery, Atelier_Repository::GALLERY_META_V2, true );
+	$slash_record_after = get_post_meta( $slash_gallery, Lichtbild_Repository::GALLERY_META_V2, true );
 	$slash_titles       = is_array( $slash_record_after ) && isset( $slash_record_after['items'] )
 		? wp_list_pluck( $slash_record_after['items'], 'title' )
 		: array();
@@ -2186,7 +2186,7 @@ if ( $slash_gallery > 0 ) {
 // nothing about whether a save reaches a visitor.
 // ============================================================================
 
-$editor = new Atelier_Editor( $settings, $migrated_repository );
+$editor = new Lichtbild_Editor( $settings, $migrated_repository );
 
 $checks->expect(
 	'a save with no nonce field changes nothing',
@@ -2225,13 +2225,13 @@ $checks->expect(
 /**
  * Runs one save against the editor.
  *
- * @param Atelier_Editor $editor  The editor.
+ * @param Lichtbild_Editor $editor  The editor.
  * @param int           $id      Gallery post ID.
  * @param array         $payload The `$_POST` to run it with.
  *
  * @return void
  */
-$editor_save = function ( Atelier_Editor $editor, $id, array $payload ) {
+$editor_save = function ( Lichtbild_Editor $editor, $id, array $payload ) {
 	$_POST = $payload;
 	$editor->save( $id );
 	$_POST = array();
@@ -2304,7 +2304,7 @@ $editor_items_payload = function ( array $items ) {
  * @return array The `$_POST` a faithful round trip would produce.
  */
 $editor_payload = function ( $id ) use ( $site, $editor_items_payload, $editor_settings_payload ) {
-	$record = $site->galleries[ $id ]['atelier'];
+	$record = $site->galleries[ $id ]['lichtbild'];
 	$images = $editor_items_payload( $record['items'] );
 
 	// `wp_slash()`, because that is the state `$_POST` is actually in when WordPress hands it to
@@ -2314,10 +2314,10 @@ $editor_payload = function ( $id ) use ( $site, $editor_items_payload, $editor_s
 	// pointing at the harness. A payload builder is part of the code under test.
 	return wp_slash(
 		array(
-			Atelier_Editor::NONCE => wp_create_nonce( Atelier_Editor::NONCE_ACTION . $id ),
-			'atelier_items'       => $images['items'],
-			'atelier_order'       => $images['order'],
-			'atelier_settings'    => $editor_settings_payload( $record['settings'] ),
+			Lichtbild_Editor::NONCE => wp_create_nonce( Lichtbild_Editor::NONCE_ACTION . $id ),
+			'lichtbild_items'       => $images['items'],
+			'lichtbild_order'       => $images['order'],
+			'lichtbild_settings'    => $editor_settings_payload( $record['settings'] ),
 		)
 	);
 };
@@ -2329,13 +2329,13 @@ $editor_payload = function ( $id ) use ( $site, $editor_items_payload, $editor_s
  * memoises each gallery for the life of the object, so reusing one after a save answers with
  * the object built before it and every check compares the record with itself.
  *
- * @return Atelier_Repository A reader wired the way the plugin wires one after a migration.
+ * @return Lichtbild_Repository A reader wired the way the plugin wires one after a migration.
  */
 $editor_reader = function () use ( $settings ) {
-	return new Atelier_Repository(
-		Atelier_Post_Types::gallery_type( $settings ),
-		Atelier_Post_Types::album_type( $settings ),
-		Atelier_Post_Types::tag_taxonomy( $settings ),
+	return new Lichtbild_Repository(
+		Lichtbild_Post_Types::gallery_type( $settings ),
+		Lichtbild_Post_Types::album_type( $settings ),
+		Lichtbild_Post_Types::tag_taxonomy( $settings ),
 		$settings->has_migrated()
 	);
 };
@@ -2392,8 +2392,8 @@ $checks->assert(
 // The nonce is bound to the post being edited, so one lifted from another gallery's form
 // must not authorise a write here.
 $other_nonce                        = $editor_payload( $editor_id );
-$other_nonce[ Atelier_Editor::NONCE ] = wp_create_nonce( Atelier_Editor::NONCE_ACTION . ( $editor_id + 1 ) );
-$other_nonce['atelier_order']        = '';
+$other_nonce[ Lichtbild_Editor::NONCE ] = wp_create_nonce( Lichtbild_Editor::NONCE_ACTION . ( $editor_id + 1 ) );
+$other_nonce['lichtbild_order']        = '';
 
 $editor_save( $editor, $editor_id, $other_nonce );
 
@@ -2406,7 +2406,7 @@ $checks->assert(
 $site->capabilities = false;
 
 $no_cap                  = $editor_payload( $editor_id );
-$no_cap['atelier_order']  = '';
+$no_cap['lichtbild_order']  = '';
 
 $editor_save( $editor, $editor_id, $no_cap );
 
@@ -2423,13 +2423,13 @@ $site->capabilities = true;
 $album_id = array_key_first( $site->albums );
 
 $wrong_type                        = $editor_payload( $editor_id );
-$wrong_type[ Atelier_Editor::NONCE ] = wp_create_nonce( Atelier_Editor::NONCE_ACTION . $album_id );
+$wrong_type[ Lichtbild_Editor::NONCE ] = wp_create_nonce( Lichtbild_Editor::NONCE_ACTION . $album_id );
 
 $editor_save( $editor, $album_id, $wrong_type );
 
 $checks->assert(
 	'a save aimed at another post type is refused',
-	! is_array( get_post_meta( $album_id, Atelier_Repository::GALLERY_META_V2, true ) ),
+	! is_array( get_post_meta( $album_id, Lichtbild_Repository::GALLERY_META_V2, true ) ),
 	'an album row was given a gallery record'
 );
 
@@ -2437,26 +2437,26 @@ $checks->assert(
 // declines rather than saving happily and appearing to change nothing.
 //
 // The row has to go back to Envira's post type as well as the flag, and that is the whole
-// check rather than tidiness. Clearing the flag alone leaves a `atelier_gallery` row on a site
+// check rather than tidiness. Clearing the flag alone leaves a `lichtbild_gallery` row on a site
 // whose `gallery_type()` now says `envira`, so the *post type* guard refuses first and this
 // check passes without the migration guard existing at all — which is exactly what a mutation
 // removing it demonstrated. An unmigrated site is one where both agree.
-$unmigrated_record = $site->galleries[ $editor_id ]['atelier'];
+$unmigrated_record = $site->galleries[ $editor_id ]['lichtbild'];
 
-unset( $site->options[ Atelier_Settings::OPTION_SCHEMA ] );
-$site->posts[ $editor_id ]['post_type'] = Atelier_Repository::GALLERY_POST_TYPE;
+unset( $site->options[ Lichtbild_Settings::OPTION_SCHEMA ] );
+$site->posts[ $editor_id ]['post_type'] = Lichtbild_Repository::GALLERY_POST_TYPE;
 
 $unmigrated                 = $editor_payload( $editor_id );
-$unmigrated['atelier_order'] = '';
+$unmigrated['lichtbild_order'] = '';
 
 $editor_save( $editor, $editor_id, $unmigrated );
 
-$site->posts[ $editor_id ]['post_type']          = Atelier_Post_Types::GALLERY;
-$site->options[ Atelier_Settings::OPTION_SCHEMA ] = Atelier_Settings::SCHEMA_MIGRATED;
+$site->posts[ $editor_id ]['post_type']          = Lichtbild_Post_Types::GALLERY;
+$site->options[ Lichtbild_Settings::OPTION_SCHEMA ] = Lichtbild_Settings::SCHEMA_MIGRATED;
 
 $checks->assert(
 	'an unmigrated site refuses to save',
-	$unmigrated_record === $site->galleries[ $editor_id ]['atelier']
+	$unmigrated_record === $site->galleries[ $editor_id ]['lichtbild']
 		&& $editor_before === $editor_render( $editor_id ),
 	'an unmigrated site wrote a record anyway'
 );
@@ -2471,7 +2471,7 @@ foreach ( array_keys( $pre_migration ) as $round_trip_id ) {
 	// conversion count and the equivalence checks above are what report that failure, and these
 	// checks are declared with `expect()`, so skipping every one of them is reported [EMPTY]
 	// and fails instead of quietly examining nothing.
-	if ( ! isset( $site->galleries[ $round_trip_id ]['atelier'] ) ) {
+	if ( ! isset( $site->galleries[ $round_trip_id ]['lichtbild'] ) ) {
 		continue;
 	}
 
@@ -2497,15 +2497,15 @@ foreach ( array_keys( $pre_migration ) as $round_trip_id ) {
 // Order is submitted explicitly rather than inferred from the order of the fields, so the
 // check submits the two in *opposite* orders. A handler that iterated the items map would
 // pass a same-order test and fail this one.
-$order_record = $site->galleries[ $editor_id ]['atelier'];
+$order_record = $site->galleries[ $editor_id ]['lichtbild'];
 
 if ( count( $order_record['items'] ) > 1 ) {
 	$reversed          = $editor_payload( $editor_id );
-	$reversed['atelier_order'] = implode( ',', array_reverse( explode( ',', $reversed['atelier_order'] ) ) );
+	$reversed['lichtbild_order'] = implode( ',', array_reverse( explode( ',', $reversed['lichtbild_order'] ) ) );
 
 	$editor_save( $editor, $editor_id, $reversed );
 
-	$stored_ids = wp_list_pluck( $site->galleries[ $editor_id ]['atelier']['items'], 'id' );
+	$stored_ids = wp_list_pluck( $site->galleries[ $editor_id ]['lichtbild']['items'], 'id' );
 	$wanted_ids = array_reverse( wp_list_pluck( $order_record['items'], 'id' ) );
 
 	$checks->assert(
@@ -2516,51 +2516,51 @@ if ( count( $order_record['items'] ) > 1 ) {
 
 	// Each of these starts from the gallery as it was, because the previous one deliberately
 	// changed it — comparing a count against a record two saves old measures the wrong thing.
-	$site->galleries[ $editor_id ]['atelier'] = $order_record;
+	$site->galleries[ $editor_id ]['lichtbild'] = $order_record;
 
 	// A row the order list does not name is a row the browser left behind, and dropping it is
 	// how removal works — so it has to be the order that decides, not the presence of fields.
 	$dropped                 = $editor_payload( $editor_id );
-	$dropped_keys            = explode( ',', $dropped['atelier_order'] );
+	$dropped_keys            = explode( ',', $dropped['lichtbild_order'] );
 	$kept_key                = array_shift( $dropped_keys );
-	$dropped['atelier_order'] = implode( ',', $dropped_keys );
+	$dropped['lichtbild_order'] = implode( ',', $dropped_keys );
 
 	$editor_save( $editor, $editor_id, $dropped );
 
 	$checks->assert(
 		'a row the order does not name is dropped',
-		count( $site->galleries[ $editor_id ]['atelier']['items'] ) === count( $order_record['items'] ) - 1,
-		'dropping ' . $kept_key . ' left ' . count( $site->galleries[ $editor_id ]['atelier']['items'] ) . ' items'
+		count( $site->galleries[ $editor_id ]['lichtbild']['items'] ) === count( $order_record['items'] ) - 1,
+		'dropping ' . $kept_key . ' left ' . count( $site->galleries[ $editor_id ]['lichtbild']['items'] ) . ' items'
 	);
 
-	$site->galleries[ $editor_id ]['atelier'] = $order_record;
+	$site->galleries[ $editor_id ]['lichtbild'] = $order_record;
 
 	// A duplicated key is a malformed submission, not an instruction to show the image twice:
 	// the two rows are the same fields, so storing both would silently double an image.
 	$twice                 = $editor_payload( $editor_id );
-	$twice_keys            = explode( ',', $twice['atelier_order'] );
-	$twice['atelier_order'] = implode( ',', array_merge( $twice_keys, array( $twice_keys[0] ) ) );
+	$twice_keys            = explode( ',', $twice['lichtbild_order'] );
+	$twice['lichtbild_order'] = implode( ',', array_merge( $twice_keys, array( $twice_keys[0] ) ) );
 
 	$editor_save( $editor, $editor_id, $twice );
 
 	$checks->assert(
 		'a row named twice is stored once',
-		count( $site->galleries[ $editor_id ]['atelier']['items'] ) === count( $order_record['items'] ),
-		'a duplicated key stored ' . count( $site->galleries[ $editor_id ]['atelier']['items'] ) . ' items'
+		count( $site->galleries[ $editor_id ]['lichtbild']['items'] ) === count( $order_record['items'] ),
+		'a duplicated key stored ' . count( $site->galleries[ $editor_id ]['lichtbild']['items'] ) . ' items'
 	);
 }
 
 // Put it back, so everything after this reads the gallery it started with.
 $editor_save( $editor, $editor_id, $editor_payload( $editor_id ) );
-$site->galleries[ $editor_id ]['atelier'] = $order_record;
+$site->galleries[ $editor_id ]['lichtbild'] = $order_record;
 
 // A row naming neither an attachment nor a URL cannot produce an image, so it is dropped
 // rather than stored as an empty box.
 $junk = array(
-	Atelier_Editor::NONCE => wp_create_nonce( Atelier_Editor::NONCE_ACTION . $editor_id ),
-	'atelier_order'       => 'a,b,c',
-	'atelier_settings'    => array(),
-	'atelier_items'       => array(
+	Lichtbild_Editor::NONCE => wp_create_nonce( Lichtbild_Editor::NONCE_ACTION . $editor_id ),
+	'lichtbild_order'       => 'a,b,c',
+	'lichtbild_settings'    => array(),
+	'lichtbild_items'       => array(
 		'a' => array( 'id' => '0', 'src' => '', 'title' => 'nothing' ),
 		'b' => array( 'id' => '0', 'src' => 'javascript:alert(1)', 'link' => 'javascript:alert(1)' ),
 		'c' => array(
@@ -2573,7 +2573,7 @@ $junk = array(
 
 $editor_save( $editor, $editor_id, $junk );
 
-$junk_items = $site->galleries[ $editor_id ]['atelier']['items'];
+$junk_items = $site->galleries[ $editor_id ]['lichtbild']['items'];
 
 $checks->assert(
 	'a row with nothing to show is dropped',
@@ -2595,15 +2595,15 @@ $checks->assert(
 	'stored caption: ' . ( isset( $junk_items[0]['caption'] ) ? $junk_items[0]['caption'] : '(none)' )
 );
 
-$site->galleries[ $editor_id ]['atelier'] = $order_record;
+$site->galleries[ $editor_id ]['lichtbild'] = $order_record;
 
 // ---------------------------------------------------------------------------
 // The settings sanitiser.
 // ---------------------------------------------------------------------------
 
-$sanitised = Atelier_Config::sanitize( $editor_settings_payload( Atelier_Config::defaults() ) );
+$sanitised = Lichtbild_Config::sanitize( $editor_settings_payload( Lichtbild_Config::defaults() ) );
 
-foreach ( array_keys( Atelier_Config::defaults() ) as $setting_key ) {
+foreach ( array_keys( Lichtbild_Config::defaults() ) as $setting_key ) {
 	$checks->assert(
 		'every setting survives a save',
 		array_key_exists( $setting_key, $sanitised ),
@@ -2614,11 +2614,11 @@ foreach ( array_keys( Atelier_Config::defaults() ) as $setting_key ) {
 // A checkbox that is off sends nothing, so absence has to read as false. Written with the
 // stored-record rule — absent means "use the default" — a box whose default is true could
 // never be switched off, which is the only interesting direction.
-$unchecked = Atelier_Config::sanitize( array( 'per_page' => '10', 'pagination' => '1' ) );
+$unchecked = Lichtbild_Config::sanitize( array( 'per_page' => '10', 'pagination' => '1' ) );
 
 $checks->assert(
 	'an unchecked box switches its setting off',
-	true === Atelier_Config::defaults()['keyboard']
+	true === Lichtbild_Config::defaults()['keyboard']
 		&& false === $unchecked['keyboard']
 		&& false === $unchecked['lazy_loading'],
 	'keyboard came back as ' . wp_json_encode( $unchecked['keyboard'] )
@@ -2626,14 +2626,14 @@ $checks->assert(
 
 $checks->assert(
 	'an unknown choice falls back to the default',
-	'justified' === Atelier_Config::sanitize( array( 'layout' => 'spiral' ) )['layout']
-		&& 'medium_large' === Atelier_Config::sanitize( array( 'image_size' => 'no_such_size' ) )['image_size'],
+	'justified' === Lichtbild_Config::sanitize( array( 'layout' => 'spiral' ) )['layout']
+		&& 'medium_large' === Lichtbild_Config::sanitize( array( 'image_size' => 'no_such_size' ) )['image_size'],
 	'an unknown choice was stored'
 );
 
 // Clamped rather than reset: a row height of 40000 is a typo, and reverting to the default
 // leaves the editor showing a number nobody typed.
-$clamped = Atelier_Config::sanitize( array( 'row_height' => '40000', 'columns' => '-3' ) );
+$clamped = Lichtbild_Config::sanitize( array( 'row_height' => '40000', 'columns' => '-3' ) );
 
 $checks->assert(
 	'a number out of range is clamped, not reset',
@@ -2643,13 +2643,13 @@ $checks->assert(
 
 $checks->assert(
 	'pagination without a page size is off',
-	false === Atelier_Config::sanitize( array( 'pagination' => '1', 'per_page' => '0' ) )['pagination'],
+	false === Lichtbild_Config::sanitize( array( 'pagination' => '1', 'per_page' => '0' ) )['pagination'],
 	'pagination survived a page size of zero'
 );
 
 // Ordered by the allowlist rather than by the submission, so two galleries with the same
 // fields ticked produce the same record whatever order the browser sent them in.
-$listed = Atelier_Config::sanitize(
+$listed = Lichtbild_Config::sanitize(
 	array(
 		'exif_fields'     => array( 'iso', 'nonsense', 'make' ),
 		'social_networks' => array( 'email', 'facebook' ),
@@ -2675,10 +2675,10 @@ ob_start();
 $editor->render_settings_box( (object) array( 'ID' => $editor_id ) );
 $settings_form = (string) ob_get_clean();
 
-foreach ( array_keys( Atelier_Config::defaults() ) as $setting_key ) {
+foreach ( array_keys( Lichtbild_Config::defaults() ) as $setting_key ) {
 	$checks->assert(
 		'the settings form has a field for every setting',
-		false !== strpos( $settings_form, 'name="atelier_settings[' . $setting_key . ']' ),
+		false !== strpos( $settings_form, 'name="lichtbild_settings[' . $setting_key . ']' ),
 		$setting_key . ' has no field on the settings form'
 	);
 }
@@ -2691,7 +2691,7 @@ foreach ( array_keys( Atelier_Config::defaults() ) as $setting_key ) {
 // than the particular field name it once had.
 $checks->assert(
 	'the settings form offers no custom css field',
-	false === strpos( $settings_form, 'atelier_settings[custom_css]' )
+	false === strpos( $settings_form, 'lichtbild_settings[custom_css]' )
 		&& false === stripos( $settings_form, '<textarea' ),
 	'the settings form still carries a free-text CSS control'
 );
@@ -2700,7 +2700,7 @@ ob_start();
 $editor->render_images_box( (object) array( 'ID' => $editor_id ) );
 $images_form = (string) ob_get_clean();
 
-foreach ( Atelier_Item::record_keys() as $record_key ) {
+foreach ( Lichtbild_Item::record_keys() as $record_key ) {
 	$server_side = false !== strpos( $images_form, '][' . $record_key . ']' );
 	$client_side = false !== strpos( $images_form, '{{ data.key }}][' . $record_key . ']' );
 
@@ -2722,16 +2722,16 @@ $shape_source = array(
 // Indexed unconditionally until now, which fatals the suite rather than failing this check when
 // a mutation makes the converter produce no items at all — the same harness defect as the
 // unguarded renderer calls above, and it hides the same class of mutation.
-$shape_record = Atelier_Migration::build_record( $shape_source, $editor_id );
+$shape_record = Lichtbild_Migration::build_record( $shape_source, $editor_id );
 
 if ( $checks->assert( 'the converter emits an item for a gallery that has one', ! empty( $shape_record['items'] ), 'converted record carries no items' ) ) {
 	$from_migration = $shape_record['items'][0];
-	$from_editor    = Atelier_Item::sanitize_record( array( 'id' => 7, 'src' => 'https://example.com/a.jpg' ) );
+	$from_editor    = Lichtbild_Item::sanitize_record( array( 'id' => 7, 'src' => 'https://example.com/a.jpg' ) );
 
 	$checks->assert(
 		'the editor and the migration agree on the record shape',
-		array_keys( $from_migration ) === Atelier_Item::record_keys()
-			&& array_keys( $from_editor ) === Atelier_Item::record_keys(),
+		array_keys( $from_migration ) === Lichtbild_Item::record_keys()
+			&& array_keys( $from_editor ) === Lichtbild_Item::record_keys(),
 		'migration ' . implode( ',', array_keys( $from_migration ) ) . ' / editor ' . implode( ',', array_keys( $from_editor ) )
 	);
 }
@@ -2760,9 +2760,9 @@ if ( null !== $tag_item ) {
 		: null;
 
 	$tag_payload = $editor_payload( $editor_id );
-	$tag_key     = array_key_first( $tag_payload['atelier_items'] );
+	$tag_key     = array_key_first( $tag_payload['lichtbild_items'] );
 
-	foreach ( $tag_payload['atelier_items'] as $key => $row ) {
+	foreach ( $tag_payload['lichtbild_items'] as $key => $row ) {
 		if ( (int) $row['id'] === $tag_item['id'] ) {
 			$tag_key = $key;
 
@@ -2770,11 +2770,11 @@ if ( null !== $tag_item ) {
 		}
 	}
 
-	$tag_payload['atelier_items'][ $tag_key ]['tags'] = 'Leipzig, Zoo';
+	$tag_payload['lichtbild_items'][ $tag_key ]['tags'] = 'Leipzig, Zoo';
 
 	$editor_save( $editor, $editor_id, $tag_payload );
 
-	$stored_tags = get_the_terms( $tag_item['id'], Atelier_Post_Types::tag_taxonomy( $settings ) );
+	$stored_tags = get_the_terms( $tag_item['id'], Lichtbild_Post_Types::tag_taxonomy( $settings ) );
 
 	$checks->assert(
 		'tags submitted by the editor are stored',
@@ -2792,7 +2792,7 @@ if ( null !== $tag_item ) {
 	// anyway -- so removing the key check leaves the tags alone and announces itself only as
 	// "Undefined array key" on every save of every gallery.
 	$no_tag_field = $editor_payload( $editor_id );
-	unset( $no_tag_field['atelier_items'][ $tag_key ]['tags'] );
+	unset( $no_tag_field['lichtbild_items'][ $tag_key ]['tags'] );
 
 	$no_tag_warnings = array();
 
@@ -2808,7 +2808,7 @@ if ( null !== $tag_item ) {
 
 	restore_error_handler();
 
-	$after_tags = get_the_terms( $tag_item['id'], Atelier_Post_Types::tag_taxonomy( $settings ) );
+	$after_tags = get_the_terms( $tag_item['id'], Lichtbild_Post_Types::tag_taxonomy( $settings ) );
 
 	$checks->assert(
 		'a row with no tag field leaves tags alone',
@@ -2830,11 +2830,11 @@ if ( null !== $tag_item ) {
 
 	// Names chosen so submission order and alphabetical order agree, so the assertion below
 	// cannot fail over an ordering neither the guard nor this check has any opinion about.
-	$foreign_tags['atelier_items'][ $tag_key ]['tags'] = 'Elbe, Hamburg';
+	$foreign_tags['lichtbild_items'][ $tag_key ]['tags'] = 'Elbe, Hamburg';
 
 	$editor_save( $editor, $editor_id, $foreign_tags );
 
-	$guarded_tags = get_the_terms( $tag_item['id'], Atelier_Post_Types::tag_taxonomy( $settings ) );
+	$guarded_tags = get_the_terms( $tag_item['id'], Lichtbild_Post_Types::tag_taxonomy( $settings ) );
 
 	$site->capability_overrides = array();
 
@@ -2848,7 +2848,7 @@ if ( null !== $tag_item ) {
 	// that never ran at all. Same payload, same user, capability restored — the tags must move.
 	$editor_save( $editor, $editor_id, $foreign_tags );
 
-	$allowed_tags = get_the_terms( $tag_item['id'], Atelier_Post_Types::tag_taxonomy( $settings ) );
+	$allowed_tags = get_the_terms( $tag_item['id'], Lichtbild_Post_Types::tag_taxonomy( $settings ) );
 
 	$checks->assert(
 		'the tag guard is the only thing that stopped the write',
@@ -2859,20 +2859,20 @@ if ( null !== $tag_item ) {
 	// Put the fixture back, so later checks see the tags they were written for.
 	$restore_tags = $editor_payload( $editor_id );
 
-	$restore_tags['atelier_items'][ $tag_key ]['tags'] = 'Leipzig, Zoo';
+	$restore_tags['lichtbild_items'][ $tag_key ]['tags'] = 'Leipzig, Zoo';
 
 	$editor_save( $editor, $editor_id, $restore_tags );
 
-	// A form field is a string or it is absent -- except that `atelier_items[i0][tags][]` is an
+	// A form field is a string or it is absent -- except that `lichtbild_items[i0][tags][]` is an
 	// array, and nothing stops a request carrying one. Cast, each of these becomes the literal
 	// word "Array": stored as the title and the caption, and written to the taxonomy as a tag on
 	// an image every gallery holding it shares -- with a PHP warning per field on the way. The
 	// row still saves; a field submitted as something that is not text is a field the row has
 	// said nothing about, which for tags is the same "leave them alone" the check above asserts.
 	$array_fields                                        = $editor_payload( $editor_id );
-	$array_fields['atelier_items'][ $tag_key ]['tags']    = wp_slash( array( 'Elbe' ) );
-	$array_fields['atelier_items'][ $tag_key ]['title']   = wp_slash( array( 'Elbe' ) );
-	$array_fields['atelier_items'][ $tag_key ]['caption'] = wp_slash( array( 'Elbe' ) );
+	$array_fields['lichtbild_items'][ $tag_key ]['tags']    = wp_slash( array( 'Elbe' ) );
+	$array_fields['lichtbild_items'][ $tag_key ]['title']   = wp_slash( array( 'Elbe' ) );
+	$array_fields['lichtbild_items'][ $tag_key ]['caption'] = wp_slash( array( 'Elbe' ) );
 
 	$array_warnings = array();
 
@@ -2888,10 +2888,10 @@ if ( null !== $tag_item ) {
 
 	restore_error_handler();
 
-	$array_tags   = get_the_terms( $tag_item['id'], Atelier_Post_Types::tag_taxonomy( $settings ) );
+	$array_tags   = get_the_terms( $tag_item['id'], Lichtbild_Post_Types::tag_taxonomy( $settings ) );
 	$array_stored = array();
 
-	foreach ( $site->galleries[ $editor_id ]['atelier']['items'] as $stored_row ) {
+	foreach ( $site->galleries[ $editor_id ]['lichtbild']['items'] as $stored_row ) {
 		if ( (int) $stored_row['id'] === $tag_item['id'] ) {
 			$array_stored = $stored_row;
 		}
@@ -2910,7 +2910,7 @@ if ( null !== $tag_item ) {
 
 	// That save deliberately submitted a broken row, so the record goes back before anything
 	// reads it again.
-	$site->galleries[ $editor_id ]['atelier'] = $order_record;
+	$site->galleries[ $editor_id ]['lichtbild'] = $order_record;
 
 	// Which is why the media library is told the tags in the first place.
 	$_REQUEST['post_id'] = $editor_id;
@@ -2923,8 +2923,8 @@ if ( null !== $tag_item ) {
 
 	$checks->assert(
 		'the media library carries an image\'s tags',
-		'Leipzig, Zoo' === ( isset( $prepared['atelierTags'] ) ? $prepared['atelierTags'] : '' )
-			&& ! isset( $unrelated['atelierTags'] ),
+		'Leipzig, Zoo' === ( isset( $prepared['lichtbildTags'] ) ? $prepared['lichtbildTags'] : '' )
+			&& ! isset( $unrelated['lichtbildTags'] ),
 		'prepared: ' . wp_json_encode( $prepared ) . ' unrelated: ' . wp_json_encode( $unrelated )
 	);
 
@@ -2935,25 +2935,25 @@ if ( null !== $tag_item ) {
 	}
 }
 
-$site->galleries[ $editor_id ]['atelier'] = $order_record;
+$site->galleries[ $editor_id ]['lichtbild'] = $order_record;
 
 // ---------------------------------------------------------------------------
 // The edit screen itself.
 // ---------------------------------------------------------------------------
 
-unset( $site->options[ Atelier_Settings::OPTION_SCHEMA ] );
+unset( $site->options[ Lichtbild_Settings::OPTION_SCHEMA ] );
 
 ob_start();
 $editor->render_images_box( (object) array( 'ID' => $editor_id ) );
 $unmigrated_form = (string) ob_get_clean();
 
-$site->options[ Atelier_Settings::OPTION_SCHEMA ] = Atelier_Settings::SCHEMA_MIGRATED;
+$site->options[ Lichtbild_Settings::OPTION_SCHEMA ] = Lichtbild_Settings::SCHEMA_MIGRATED;
 
 $checks->assert(
 	'an unmigrated edit screen offers no fields',
-	false === strpos( $unmigrated_form, 'atelier_items[' )
-		&& false === strpos( $unmigrated_form, 'name="' . Atelier_Editor::NONCE . '"' )
-		&& false !== strpos( $unmigrated_form, 'options-general.php?page=atelier' ),
+	false === strpos( $unmigrated_form, 'lichtbild_items[' )
+		&& false === strpos( $unmigrated_form, 'name="' . Lichtbild_Editor::NONCE . '"' )
+		&& false !== strpos( $unmigrated_form, 'options-general.php?page=lichtbild' ),
 	'the unmigrated screen rendered ' . strlen( $unmigrated_form ) . ' bytes of form'
 );
 
@@ -2964,10 +2964,10 @@ $editor->add_meta_boxes();
 
 $checks->assert(
 	'metaboxes attach to the post type that exists',
-	isset( $site->meta_boxes['atelier-images'] )
-		&& Atelier_Post_Types::GALLERY === $site->meta_boxes['atelier-images']['screen']
-		&& isset( $site->meta_boxes['atelier-settings'] )
-		&& isset( $site->meta_boxes['atelier-shortcode'] ),
+	isset( $site->meta_boxes['lichtbild-images'] )
+		&& Lichtbild_Post_Types::GALLERY === $site->meta_boxes['lichtbild-images']['screen']
+		&& isset( $site->meta_boxes['lichtbild-settings'] )
+		&& isset( $site->meta_boxes['lichtbild-shortcode'] ),
 	'registered: ' . wp_json_encode( $site->meta_boxes )
 );
 
@@ -2979,8 +2979,8 @@ $no_date   = $editor->columns( array( 'title' => 'Title' ) );
 
 $checks->assert(
 	'the list columns survive a table with no date',
-	array( 'title', 'atelier_images', 'atelier_shortcode', 'date' ) === array_keys( $with_date )
-		&& array( 'title', 'atelier_images', 'atelier_shortcode' ) === array_keys( $no_date ),
+	array( 'title', 'lichtbild_images', 'lichtbild_shortcode', 'date' ) === array_keys( $with_date )
+		&& array( 'title', 'lichtbild_images', 'lichtbild_shortcode' ) === array_keys( $no_date ),
 	'with date: ' . implode( ',', array_keys( $with_date ) ) . ' / without: ' . implode( ',', array_keys( $no_date ) )
 );
 
@@ -3000,7 +3000,7 @@ foreach ( $order_record['items'] as $stored_item ) {
 // this gallery since before the editor saves above, and a column check that reads through a
 // stale memo is reporting on a record two hundred lines old.
 ob_start();
-( new Atelier_Editor( $settings, $editor_reader() ) )->column( 'atelier_images', $editor_id );
+( new Lichtbild_Editor( $settings, $editor_reader() ) )->column( 'lichtbild_images', $editor_id );
 $column = (string) ob_get_clean();
 
 $checks->assert(
@@ -3011,25 +3011,25 @@ $checks->assert(
 
 // And on an un-migrated site, which is where this plugin spent its whole life before the
 // migration and where a rollback puts it back. The authoritative record there is Envira's, so a
-// column reading `_atelier_gallery` directly reports 0 for every gallery -- visibly wrong on the
+// column reading `_lichtbild_gallery` directly reports 0 for every gallery -- visibly wrong on the
 // one screen that summarises them, and the exact defect its album twin was fixed for in 26.8.5.
 //
 // The v2 record is removed for the duration, and that is the check rather than tidiness: a
 // migrate-then-rollback leaves the converted record behind deliberately, so counting it gives
 // the right answer by accident and passes whether or not the column consults the right source.
-$gallery_column_record = $site->galleries[ $editor_id ]['atelier'];
+$gallery_column_record = $site->galleries[ $editor_id ]['lichtbild'];
 
-unset( $site->galleries[ $editor_id ]['atelier'] );
-unset( $site->options[ Atelier_Settings::OPTION_SCHEMA ] );
-$site->posts[ $editor_id ]['post_type'] = Atelier_Repository::GALLERY_POST_TYPE;
+unset( $site->galleries[ $editor_id ]['lichtbild'] );
+unset( $site->options[ Lichtbild_Settings::OPTION_SCHEMA ] );
+$site->posts[ $editor_id ]['post_type'] = Lichtbild_Repository::GALLERY_POST_TYPE;
 
 ob_start();
-( new Atelier_Editor( new Atelier_Settings(), new Atelier_Repository() ) )->column( 'atelier_images', $editor_id );
+( new Lichtbild_Editor( new Lichtbild_Settings(), new Lichtbild_Repository() ) )->column( 'lichtbild_images', $editor_id );
 $unmigrated_gallery_column = (string) ob_get_clean();
 
-$site->posts[ $editor_id ]['post_type']          = Atelier_Post_Types::GALLERY;
-$site->options[ Atelier_Settings::OPTION_SCHEMA ] = Atelier_Settings::SCHEMA_MIGRATED;
-$site->galleries[ $editor_id ]['atelier']         = $gallery_column_record;
+$site->posts[ $editor_id ]['post_type']          = Lichtbild_Post_Types::GALLERY;
+$site->options[ Lichtbild_Settings::OPTION_SCHEMA ] = Lichtbild_Settings::SCHEMA_MIGRATED;
+$site->galleries[ $editor_id ]['lichtbild']         = $gallery_column_record;
 
 $checks->assert(
 	'the list column counts the stored images',
@@ -3047,7 +3047,7 @@ $checks->assert(
 // be one of that gallery's own images.
 // ============================================================================
 
-$album_editor = new Atelier_Album_Editor( $settings, $migrated_repository );
+$album_editor = new Lichtbild_Album_Editor( $settings, $migrated_repository );
 
 $checks->expect(
 	'an album save with no nonce changes nothing',
@@ -3077,13 +3077,13 @@ $checks->expect(
 /**
  * Runs one save against the album editor.
  *
- * @param Atelier_Album_Editor $editor  The editor.
+ * @param Lichtbild_Album_Editor $editor  The editor.
  * @param int                 $id      Album post ID.
  * @param array               $payload The `$_POST` to run it with.
  *
  * @return void
  */
-$album_save = function ( Atelier_Album_Editor $editor, $id, array $payload ) {
+$album_save = function ( Lichtbild_Album_Editor $editor, $id, array $payload ) {
 	$_POST = $payload;
 	$editor->save( $id );
 	$_POST = array();
@@ -3092,18 +3092,18 @@ $album_save = function ( Atelier_Album_Editor $editor, $id, array $payload ) {
 /**
  * Builds a reader the way the plugin does at the start of a request.
  *
- * A fresh one per read-back, and that is load-bearing rather than tidy: `Atelier_Repository`
+ * A fresh one per read-back, and that is load-bearing rather than tidy: `Lichtbild_Repository`
  * memoises each album for the life of the object, so reusing one after a save returns the
  * object built before it. Every check below would then compare the record with itself and
  * pass -- which is the direction nobody re-reads.
  *
- * @return Atelier_Repository A reader wired the way the plugin wires one after a migration.
+ * @return Lichtbild_Repository A reader wired the way the plugin wires one after a migration.
  */
 $album_reader = function () use ( $settings ) {
-	return new Atelier_Repository(
-		Atelier_Post_Types::gallery_type( $settings ),
-		Atelier_Post_Types::album_type( $settings ),
-		Atelier_Post_Types::tag_taxonomy( $settings ),
+	return new Lichtbild_Repository(
+		Lichtbild_Post_Types::gallery_type( $settings ),
+		Lichtbild_Post_Types::album_type( $settings ),
+		Lichtbild_Post_Types::tag_taxonomy( $settings ),
 		$settings->has_migrated()
 	);
 };
@@ -3111,7 +3111,7 @@ $album_reader = function () use ( $settings ) {
 /**
  * Builds a complete, valid submission for one album from its stored record.
  *
- * @param array $record Stored `_atelier_album` record.
+ * @param array $record Stored `_lichtbild_album` record.
  * @param int   $id     Album post ID.
  *
  * @return array Form payload.
@@ -3149,10 +3149,10 @@ $album_payload = function ( array $record, $id ) {
 	// delivers `$_POST` in, and the save path's `wp_unslash()` is written for it.
 	return wp_slash(
 		array(
-			Atelier_Album_Editor::NONCE => wp_create_nonce( Atelier_Album_Editor::NONCE_ACTION . $id ),
-			'atelier_album_items'       => $rows,
-			'atelier_album_order'       => implode( ',', $order ),
-			'atelier_album_settings'    => $settings,
+			Lichtbild_Album_Editor::NONCE => wp_create_nonce( Lichtbild_Album_Editor::NONCE_ACTION . $id ),
+			'lichtbild_album_items'       => $rows,
+			'lichtbild_album_order'       => implode( ',', $order ),
+			'lichtbild_album_settings'    => $settings,
 		)
 	);
 };
@@ -3163,7 +3163,7 @@ $album_payload = function ( array $record, $id ) {
 $album_edit_id = 0;
 
 foreach ( array_keys( $pre_migration_albums ) as $candidate_id ) {
-	$candidate_record = get_post_meta( $candidate_id, Atelier_Repository::ALBUM_META_V2, true );
+	$candidate_record = get_post_meta( $candidate_id, Lichtbild_Repository::ALBUM_META_V2, true );
 
 	if ( is_array( $candidate_record ) && ! empty( $candidate_record['items'] ) ) {
 		$album_edit_id = (int) $candidate_id;
@@ -3173,12 +3173,12 @@ foreach ( array_keys( $pre_migration_albums ) as $candidate_id ) {
 }
 
 if ( $album_edit_id > 0 ) {
-	$album_record = get_post_meta( $album_edit_id, Atelier_Repository::ALBUM_META_V2, true );
-	$album_before = atelier_render_album_found( $checks, $renderer, $album_reader()->album( $album_edit_id ), $album_reader(), "album #{$album_edit_id} unreadable through the editing reader" );
+	$album_record = get_post_meta( $album_edit_id, Lichtbild_Repository::ALBUM_META_V2, true );
+	$album_before = lichtbild_render_album_found( $checks, $renderer, $album_reader()->album( $album_edit_id ), $album_reader(), "album #{$album_edit_id} unreadable through the editing reader" );
 
 	$album_caps                                        = $site->capabilities;
 	$site->capabilities                                = true;
-	$site->options[ Atelier_Settings::OPTION_SCHEMA ]    = Atelier_Settings::SCHEMA_MIGRATED;
+	$site->options[ Lichtbild_Settings::OPTION_SCHEMA ]    = Lichtbild_Settings::SCHEMA_MIGRATED;
 
 	// --- the guards ---------------------------------------------------------------------
 
@@ -3203,7 +3203,7 @@ if ( $album_edit_id > 0 ) {
 
 	$checks->assert(
 		'an album save with no nonce changes nothing',
-		get_post_meta( $album_edit_id, Atelier_Repository::ALBUM_META_V2, true ) === $album_record
+		get_post_meta( $album_edit_id, Lichtbild_Repository::ALBUM_META_V2, true ) === $album_record
 			&& empty( $album_warnings ),
 		'a request with no album fields rewrote the album or complained: ' . implode( '; ', $album_warnings )
 	);
@@ -3213,22 +3213,22 @@ if ( $album_edit_id > 0 ) {
 	//
 	// The row goes back to Envira's post type as well as the flag, and that is the check rather
 	// than tidiness — the same trap the gallery editor's twin fell into. Clearing the flag alone
-	// leaves a `atelier_album` row on a site whose `album_type()` now says `envira_album`, so the
+	// leaves a `lichtbild_album` row on a site whose `album_type()` now says `envira_album`, so the
 	// *post type* guard refuses first and this passes whether or not the migration guard exists.
-	unset( $site->options[ Atelier_Settings::OPTION_SCHEMA ] );
-	$site->posts[ $album_edit_id ]['post_type'] = Atelier_Repository::ALBUM_POST_TYPE;
+	unset( $site->options[ Lichtbild_Settings::OPTION_SCHEMA ] );
+	$site->posts[ $album_edit_id ]['post_type'] = Lichtbild_Repository::ALBUM_POST_TYPE;
 
 	$unmigrated_payload                       = $album_payload( $album_record, $album_edit_id );
-	$unmigrated_payload['atelier_album_order'] = '';
+	$unmigrated_payload['lichtbild_album_order'] = '';
 
 	$album_save( $album_editor, $album_edit_id, $unmigrated_payload );
 
-	$site->posts[ $album_edit_id ]['post_type']      = Atelier_Post_Types::ALBUM;
-	$site->options[ Atelier_Settings::OPTION_SCHEMA ] = Atelier_Settings::SCHEMA_MIGRATED;
+	$site->posts[ $album_edit_id ]['post_type']      = Lichtbild_Post_Types::ALBUM;
+	$site->options[ Lichtbild_Settings::OPTION_SCHEMA ] = Lichtbild_Settings::SCHEMA_MIGRATED;
 
 	$checks->assert(
 		'an unmigrated site refuses to save an album',
-		get_post_meta( $album_edit_id, Atelier_Repository::ALBUM_META_V2, true ) === $album_record,
+		get_post_meta( $album_edit_id, Lichtbild_Repository::ALBUM_META_V2, true ) === $album_record,
 		'an unmigrated site emptied the album'
 	);
 
@@ -3236,7 +3236,7 @@ if ( $album_edit_id > 0 ) {
 
 	$album_save( $album_editor, $album_edit_id, $album_payload( $album_record, $album_edit_id ) );
 
-	$album_after = atelier_render_album_found( $checks, $renderer, $album_reader()->album( $album_edit_id ), $album_reader(), "album #{$album_edit_id} unreadable through the editing reader" );
+	$album_after = lichtbild_render_album_found( $checks, $renderer, $album_reader()->album( $album_edit_id ), $album_reader(), "album #{$album_edit_id} unreadable through the editing reader" );
 
 	$checks->assert(
 		'an album save round-trips byte for byte',
@@ -3253,11 +3253,11 @@ if ( $album_edit_id > 0 ) {
 
 	$album_save( $album_editor, $album_edit_id, $album_payload( $reversed, $album_edit_id ) );
 
-	$reversed_ids = atelier_album_found( $checks, $album_reader()->album( $album_edit_id ), "album #{$album_edit_id} unreadable through the editing reader" )->gallery_ids();
+	$reversed_ids = lichtbild_album_found( $checks, $album_reader()->album( $album_edit_id ), "album #{$album_edit_id} unreadable through the editing reader" )->gallery_ids();
 
 	$album_save( $album_editor, $album_edit_id, $album_payload( $album_record, $album_edit_id ) );
 
-	$restored_ids = atelier_album_found( $checks, $album_reader()->album( $album_edit_id ), "album #{$album_edit_id} unreadable through the editing reader" )->gallery_ids();
+	$restored_ids = lichtbild_album_found( $checks, $album_reader()->album( $album_edit_id ), "album #{$album_edit_id} unreadable through the editing reader" )->gallery_ids();
 
 	$checks->assert(
 		'stored album order follows the submitted order',
@@ -3272,11 +3272,11 @@ if ( $album_edit_id > 0 ) {
 	// and a handler walking the map passes -- a mutation that made the album walk the map
 	// survived the leg above for exactly that reason.
 	$order_only                       = $album_payload( $album_record, $album_edit_id );
-	$order_only['atelier_album_order'] = implode( ',', array_reverse( explode( ',', $order_only['atelier_album_order'] ) ) );
+	$order_only['lichtbild_album_order'] = implode( ',', array_reverse( explode( ',', $order_only['lichtbild_album_order'] ) ) );
 
 	$album_save( $album_editor, $album_edit_id, $order_only );
 
-	$order_only_ids = atelier_album_found( $checks, $album_reader()->album( $album_edit_id ), "album #{$album_edit_id} unreadable through the editing reader" )->gallery_ids();
+	$order_only_ids = lichtbild_album_found( $checks, $album_reader()->album( $album_edit_id ), "album #{$album_edit_id} unreadable through the editing reader" )->gallery_ids();
 
 	$album_save( $album_editor, $album_edit_id, $album_payload( $album_record, $album_edit_id ) );
 
@@ -3289,12 +3289,12 @@ if ( $album_edit_id > 0 ) {
 	// --- a member has to be a gallery ---------------------------------------------------
 
 	$intruder                                      = $album_payload( $album_record, $album_edit_id );
-	$intruder['atelier_album_items']['x']           = array( 'id' => (string) $album_edit_id, 'cover_id' => '0', 'caption' => '' );
-	$intruder['atelier_album_order']               .= ',x';
+	$intruder['lichtbild_album_items']['x']           = array( 'id' => (string) $album_edit_id, 'cover_id' => '0', 'caption' => '' );
+	$intruder['lichtbild_album_order']               .= ',x';
 
 	$album_save( $album_editor, $album_edit_id, $intruder );
 
-	$intruder_ids = atelier_album_found( $checks, $album_reader()->album( $album_edit_id ), "album #{$album_edit_id} unreadable through the editing reader" )->gallery_ids();
+	$intruder_ids = lichtbild_album_found( $checks, $album_reader()->album( $album_edit_id ), "album #{$album_edit_id} unreadable through the editing reader" )->gallery_ids();
 
 	$checks->assert(
 		'a member that is not a gallery is dropped',
@@ -3339,19 +3339,19 @@ if ( $album_edit_id > 0 ) {
 	// checks are declared above, so skipping them is reported [EMPTY] and fails -- never as the
 	// silence that reads like coverage.
 	$with_foreign                                        = $album_payload( $album_record, $album_edit_id );
-	$with_foreign['atelier_album_items']['i0']['cover_id'] = (string) $foreign_cover;
+	$with_foreign['lichtbild_album_items']['i0']['cover_id'] = (string) $foreign_cover;
 
 	$album_save( $album_editor, $album_edit_id, $with_foreign );
 
-	$foreign_row    = atelier_album_member( atelier_album_found( $checks, $album_reader()->album( $album_edit_id ), "album #{$album_edit_id} unreadable through the editing reader" ), $member_id );
+	$foreign_row    = lichtbild_album_member( lichtbild_album_found( $checks, $album_reader()->album( $album_edit_id ), "album #{$album_edit_id} unreadable through the editing reader" ), $member_id );
 	$stored_foreign = null === $foreign_row ? null : (int) $foreign_row['cover_id'];
 
 	$with_own                                        = $album_payload( $album_record, $album_edit_id );
-	$with_own['atelier_album_items']['i0']['cover_id'] = (string) $own_cover;
+	$with_own['lichtbild_album_items']['i0']['cover_id'] = (string) $own_cover;
 
 	$album_save( $album_editor, $album_edit_id, $with_own );
 
-	$own_row    = atelier_album_member( atelier_album_found( $checks, $album_reader()->album( $album_edit_id ), "album #{$album_edit_id} unreadable through the editing reader" ), $member_id );
+	$own_row    = lichtbild_album_member( lichtbild_album_found( $checks, $album_reader()->album( $album_edit_id ), "album #{$album_edit_id} unreadable through the editing reader" ), $member_id );
 	$stored_own = null === $own_row ? null : (int) $own_row['cover_id'];
 
 	$checks->assert(
@@ -3377,18 +3377,18 @@ if ( $album_edit_id > 0 ) {
 	// --- settings ------------------------------------------------------------------------
 
 	$loud                                          = $album_payload( $album_record, $album_edit_id );
-	$loud['atelier_album_settings']                 = array( 'columns' => '5', 'show_titles' => '1', 'show_counts' => '1' );
+	$loud['lichtbild_album_settings']                 = array( 'columns' => '5', 'show_titles' => '1', 'show_counts' => '1' );
 
 	$album_save( $album_editor, $album_edit_id, $loud );
 
-	$loud_album = atelier_album_found( $checks, $album_reader()->album( $album_edit_id ), "album #{$album_edit_id} unreadable through the editing reader" );
+	$loud_album = lichtbild_album_found( $checks, $album_reader()->album( $album_edit_id ), "album #{$album_edit_id} unreadable through the editing reader" );
 
 	$quiet                         = $album_payload( $album_record, $album_edit_id );
-	$quiet['atelier_album_settings'] = array( 'columns' => '5' );
+	$quiet['lichtbild_album_settings'] = array( 'columns' => '5' );
 
 	$album_save( $album_editor, $album_edit_id, $quiet );
 
-	$quiet_album = atelier_album_found( $checks, $album_reader()->album( $album_edit_id ), "album #{$album_edit_id} unreadable through the editing reader" );
+	$quiet_album = lichtbild_album_found( $checks, $album_reader()->album( $album_edit_id ), "album #{$album_edit_id} unreadable through the editing reader" );
 
 	$checks->assert(
 		'album settings survive a save',
@@ -3411,7 +3411,7 @@ if ( $album_edit_id > 0 ) {
 	$checks->assert(
 		'an album save round-trips byte for byte',
 		'' !== $album_before
-			&& atelier_render_album_found( $checks, $renderer, $album_reader()->album( $album_edit_id ), $album_reader(), "album #{$album_edit_id} unreadable through the editing reader" ) === $album_before,
+			&& lichtbild_render_album_found( $checks, $renderer, $album_reader()->album( $album_edit_id ), $album_reader(), "album #{$album_edit_id} unreadable through the editing reader" ) === $album_before,
 		'' === $album_before
 			? 'the album rendered nothing to begin with, so nothing round-tripped'
 			: 'the album did not survive the settings checks'
@@ -3432,7 +3432,7 @@ if ( $album_edit_id > 0 ) {
 	// count over the whole form is in the thousands and stays above any threshold however empty
 	// the picker is. A mutation naming the pre-migration post type survived exactly that.
 	$picker  = '';
-	$opens   = strpos( $album_form, '<select id="atelier-album-add">' );
+	$opens   = strpos( $album_form, '<select id="lichtbild-album-add">' );
 	$offered = 0;
 
 	if ( false !== $opens ) {
@@ -3477,11 +3477,11 @@ if ( $album_edit_id > 0 ) {
 	$row_ok       = true;
 
 	foreach ( $album_fields as $field ) {
-		if ( false === strpos( $album_form, 'atelier_album_items[{{ data.key }}]' . $field ) ) {
+		if ( false === strpos( $album_form, 'lichtbild_album_items[{{ data.key }}]' . $field ) ) {
 			$template_ok = false;
 		}
 
-		if ( false === strpos( $album_form, 'atelier_album_items[i0]' . $field ) ) {
+		if ( false === strpos( $album_form, 'lichtbild_album_items[i0]' . $field ) ) {
 			$row_ok = false;
 		}
 	}
@@ -3492,19 +3492,19 @@ if ( $album_edit_id > 0 ) {
 		'server row: ' . ( $row_ok ? 'ok' : 'incomplete' ) . ', client template: ' . ( $template_ok ? 'ok' : 'incomplete' )
 	);
 
-	unset( $site->options[ Atelier_Settings::OPTION_SCHEMA ] );
+	unset( $site->options[ Lichtbild_Settings::OPTION_SCHEMA ] );
 
 	ob_start();
 	$album_editor->render_galleries_box( (object) array( 'ID' => $album_edit_id ) );
 	$unmigrated_album_form = (string) ob_get_clean();
 
-	$site->options[ Atelier_Settings::OPTION_SCHEMA ] = Atelier_Settings::SCHEMA_MIGRATED;
+	$site->options[ Lichtbild_Settings::OPTION_SCHEMA ] = Lichtbild_Settings::SCHEMA_MIGRATED;
 
 	$checks->assert(
 		'an unmigrated album screen offers no fields',
-		false === strpos( $unmigrated_album_form, 'atelier_album_items[' )
-			&& false === strpos( $unmigrated_album_form, 'name="' . Atelier_Album_Editor::NONCE . '"' )
-			&& false !== strpos( $unmigrated_album_form, 'options-general.php?page=atelier' ),
+		false === strpos( $unmigrated_album_form, 'lichtbild_album_items[' )
+			&& false === strpos( $unmigrated_album_form, 'name="' . Lichtbild_Album_Editor::NONCE . '"' )
+			&& false !== strpos( $unmigrated_album_form, 'options-general.php?page=lichtbild' ),
 		'the unmigrated album screen rendered ' . strlen( $unmigrated_album_form ) . ' bytes of form'
 	);
 
@@ -3513,15 +3513,15 @@ if ( $album_edit_id > 0 ) {
 
 	$checks->assert(
 		'album metaboxes attach to the post type that exists',
-		isset( $site->meta_boxes['atelier-album-galleries'] )
-			&& Atelier_Post_Types::ALBUM === $site->meta_boxes['atelier-album-galleries']['screen']
-			&& isset( $site->meta_boxes['atelier-album-settings'] )
-			&& isset( $site->meta_boxes['atelier-album-shortcode'] ),
+		isset( $site->meta_boxes['lichtbild-album-galleries'] )
+			&& Lichtbild_Post_Types::ALBUM === $site->meta_boxes['lichtbild-album-galleries']['screen']
+			&& isset( $site->meta_boxes['lichtbild-album-settings'] )
+			&& isset( $site->meta_boxes['lichtbild-album-shortcode'] ),
 		'registered: ' . wp_json_encode( $site->meta_boxes )
 	);
 
 	ob_start();
-	$album_editor->column( 'atelier_galleries', $album_edit_id );
+	$album_editor->column( 'lichtbild_galleries', $album_edit_id );
 	$album_column = (string) ob_get_clean();
 
 	$checks->assert(
@@ -3531,27 +3531,27 @@ if ( $album_edit_id > 0 ) {
 	);
 
 	// And on an un-migrated site, which is where this plugin has spent its whole life so far.
-	// The authoritative record there is Envira's, so a column reading `_atelier_album` directly
+	// The authoritative record there is Envira's, so a column reading `_lichtbild_album` directly
 	// reports 0 for every album -- visibly wrong on the one screen that summarises them.
 	// The v2 record is removed for the duration, and that is the check rather than tidiness.
 	// A migrate-then-rollback leaves the converted record behind deliberately, so counting it
 	// gives the right answer by accident and the check passes whether or not the column consults
 	// the right source. A site that has never migrated -- which is every site running v1, and
 	// the live one today -- has no such record at all.
-	$column_record = $site->albums[ $album_edit_id ]['atelier'];
+	$column_record = $site->albums[ $album_edit_id ]['lichtbild'];
 
-	unset( $site->albums[ $album_edit_id ]['atelier'] );
-	unset( $site->options[ Atelier_Settings::OPTION_SCHEMA ] );
-	$site->posts[ $album_edit_id ]['post_type'] = Atelier_Repository::ALBUM_POST_TYPE;
+	unset( $site->albums[ $album_edit_id ]['lichtbild'] );
+	unset( $site->options[ Lichtbild_Settings::OPTION_SCHEMA ] );
+	$site->posts[ $album_edit_id ]['post_type'] = Lichtbild_Repository::ALBUM_POST_TYPE;
 
 	ob_start();
-	( new Atelier_Album_Editor( new Atelier_Settings(), new Atelier_Repository() ) )
-		->column( 'atelier_galleries', $album_edit_id );
+	( new Lichtbild_Album_Editor( new Lichtbild_Settings(), new Lichtbild_Repository() ) )
+		->column( 'lichtbild_galleries', $album_edit_id );
 	$unmigrated_column = (string) ob_get_clean();
 
-	$site->posts[ $album_edit_id ]['post_type']      = Atelier_Post_Types::ALBUM;
-	$site->options[ Atelier_Settings::OPTION_SCHEMA ] = Atelier_Settings::SCHEMA_MIGRATED;
-	$site->albums[ $album_edit_id ]['atelier']        = $column_record;
+	$site->posts[ $album_edit_id ]['post_type']      = Lichtbild_Post_Types::ALBUM;
+	$site->options[ Lichtbild_Settings::OPTION_SCHEMA ] = Lichtbild_Settings::SCHEMA_MIGRATED;
+	$site->albums[ $album_edit_id ]['lichtbild']        = $column_record;
 
 	$checks->assert(
 		'the album list column counts its galleries',
@@ -3565,8 +3565,8 @@ if ( $album_edit_id > 0 ) {
 
 	$checks->assert(
 		'the album list columns survive a table with no date',
-		array( 'title', 'atelier_galleries', 'atelier_shortcode', 'date' ) === array_keys( $album_with_date )
-			&& array( 'title', 'atelier_galleries', 'atelier_shortcode' ) === array_keys( $album_no_date ),
+		array( 'title', 'lichtbild_galleries', 'lichtbild_shortcode', 'date' ) === array_keys( $album_with_date )
+			&& array( 'title', 'lichtbild_galleries', 'lichtbild_shortcode' ) === array_keys( $album_no_date ),
 		'with date: ' . implode( ',', array_keys( $album_with_date ) ) . ' / without: ' .
 			implode( ',', array_keys( $album_no_date ) )
 	);
@@ -3587,26 +3587,26 @@ if ( $album_edit_id > 0 ) {
 
 	try {
 		$album_editor->handle_covers();
-	} catch ( Atelier_Test_Halt $e ) {
+	} catch ( Lichtbild_Test_Halt $e ) {
 		$covers_no_nonce = $e->getMessage();
 	}
 
 	$covers_no_nonce_body = (string) ob_get_clean();
 
-	$_REQUEST['nonce'] = 'nonce:' . Atelier_Album_Editor::COVERS_NONCE_ACTION . '-not-this-one';
+	$_REQUEST['nonce'] = 'nonce:' . Lichtbild_Album_Editor::COVERS_NONCE_ACTION . '-not-this-one';
 
 	ob_start();
 	$covers_bad_nonce = '';
 
 	try {
 		$album_editor->handle_covers();
-	} catch ( Atelier_Test_Halt $e ) {
+	} catch ( Lichtbild_Test_Halt $e ) {
 		$covers_bad_nonce = $e->getMessage();
 	}
 
 	$covers_bad_nonce_body = (string) ob_get_clean();
 
-	$_REQUEST['nonce'] = wp_create_nonce( Atelier_Album_Editor::COVERS_NONCE_ACTION );
+	$_REQUEST['nonce'] = wp_create_nonce( Lichtbild_Album_Editor::COVERS_NONCE_ACTION );
 
 	// `die:403` rather than `error 403`: this is the nonce gate answering, not the capability
 	// check below it, and the two are worth being able to tell apart. An admin screen is never
@@ -3627,7 +3627,7 @@ if ( $album_edit_id > 0 ) {
 
 	try {
 		$album_editor->handle_covers();
-	} catch ( Atelier_Test_Halt $e ) {
+	} catch ( Lichtbild_Test_Halt $e ) {
 		$covers_halt = $e->getMessage();
 	}
 
@@ -3640,7 +3640,7 @@ if ( $album_edit_id > 0 ) {
 
 	try {
 		$album_editor->handle_covers();
-	} catch ( Atelier_Test_Halt $e ) {
+	} catch ( Lichtbild_Test_Halt $e ) {
 		$covers_allowed_halt = $e->getMessage();
 	}
 
@@ -3686,7 +3686,7 @@ if ( $album_edit_id > 0 ) {
 
 	try {
 		$album_editor->handle_covers();
-	} catch ( Atelier_Test_Halt $e ) {
+	} catch ( Lichtbild_Test_Halt $e ) {
 		$gallery_denied = $e->getMessage();
 	}
 
@@ -3710,7 +3710,7 @@ if ( $album_edit_id > 0 ) {
 
 	try {
 		$album_editor->handle_covers();
-	} catch ( Atelier_Test_Halt $e ) {
+	} catch ( Lichtbild_Test_Halt $e ) {
 		$wrong_type_halt = $e->getMessage();
 	}
 
@@ -3739,11 +3739,11 @@ if ( $album_edit_id > 0 ) {
 	$slash_intended = "C:\\Photos 100% 'quoted'";
 	$slashy         = $album_payload( $album_record, $album_edit_id );
 
-	$slashy['atelier_album_items']['i0']['caption'] = wp_slash( $slash_intended );
+	$slashy['lichtbild_album_items']['i0']['caption'] = wp_slash( $slash_intended );
 
 	$album_save( $album_editor, $album_edit_id, $slashy );
 
-	$slash_row    = atelier_album_member( atelier_album_found( $checks, $album_reader()->album( $album_edit_id ), "album #{$album_edit_id} unreadable through the editing reader" ), $member_id );
+	$slash_row    = lichtbild_album_member( lichtbild_album_found( $checks, $album_reader()->album( $album_edit_id ), "album #{$album_edit_id} unreadable through the editing reader" ), $member_id );
 	$slash_stored = null === $slash_row ? null : (string) $slash_row['caption'];
 
 	$album_save( $album_editor, $album_edit_id, $album_payload( $album_record, $album_edit_id ) );
@@ -3762,18 +3762,18 @@ if ( $album_edit_id > 0 ) {
 	if ( $own_cover > 0 && count( $member_items ) > 1 ) {
 		$twice = $album_payload( $album_record, $album_edit_id );
 
-		$twice['atelier_album_items']['i0']['cover_id'] = (string) $member_items[0]->id();
-		$twice['atelier_album_items']['i0']['caption']  = 'first appearance';
-		$twice['atelier_album_items']['dup']            = array(
+		$twice['lichtbild_album_items']['i0']['cover_id'] = (string) $member_items[0]->id();
+		$twice['lichtbild_album_items']['i0']['caption']  = 'first appearance';
+		$twice['lichtbild_album_items']['dup']            = array(
 			'id'       => (string) $member_id,
 			'cover_id' => (string) $own_cover,
 			'caption'  => 'second appearance',
 		);
-		$twice['atelier_album_order']                  .= ',dup';
+		$twice['lichtbild_album_order']                  .= ',dup';
 
 		$album_save( $album_editor, $album_edit_id, $twice );
 
-		$twice_markup = atelier_render_album_found( $checks, $renderer, $album_reader()->album( $album_edit_id ), $album_reader(), "album #{$album_edit_id} unreadable through the editing reader" );
+		$twice_markup = lichtbild_render_album_found( $checks, $renderer, $album_reader()->album( $album_edit_id ), $album_reader(), "album #{$album_edit_id} unreadable through the editing reader" );
 
 		$album_save( $album_editor, $album_edit_id, $album_payload( $album_record, $album_edit_id ) );
 
@@ -3781,8 +3781,8 @@ if ( $album_edit_id > 0 ) {
 			'a repeated member keeps its own cover and caption',
 			false !== strpos( $twice_markup, 'first appearance' )
 				&& false !== strpos( $twice_markup, 'second appearance' )
-				&& substr_count( $twice_markup, 'atelier-album-item' ) === count( $album_record['items'] ) + 1,
-			'the album rendered ' . substr_count( $twice_markup, 'atelier-album-item' ) . ' items, captions: ' .
+				&& substr_count( $twice_markup, 'lichtbild-album-item' ) === count( $album_record['items'] ) + 1,
+			'the album rendered ' . substr_count( $twice_markup, 'lichtbild-album-item' ) . ' items, captions: ' .
 				( false !== strpos( $twice_markup, 'first appearance' ) ? 'first ' : '' ) .
 				( false !== strpos( $twice_markup, 'second appearance' ) ? 'second' : '' )
 		);
@@ -3813,7 +3813,7 @@ $checks->assert(
 // Takeover stops being a choice once the rows have moved, because Envira cannot read them.
 // Forced to `never` first: on `auto` with Envira absent the answer is true anyway, so the
 // check would pass whether or not the migrated case is handled at all.
-$site->options['atelier_takeover'] = 'never';
+$site->options['lichtbild_takeover'] = 'never';
 
 $checks->assert(
 	'migrated site always takes the shortcode over',
@@ -3821,7 +3821,7 @@ $checks->assert(
 	'a migrated site honoured the takeover setting'
 );
 
-unset( $site->options['atelier_takeover'] );
+unset( $site->options['lichtbild_takeover'] );
 
 $rolled_back = $migration->rollback();
 
@@ -3858,7 +3858,7 @@ $checks->assert(
 
 // And the Envira path works again, unchanged, which is what "reversible" has to mean.
 foreach ( $pre_migration as $gallery_id => $before_markup ) {
-	$gallery = ( new Atelier_Repository() )->gallery( $gallery_id );
+	$gallery = ( new Lichtbild_Repository() )->gallery( $gallery_id );
 
 	$checks->assert(
 		'rollback restores every row',
@@ -3872,7 +3872,7 @@ foreach ( $pre_migration as $gallery_id => $before_markup ) {
 $kept = 0;
 
 foreach ( array_keys( $site->galleries ) as $gallery_id ) {
-	if ( is_array( get_post_meta( $gallery_id, '_atelier_gallery', true ) ) ) {
+	if ( is_array( get_post_meta( $gallery_id, '_lichtbild_gallery', true ) ) ) {
 		$kept++;
 	}
 }
@@ -3900,28 +3900,28 @@ $checks->assert(
 // Envira record says justified rows, and an unmigrated reader must show the second.
 $authority_id = array_key_first( $pre_migration );
 
-$site->galleries[ $authority_id ]['atelier']['settings']['layout']  = 'columns';
-$site->galleries[ $authority_id ]['atelier']['settings']['columns'] = 7;
+$site->galleries[ $authority_id ]['lichtbild']['settings']['layout']  = 'columns';
+$site->galleries[ $authority_id ]['lichtbild']['settings']['columns'] = 7;
 
-$authority_markup = atelier_render_found(
+$authority_markup = lichtbild_render_found(
 	$checks,
 	$renderer,
-	( new Atelier_Repository() )->gallery( $authority_id ),
+	( new Lichtbild_Repository() )->gallery( $authority_id ),
 	"#{$authority_id} unreadable through the envira path after a rollback"
 );
 
 $checks->assert(
 	'a rolled back site ignores the converted record',
 	$authority_markup === $pre_migration[ $authority_id ],
-	"#{$authority_id} rendered the retained Atelier record after a rollback"
+	"#{$authority_id} rendered the retained Lichtbild record after a rollback"
 );
 
 // The control: that record does win once the site owns its data, or the check above would
 // pass just as happily against a reader that could never see a converted record at all.
-$authority_owned = atelier_render_found(
+$authority_owned = lichtbild_render_found(
 	$checks,
 	$renderer,
-	( new Atelier_Repository( Atelier_Repository::GALLERY_POST_TYPE, Atelier_Repository::ALBUM_POST_TYPE, Atelier_Repository::TAG_TAXONOMY, true ) )->gallery( $authority_id ),
+	( new Lichtbild_Repository( Lichtbild_Repository::GALLERY_POST_TYPE, Lichtbild_Repository::ALBUM_POST_TYPE, Lichtbild_Repository::TAG_TAXONOMY, true ) )->gallery( $authority_id ),
 	"#{$authority_id} unreadable through the v2 path while owning its data"
 );
 
@@ -3932,37 +3932,37 @@ $checks->assert(
 );
 
 // The same pair for albums, because they gained a converted record of their own in 26.8.3 and
-// inherit the identical hazard: the rollback leaves `_atelier_album` behind, so a reader that
+// inherit the identical hazard: the rollback leaves `_lichtbild_album` behind, so a reader that
 // preferred it unconditionally would render the pre-rollback album for ever after.
 $album_authority = array_key_first( $pre_migration_albums );
 
 if ( null !== $album_authority ) {
-	$site->albums[ $album_authority ]['atelier']['settings']['columns'] = 7;
+	$site->albums[ $album_authority ]['lichtbild']['settings']['columns'] = 7;
 
 	$checks->assert(
 		'a rolled back site ignores the converted album',
-		atelier_render_album_found( $checks, $renderer, ( new Atelier_Repository() )->album( $album_authority ), new Atelier_Repository(), "album #{$album_authority} unreadable through the envira path after a rollback" )
+		lichtbild_render_album_found( $checks, $renderer, ( new Lichtbild_Repository() )->album( $album_authority ), new Lichtbild_Repository(), "album #{$album_authority} unreadable through the envira path after a rollback" )
 			=== $pre_migration_albums[ $album_authority ],
-		"#{$album_authority} rendered the retained Atelier record after a rollback"
+		"#{$album_authority} rendered the retained Lichtbild record after a rollback"
 	);
 
-	$owning_album = new Atelier_Repository(
-		Atelier_Repository::GALLERY_POST_TYPE,
-		Atelier_Repository::ALBUM_POST_TYPE,
-		Atelier_Repository::TAG_TAXONOMY,
+	$owning_album = new Lichtbild_Repository(
+		Lichtbild_Repository::GALLERY_POST_TYPE,
+		Lichtbild_Repository::ALBUM_POST_TYPE,
+		Lichtbild_Repository::TAG_TAXONOMY,
 		true
 	);
 
 	// The control, for the same reason as the gallery pair above.
 	$checks->assert(
 		'a migrated site does use the converted album',
-		atelier_render_album_found( $checks, $renderer, $owning_album->album( $album_authority ), $owning_album, "album #{$album_authority} unreadable while owning its data" )
+		lichtbild_render_album_found( $checks, $renderer, $owning_album->album( $album_authority ), $owning_album, "album #{$album_authority} unreadable while owning its data" )
 			!== $pre_migration_albums[ $album_authority ],
 		"#{$album_authority} ignored its own converted record while owning its data"
 	);
 }
 
-$site->galleries[ $authority_id ]['atelier'] = Atelier_Migration::build_record(
+$site->galleries[ $authority_id ]['lichtbild'] = Lichtbild_Migration::build_record(
 	$site->galleries[ $authority_id ]['data'],
 	$authority_id
 );
@@ -3977,7 +3977,7 @@ $site->galleries[ $authority_id ]['atelier'] = Atelier_Migration::build_record(
 // destination is redirected to a file for the length of this section and restored afterwards.
 $checks->expect( 'a failed rename says why in the log', 'an ordinary rename logs nothing' );
 
-$log_path       = (string) tempnam( sys_get_temp_dir(), 'atelier-log-' );
+$log_path       = (string) tempnam( sys_get_temp_dir(), 'lichtbild-log-' );
 $log_target_was = (string) ini_get( 'error_log' );
 $log_errors_was = (string) ini_get( 'log_errors' );
 
@@ -4003,14 +4003,14 @@ $checks->assert(
 $checks->assert(
 	'a failed rename says why in the log',
 	false !== strpos( $logged, $GLOBALS['wpdb']->posts )
-		&& false !== strpos( $logged, '"' . Atelier_Repository::GALLERY_POST_TYPE . '"' )
-		&& false !== strpos( $logged, Atelier_Test_wpdb::SIMULATED_ERROR ),
+		&& false !== strpos( $logged, '"' . Lichtbild_Repository::GALLERY_POST_TYPE . '"' )
+		&& false !== strpos( $logged, Lichtbild_Test_wpdb::SIMULATED_ERROR ),
 	'logged: ' . trim( $logged )
 );
 
 // And it must not have written the schema option. The option is what every read consults, so
 // claiming a state the rows are not in is worse than the failed statement itself: the reader
-// would look for `atelier_gallery` while the rows still say `envira`, and every gallery on the
+// would look for `lichtbild_gallery` while the rows still say `envira`, and every gallery on the
 // site would be unreachable.
 $checks->assert(
 	'a failed migration does not claim to have migrated',
@@ -4053,8 +4053,8 @@ $checks->assert(
 // back, and a rollback gated on the option would refuse in precisely that case.
 $GLOBALS['wpdb']->update(
 	$GLOBALS['wpdb']->posts,
-	array( 'post_type' => Atelier_Post_Types::GALLERY ),
-	array( 'post_type' => Atelier_Repository::GALLERY_POST_TYPE ),
+	array( 'post_type' => Lichtbild_Post_Types::GALLERY ),
+	array( 'post_type' => Lichtbild_Repository::GALLERY_POST_TYPE ),
 	array( '%s' ),
 	array( '%s' )
 );
@@ -4064,7 +4064,7 @@ $checks->assert(
 	! $settings->has_migrated()
 		&& empty( $migration->rollback()['errors'] )
 		&& 'envira' === get_post_type( array_key_first( $site->galleries ) ),
-	'rollback refused, or failed, on rows stranded under Atelier\'s types'
+	'rollback refused, or failed, on rows stranded under Lichtbild\'s types'
 );
 
 // A meta write that silently does not land is the case the read-back exists for. Trusting
@@ -4077,7 +4077,7 @@ $checks->assert(
 // proceeding is correct. Clearing them first is what makes the failed write actually missing,
 // which is the only version of this scenario that is a defect.
 foreach ( array_keys( $site->galleries ) as $gallery_id ) {
-	unset( $site->galleries[ $gallery_id ]['atelier'] );
+	unset( $site->galleries[ $gallery_id ]['lichtbild'] );
 }
 
 $site->fail_meta_writes = true;
@@ -4098,10 +4098,10 @@ $checks->assert(
 // has to survive Envira being uninstalled or every gallery page on the site goes blank.
 $checks->expect( 'standalone setting follows envira before migration', 'migration takes ownership of the standalone setting' );
 
-unset( $site->options[ Atelier_Settings::OPTION_STANDALONE ] );
+unset( $site->options[ Lichtbild_Settings::OPTION_STANDALONE ] );
 
 foreach ( array( array( 1, true ), array( 0, false ) ) as $case ) {
-	$site->options[ Atelier_Settings::OPTION_STANDALONE_ENVIRA ] = $case[0];
+	$site->options[ Lichtbild_Settings::OPTION_STANDALONE_ENVIRA ] = $case[0];
 
 	$checks->assert(
 		'standalone setting follows envira before migration',
@@ -4117,12 +4117,12 @@ foreach ( array( array( 1, true ), array( 0, false ) ) as $case ) {
 // asserts the OTHER direction as its own control.
 $checks->expect( 'a site with no envira history renders galleries on their permalink', 'and one with an envira history still defers to envira' );
 
-unset( $site->options[ Atelier_Settings::OPTION_STANDALONE ] );
-unset( $site->options[ Atelier_Settings::OPTION_STANDALONE_ENVIRA ] );
+unset( $site->options[ Lichtbild_Settings::OPTION_STANDALONE ] );
+unset( $site->options[ Lichtbild_Settings::OPTION_STANDALONE_ENVIRA ] );
 
-$scheme_before = $site->options[ Atelier_Settings::OPTION_SLUG_SCHEME ] ?? null;
+$scheme_before = $site->options[ Lichtbild_Settings::OPTION_SLUG_SCHEME ] ?? null;
 
-$site->options[ Atelier_Settings::OPTION_SLUG_SCHEME ] = 'generic';
+$site->options[ Lichtbild_Settings::OPTION_SLUG_SCHEME ] = 'generic';
 
 $checks->assert(
 	'a site with no envira history renders galleries on their permalink',
@@ -4130,7 +4130,7 @@ $checks->assert(
 	'a fresh install read standalone as ' . wp_json_encode( $settings->standalone() )
 );
 
-$site->options[ Atelier_Settings::OPTION_SLUG_SCHEME ] = 'envira';
+$site->options[ Lichtbild_Settings::OPTION_SLUG_SCHEME ] = 'envira';
 
 $checks->assert(
 	'and one with an envira history still defers to envira',
@@ -4140,38 +4140,38 @@ $checks->assert(
 );
 
 if ( null === $scheme_before ) {
-	unset( $site->options[ Atelier_Settings::OPTION_SLUG_SCHEME ] );
+	unset( $site->options[ Lichtbild_Settings::OPTION_SLUG_SCHEME ] );
 } else {
-	$site->options[ Atelier_Settings::OPTION_SLUG_SCHEME ] = $scheme_before;
+	$site->options[ Lichtbild_Settings::OPTION_SLUG_SCHEME ] = $scheme_before;
 }
 
-// Atelier's own value wins once it exists, which is what makes uninstalling Envira safe.
-$site->options[ Atelier_Settings::OPTION_STANDALONE_ENVIRA ] = 0;
-$site->options[ Atelier_Settings::OPTION_STANDALONE ]        = 1;
+// Lichtbild's own value wins once it exists, which is what makes uninstalling Envira safe.
+$site->options[ Lichtbild_Settings::OPTION_STANDALONE_ENVIRA ] = 0;
+$site->options[ Lichtbild_Settings::OPTION_STANDALONE ]        = 1;
 
 $checks->assert(
 	'standalone setting follows envira before migration',
 	true === $settings->standalone(),
-	'Atelier\'s own standalone option did not win over Envira\'s'
+	'Lichtbild\'s own standalone option did not win over Envira\'s'
 );
 
 // The migration copies the value across, so the choice outlives the plugin that recorded it.
 foreach ( array( 1, 0 ) as $envira_value ) {
 	$migration->rollback();
-	unset( $site->options[ Atelier_Settings::OPTION_STANDALONE ] );
-	$site->options[ Atelier_Settings::OPTION_STANDALONE_ENVIRA ] = $envira_value;
+	unset( $site->options[ Lichtbild_Settings::OPTION_STANDALONE ] );
+	$site->options[ Lichtbild_Settings::OPTION_STANDALONE_ENVIRA ] = $envira_value;
 
 	$migration->migrate();
 
 	$checks->assert(
 		'migration takes ownership of the standalone setting',
-		(int) $site->options[ Atelier_Settings::OPTION_STANDALONE ] === $envira_value,
-		'envira had ' . $envira_value . ', Atelier stored ' . wp_json_encode( $site->options[ Atelier_Settings::OPTION_STANDALONE ] ?? null )
+		(int) $site->options[ Lichtbild_Settings::OPTION_STANDALONE ] === $envira_value,
+		'envira had ' . $envira_value . ', Lichtbild stored ' . wp_json_encode( $site->options[ Lichtbild_Settings::OPTION_STANDALONE ] ?? null )
 	);
 }
 
 $migration->rollback();
-unset( $site->options[ Atelier_Settings::OPTION_STANDALONE ], $site->options[ Atelier_Settings::OPTION_STANDALONE_ENVIRA ] );
+unset( $site->options[ Lichtbild_Settings::OPTION_STANDALONE ], $site->options[ Lichtbild_Settings::OPTION_STANDALONE_ENVIRA ] );
 
 // ============================================================================
 // The last statement of a migration, and the one whose failure is invisible.
@@ -4191,23 +4191,23 @@ $checks->expect(
 );
 
 if ( ! $settings->has_migrated() && ! $settings->envira_is_active() ) {
-	$site->fail_options_on = array( Atelier_Settings::OPTION_SCHEMA );
+	$site->fail_options_on = array( Lichtbild_Settings::OPTION_SCHEMA );
 
-	$stuck = ( new Atelier_Migration( $settings ) )->migrate();
+	$stuck = ( new Lichtbild_Migration( $settings ) )->migrate();
 
 	$site->fail_options_on = array();
 
 	$checks->assert(
 		'a migration that cannot write the schema reports it',
-		! empty( $stuck['errors'] ) && false === ( new Atelier_Settings() )->has_migrated(),
+		! empty( $stuck['errors'] ) && false === ( new Lichtbild_Settings() )->has_migrated(),
 		'the migration reported ' . count( $stuck['errors'] ) . ' errors while the flag said ' .
-			( ( new Atelier_Settings() )->has_migrated() ? 'migrated' : 'not migrated' )
+			( ( new Lichtbild_Settings() )->has_migrated() ? 'migrated' : 'not migrated' )
 	);
 
 	// And the state it leaves has to be the recoverable one. `rollback()` is gated on the rows
 	// rather than on the flag precisely so that it still works here -- this is the state where
 	// it is the only way back, and a rollback that consulted `has_migrated()` would refuse.
-	$recovered = ( new Atelier_Migration( $settings ) )->rollback();
+	$recovered = ( new Lichtbild_Migration( $settings ) )->rollback();
 
 	$checks->assert(
 		'the rows are still recoverable after that failure',
@@ -4220,25 +4220,25 @@ if ( ! $settings->has_migrated() && ! $settings->envira_is_active() ) {
 // The screen's guards are asserted against the handler, not the markup it draws. A control
 // the screen declines to render is still reachable by anyone holding the URL, so a guard that
 // lives in a `required` attribute or a `disabled` button is not a guard at all.
-$screen               = new Atelier_Migration_Screen( $migration, $settings );
+$screen               = new Lichtbild_Migration_Screen( $migration, $settings );
 $site->capabilities   = true;
 
 /**
  * Runs the migrate handler under a given request and reports how the request ended.
  *
- * @param Atelier_Migration_Screen $screen The screen.
+ * @param Lichtbild_Migration_Screen $screen The screen.
  * @param string                  $method Request method.
  * @param array                   $post   POST body.
  *
  * @return string Either `die:<code>`, `redirect`, or `completed`.
  */
-function atelier_test_submit( $screen, $method, $post ) {
+function lichtbild_test_submit( $screen, $method, $post ) {
 	$_SERVER['REQUEST_METHOD'] = $method;
 	$_POST                     = $post;
 
 	try {
 		$screen->handle_migrate();
-	} catch ( Atelier_Test_Halt $halt ) {
+	} catch ( Lichtbild_Test_Halt $halt ) {
 		return $halt->getMessage();
 	}
 
@@ -4249,7 +4249,7 @@ function atelier_test_submit( $screen, $method, $post ) {
 // action reachable that way is one a prefetcher or a bookmark can trigger.
 $checks->assert(
 	'the migrate action refuses a GET',
-	'die:405' === atelier_test_submit( $screen, 'GET', array( 'atelier_confirm' => '1' ) ),
+	'die:405' === lichtbild_test_submit( $screen, 'GET', array( 'lichtbild_confirm' => '1' ) ),
 	'a GET reached the migration'
 );
 
@@ -4258,7 +4258,7 @@ $before_confirm = get_post_type( array_key_first( $site->galleries ) );
 
 $checks->assert(
 	'the migrate action requires the confirmation',
-	'redirect' === atelier_test_submit( $screen, 'POST', array() )
+	'redirect' === lichtbild_test_submit( $screen, 'POST', array() )
 		&& get_post_type( array_key_first( $site->galleries ) ) === $before_confirm,
 	'a submission without the confirmation was accepted'
 );
@@ -4268,7 +4268,7 @@ $site->capabilities = false;
 
 $checks->assert(
 	'the migrate action requires the capability',
-	'die:403' === atelier_test_submit( $screen, 'POST', array( 'atelier_confirm' => '1' ) ),
+	'die:403' === lichtbild_test_submit( $screen, 'POST', array( 'lichtbild_confirm' => '1' ) ),
 	'a submission without manage_options was accepted'
 );
 
@@ -4301,14 +4301,14 @@ $site->capabilities = true;
 /**
  * Renders the screen for a stored outcome and returns the notice it produced.
  *
- * @param Atelier_Migration_Screen $screen The screen.
+ * @param Lichtbild_Migration_Screen $screen The screen.
  * @param array                   $result The outcome to report.
  * @param string                  $class  Notice class to extract.
  *
  * @return string The notice markup, or an empty string when none was rendered.
  */
-function atelier_test_notice( $screen, $result, $class ) {
-	set_transient( Atelier_Migration_Screen::RESULT . get_current_user_id(), $result, 300 );
+function lichtbild_test_notice( $screen, $result, $class ) {
+	set_transient( Lichtbild_Migration_Screen::RESULT . get_current_user_id(), $result, 300 );
 
 	ob_start();
 	$screen->render();
@@ -4321,7 +4321,7 @@ function atelier_test_notice( $screen, $result, $class ) {
 	return $found[1];
 }
 
-$two_errors = atelier_test_notice(
+$two_errors = lichtbild_test_notice(
 	$screen,
 	array(
 		'action' => 'migrate',
@@ -4341,7 +4341,7 @@ $checks->assert(
 	'notice was: ' . $two_errors
 );
 
-$one_error = atelier_test_notice(
+$one_error = lichtbild_test_notice(
 	$screen,
 	array(
 		'action' => 'migrate',
@@ -4359,7 +4359,7 @@ $checks->assert(
 
 // The six numbers `migrate()` returns, each distinct so no fragment can match another's digits,
 // and each read out of the success notice alone.
-$success = atelier_test_notice(
+$success = lichtbild_test_notice(
 	$screen,
 	array(
 		'action'           => 'migrate',
@@ -4413,12 +4413,12 @@ $checks->expect(
  * leftover outcome from the checks above would put its counts on the page — where a check
  * looking for a number in the plan would find it and pass for the wrong reason.
  *
- * @param Atelier_Migration_Screen $screen The screen.
+ * @param Lichtbild_Migration_Screen $screen The screen.
  *
  * @return string The rendered markup.
  */
-function atelier_test_screen( $screen ) {
-	delete_transient( Atelier_Migration_Screen::RESULT . get_current_user_id() );
+function lichtbild_test_screen( $screen ) {
+	delete_transient( Lichtbild_Migration_Screen::RESULT . get_current_user_id() );
 
 	ob_start();
 	$screen->render();
@@ -4427,26 +4427,26 @@ function atelier_test_screen( $screen ) {
 }
 
 // The site is unmigrated here: the rollback above put every row back under Envira's names.
-$pending_screen = atelier_test_screen( $screen );
+$pending_screen = lichtbild_test_screen( $screen );
 
 $checks->assert(
 	'the pending screen offers the migration',
-	false !== strpos( $pending_screen, 'value="' . Atelier_Migration_Screen::ACTION_MIGRATE . '"' )
-		&& false !== strpos( $pending_screen, 'name="atelier_confirm"' )
+	false !== strpos( $pending_screen, 'value="' . Lichtbild_Migration_Screen::ACTION_MIGRATE . '"' )
+		&& false !== strpos( $pending_screen, 'name="lichtbild_confirm"' )
 		// And it must NOT offer the rollback, or "offers the migration" is satisfied by a screen
 		// that offers both and has not dispatched anywhere.
-		&& false === strpos( $pending_screen, 'value="' . Atelier_Migration_Screen::ACTION_ROLLBACK . '"' ),
+		&& false === strpos( $pending_screen, 'value="' . Lichtbild_Migration_Screen::ACTION_ROLLBACK . '"' ),
 	'the unmigrated screen did not offer the migration alone'
 );
 
 $migration->migrate();
 
-$migrated_screen = atelier_test_screen( $screen );
+$migrated_screen = lichtbild_test_screen( $screen );
 
 $checks->assert(
 	'the migrated screen offers the rollback',
-	false !== strpos( $migrated_screen, 'value="' . Atelier_Migration_Screen::ACTION_ROLLBACK . '"' )
-		&& false === strpos( $migrated_screen, 'value="' . Atelier_Migration_Screen::ACTION_MIGRATE . '"' )
+	false !== strpos( $migrated_screen, 'value="' . Lichtbild_Migration_Screen::ACTION_ROLLBACK . '"' )
+		&& false === strpos( $migrated_screen, 'value="' . Lichtbild_Migration_Screen::ACTION_MIGRATE . '"' )
 		&& false === strpos( $migrated_screen, 'The migration did not finish.' ),
 	'the migrated screen did not offer the rollback alone'
 );
@@ -4461,28 +4461,28 @@ $migration->rollback();
 // single `$wpdb->update()`, so a request that dies mid-migration strands a whole category —
 // all the galleries, or all the albums — rather than one gallery among fifty unmigrated ones.
 // It is sufficient here because the property under test is the dispatch rule, and that reads
-// `atelier_rows() > 0`; any non-zero count exercises it identically. Stated rather than glossed,
+// `lichtbild_rows() > 0`; any non-zero count exercises it identically. Stated rather than glossed,
 // because "built the way a dying request builds it" is what this comment said first, and that
 // was a claim about fidelity the fixture does not support.
 $stranded_id = array_key_first( $site->galleries );
 
-$site->posts[ $stranded_id ]['post_type'] = Atelier_Post_Types::GALLERY;
+$site->posts[ $stranded_id ]['post_type'] = Lichtbild_Post_Types::GALLERY;
 
-$mixed_screen = atelier_test_screen( $screen );
+$mixed_screen = lichtbild_test_screen( $screen );
 
 $checks->assert(
 	'a half-migrated site is told so and offered the way back',
 	false !== strpos( $mixed_screen, 'The migration did not finish.' )
-		&& false !== strpos( $mixed_screen, 'value="' . Atelier_Migration_Screen::ACTION_ROLLBACK . '"' )
+		&& false !== strpos( $mixed_screen, 'value="' . Lichtbild_Migration_Screen::ACTION_ROLLBACK . '"' )
 		// The schema option still says unmigrated, so a screen that read the flag would be
 		// showing the migrate form over the stranded rows. That is the defect this branch exists
 		// to prevent, and it is the half worth asserting.
 		&& ! $settings->has_migrated()
-		&& false === strpos( $mixed_screen, 'value="' . Atelier_Migration_Screen::ACTION_MIGRATE . '"' ),
+		&& false === strpos( $mixed_screen, 'value="' . Lichtbild_Migration_Screen::ACTION_MIGRATE . '"' ),
 	'a mixed site was not offered the rollback'
 );
 
-$site->posts[ $stranded_id ]['post_type'] = Atelier_Repository::GALLERY_POST_TYPE;
+$site->posts[ $stranded_id ]['post_type'] = Lichtbild_Repository::GALLERY_POST_TYPE;
 
 // ============================================================================
 // The URL slug scheme.
@@ -4506,27 +4506,27 @@ $checks->expect(
 );
 
 $slug_paths = function ( $settings ) {
-	$site             = Atelier_Test_Site::$instance;
+	$site             = Lichtbild_Test_Site::$instance;
 	$site->registered = array();
 	$args             = null;
 
-	( new Atelier_Post_Types( $settings ) )->register_types();
+	( new Lichtbild_Post_Types( $settings ) )->register_types();
 
 	return $site->registered_args ?? array();
 };
 
 // 1. This fixture carries `_eg_gallery_data`, so it is an Envira-history site.
-unset( $site->options[ Atelier_Settings::OPTION_SLUG_SCHEME ] );
+unset( $site->options[ Lichtbild_Settings::OPTION_SLUG_SCHEME ] );
 $checks->assert(
 	'a site with envira records serves envira paths',
-	'envira' === ( new Atelier_Settings() )->slug_scheme(),
-	'scheme: ' . ( new Atelier_Settings() )->slug_scheme()
+	'envira' === ( new Lichtbild_Settings() )->slug_scheme(),
+	'scheme: ' . ( new Lichtbild_Settings() )->slug_scheme()
 );
 
 // 2. Strip every Envira record and the site becomes a fresh install.
 $saved_galleries = $site->galleries;
 $saved_albums    = $site->albums;
-$saved_schema    = $site->options[ Atelier_Settings::OPTION_SCHEMA ] ?? null;
+$saved_schema    = $site->options[ Lichtbild_Settings::OPTION_SCHEMA ] ?? null;
 
 foreach ( $site->galleries as $gid => $row ) {
 	$site->galleries[ $gid ]['data'] = '';
@@ -4534,10 +4534,10 @@ foreach ( $site->galleries as $gid => $row ) {
 foreach ( $site->albums as $aid => $row ) {
 	$site->albums[ $aid ]['data'] = '';
 }
-unset( $site->options[ Atelier_Settings::OPTION_SCHEMA ] );
-unset( $site->options[ Atelier_Settings::OPTION_SLUG_SCHEME ] );
+unset( $site->options[ Lichtbild_Settings::OPTION_SCHEMA ] );
+unset( $site->options[ Lichtbild_Settings::OPTION_SLUG_SCHEME ] );
 
-$fresh = new Atelier_Settings();
+$fresh = new Lichtbild_Settings();
 $checks->assert(
 	'a site with no envira history serves generic paths',
 	'generic' === $fresh->slug_scheme()
@@ -4549,27 +4549,27 @@ $checks->assert(
 
 // 3. A migrated site kept no Envira records here, and must STILL serve Envira's paths: it was
 //    serving them before it migrated, which is the whole reason the schema alone settles it.
-unset( $site->options[ Atelier_Settings::OPTION_SLUG_SCHEME ] );
-$site->options[ Atelier_Settings::OPTION_SCHEMA ] = Atelier_Settings::SCHEMA_MIGRATED;
+unset( $site->options[ Lichtbild_Settings::OPTION_SLUG_SCHEME ] );
+$site->options[ Lichtbild_Settings::OPTION_SCHEMA ] = Lichtbild_Settings::SCHEMA_MIGRATED;
 
 $checks->assert(
 	'a migrated site serves envira paths regardless of records',
-	'envira' === ( new Atelier_Settings() )->slug_scheme(),
-	'scheme: ' . ( new Atelier_Settings() )->slug_scheme()
+	'envira' === ( new Lichtbild_Settings() )->slug_scheme(),
+	'scheme: ' . ( new Lichtbild_Settings() )->slug_scheme()
 );
 
 // 4. Pinning. Record `envira`, then remove every signal that would derive it, and the answer
 //    must not move. A re-deriving implementation answers `generic` here.
-$site->options[ Atelier_Settings::OPTION_SLUG_SCHEME ] = 'envira';
-unset( $site->options[ Atelier_Settings::OPTION_SCHEMA ] );
+$site->options[ Lichtbild_Settings::OPTION_SLUG_SCHEME ] = 'envira';
+unset( $site->options[ Lichtbild_Settings::OPTION_SCHEMA ] );
 
 $checks->assert(
 	'the scheme is recorded, not re-derived',
-	'envira' === ( new Atelier_Settings() )->slug_scheme(),
-	'scheme after removing every signal: ' . ( new Atelier_Settings() )->slug_scheme()
+	'envira' === ( new Lichtbild_Settings() )->slug_scheme(),
+	'scheme after removing every signal: ' . ( new Lichtbild_Settings() )->slug_scheme()
 );
 
-// A site that never had Envira starts on Atelier's own storage, and this is the check the whole
+// A site that never had Envira starts on Lichtbild's own storage, and this is the check the whole
 // change exists for.
 //
 // Schema 1 means "still on Envira's storage", not "new". Left at 1 a fresh install registered
@@ -4579,10 +4579,10 @@ $checks->assert(
 //
 // The second half is the one that matters and the one a "does it say migrated" check would miss:
 // what the site actually REGISTERS. `has_migrated()` returning true is a claim; registering
-// `atelier_gallery` is the consequence anybody would notice.
+// `lichtbild_gallery` is the consequence anybody would notice.
 $checks->expect(
-	'a site that never had envira starts on atelier storage',
-	'a fresh site registers atelier types, not envira ones',
+	'a site that never had envira starts on lichtbild storage',
+	'a fresh site registers lichtbild types, not envira ones',
 	'an unmigrated envira site is not flipped by that'
 );
 
@@ -4592,24 +4592,24 @@ foreach ( $site->galleries as $gid => $row ) {
 foreach ( $site->albums as $aid => $row ) {
 	$site->albums[ $aid ]['data'] = '';
 }
-unset( $site->options[ Atelier_Settings::OPTION_SCHEMA ] );
-unset( $site->options[ Atelier_Settings::OPTION_SLUG_SCHEME ] );
+unset( $site->options[ Lichtbild_Settings::OPTION_SCHEMA ] );
+unset( $site->options[ Lichtbild_Settings::OPTION_SLUG_SCHEME ] );
 
-$virgin = new Atelier_Settings();
+$virgin = new Lichtbild_Settings();
 
 $checks->assert(
-	'a site that never had envira starts on atelier storage',
+	'a site that never had envira starts on lichtbild storage',
 	$virgin->has_migrated() && 'generic' === $virgin->slug_scheme(),
 	'has_migrated: ' . var_export( $virgin->has_migrated(), true ) . ', scheme: ' . $virgin->slug_scheme()
 );
 
 $site->registered = array();
-( new Atelier_Post_Types( $virgin ) )->register_types();
+( new Lichtbild_Post_Types( $virgin ) )->register_types();
 
 $checks->assert(
-	'a fresh site registers atelier types, not envira ones',
-	in_array( Atelier_Post_Types::GALLERY, $site->registered, true )
-		&& ! in_array( Atelier_Repository::GALLERY_POST_TYPE, $site->registered, true ),
+	'a fresh site registers lichtbild types, not envira ones',
+	in_array( Lichtbild_Post_Types::GALLERY, $site->registered, true )
+		&& ! in_array( Lichtbild_Repository::GALLERY_POST_TYPE, $site->registered, true ),
 	'registered: ' . implode( ', ', $site->registered )
 );
 
@@ -4618,10 +4618,10 @@ $checks->assert(
 // wrong would tell 53 galleries' worth of live data that it had already moved.
 $site->galleries = $saved_galleries;
 $site->albums    = $saved_albums;
-unset( $site->options[ Atelier_Settings::OPTION_SCHEMA ] );
-unset( $site->options[ Atelier_Settings::OPTION_SLUG_SCHEME ] );
+unset( $site->options[ Lichtbild_Settings::OPTION_SCHEMA ] );
+unset( $site->options[ Lichtbild_Settings::OPTION_SLUG_SCHEME ] );
 
-$waiting = new Atelier_Settings();
+$waiting = new Lichtbild_Settings();
 
 $checks->assert(
 	'an unmigrated envira site is not flipped by that',
@@ -4641,10 +4641,10 @@ foreach ( $site->galleries as $gid => $row ) {
 foreach ( $site->albums as $aid => $row ) {
 	$site->albums[ $aid ]['data'] = '';
 }
-unset( $site->options[ Atelier_Settings::OPTION_SCHEMA ] );
-unset( $site->options[ Atelier_Settings::OPTION_SLUG_SCHEME ] );
+unset( $site->options[ Lichtbild_Settings::OPTION_SCHEMA ] );
+unset( $site->options[ Lichtbild_Settings::OPTION_SLUG_SCHEME ] );
 
-$fresh_rollback = ( new Atelier_Migration( new Atelier_Settings() ) )->rollback();
+$fresh_rollback = ( new Lichtbild_Migration( new Lichtbild_Settings() ) )->rollback();
 
 $checks->assert(
 	'a site with no envira history cannot roll back',
@@ -4656,26 +4656,26 @@ $checks->assert(
 
 $site->galleries = $saved_galleries;
 $site->albums    = $saved_albums;
-unset( $site->options[ Atelier_Settings::OPTION_SCHEMA ] );
-unset( $site->options[ Atelier_Settings::OPTION_SLUG_SCHEME ] );
+unset( $site->options[ Lichtbild_Settings::OPTION_SCHEMA ] );
+unset( $site->options[ Lichtbild_Settings::OPTION_SLUG_SCHEME ] );
 
 $site->galleries = $saved_galleries;
 $site->albums    = $saved_albums;
 if ( null !== $saved_schema ) {
-	$site->options[ Atelier_Settings::OPTION_SCHEMA ] = $saved_schema;
+	$site->options[ Lichtbild_Settings::OPTION_SCHEMA ] = $saved_schema;
 } else {
-	unset( $site->options[ Atelier_Settings::OPTION_SCHEMA ] );
+	unset( $site->options[ Lichtbild_Settings::OPTION_SCHEMA ] );
 }
-$site->options[ Atelier_Settings::OPTION_SLUG_SCHEME ] = 'envira';
+$site->options[ Lichtbild_Settings::OPTION_SLUG_SCHEME ] = 'envira';
 
-// Registration before migration: Atelier must stand aside while Envira is the one registering
+// Registration before migration: Lichtbild must stand aside while Envira is the one registering
 // these names, or the second call silently wins and the two plugins fight over the type.
 $site->registered = array();
-( new Atelier_Post_Types( $settings ) )->register_types();
+( new Lichtbild_Post_Types( $settings ) )->register_types();
 
 $checks->assert(
 	'an unmigrated site registers envira\'s types',
-	in_array( Atelier_Repository::GALLERY_POST_TYPE, $site->registered, true ),
+	in_array( Lichtbild_Repository::GALLERY_POST_TYPE, $site->registered, true ),
 	'registered: ' . implode( ', ', $site->registered )
 );
 
@@ -4684,8 +4684,8 @@ $checks->assert(
 // WordPress then drops the menu entry entirely.
 $checks->assert(
 	'the album menu hangs off the type that exists',
-	'edit.php?post_type=' . Atelier_Repository::GALLERY_POST_TYPE === ( $site->menu_parents[ Atelier_Repository::ALBUM_POST_TYPE ] ?? '' ),
-	'album parent: ' . wp_json_encode( $site->menu_parents[ Atelier_Repository::ALBUM_POST_TYPE ] ?? null )
+	'edit.php?post_type=' . Lichtbild_Repository::GALLERY_POST_TYPE === ( $site->menu_parents[ Lichtbild_Repository::ALBUM_POST_TYPE ] ?? '' ),
+	'album parent: ' . wp_json_encode( $site->menu_parents[ Lichtbild_Repository::ALBUM_POST_TYPE ] ?? null )
 );
 
 // The Envira-is-active guard is checked last because declaring the class cannot be undone.
@@ -4709,9 +4709,9 @@ $checks->assert(
 	'a refused migration renamed rows anyway'
 );
 
-// With Envira active and nothing migrated, Atelier must not register anything at all.
+// With Envira active and nothing migrated, Lichtbild must not register anything at all.
 $site->registered = array();
-( new Atelier_Post_Types( $settings ) )->register_types();
+( new Lichtbild_Post_Types( $settings ) )->register_types();
 
 $checks->assert(
 	'an unmigrated site stands aside for envira',
@@ -4719,32 +4719,32 @@ $checks->assert(
 	'registered alongside Envira: ' . implode( ', ', $site->registered )
 );
 
-// But once the data has moved, standing aside would leave `atelier_gallery` registered by
+// But once the data has moved, standing aside would leave `lichtbild_gallery` registered by
 // nobody — which takes every gallery, album and tag URL off the site rather than merely
 // deferring the shortcode. Envira registering `envira` alongside is harmless by then.
-$site->options[ Atelier_Settings::OPTION_SCHEMA ] = Atelier_Settings::SCHEMA_MIGRATED;
+$site->options[ Lichtbild_Settings::OPTION_SCHEMA ] = Lichtbild_Settings::SCHEMA_MIGRATED;
 $site->registered                                = array();
 $site->rewrite_slugs                             = array();
-( new Atelier_Post_Types( $settings ) )->register_types();
+( new Lichtbild_Post_Types( $settings ) )->register_types();
 
 $checks->assert(
 	'a migrated site registers its types even with envira active',
-	in_array( Atelier_Post_Types::GALLERY, $site->registered, true )
-		&& in_array( Atelier_Post_Types::ALBUM, $site->registered, true )
-		&& in_array( Atelier_Post_Types::TAG, $site->registered, true ),
+	in_array( Lichtbild_Post_Types::GALLERY, $site->registered, true )
+		&& in_array( Lichtbild_Post_Types::ALBUM, $site->registered, true )
+		&& in_array( Lichtbild_Post_Types::TAG, $site->registered, true ),
 	'registered: ' . implode( ', ', $site->registered )
 );
 
 // And the paths stay Envira's in both directions, because they are indexed and canonical.
 $checks->assert(
 	'registration keeps envira url paths',
-	'envira' === ( $site->rewrite_slugs[ Atelier_Post_Types::GALLERY ] ?? '' )
-		&& 'envira_album' === ( $site->rewrite_slugs[ Atelier_Post_Types::ALBUM ] ?? '' )
-		&& 'envira-tag' === ( $site->rewrite_slugs[ Atelier_Post_Types::TAG ] ?? '' ),
+	'envira' === ( $site->rewrite_slugs[ Lichtbild_Post_Types::GALLERY ] ?? '' )
+		&& 'envira_album' === ( $site->rewrite_slugs[ Lichtbild_Post_Types::ALBUM ] ?? '' )
+		&& 'envira-tag' === ( $site->rewrite_slugs[ Lichtbild_Post_Types::TAG ] ?? '' ),
 	'slugs: ' . wp_json_encode( $site->rewrite_slugs )
 );
 
-unset( $site->options[ Atelier_Settings::OPTION_SCHEMA ] );
+unset( $site->options[ Lichtbild_Settings::OPTION_SCHEMA ] );
 
 
 // ============================================================================
@@ -4792,18 +4792,18 @@ if ( 0 === $locked_id ) {
 	exit( 2 );
 }
 
-$standalone = new Atelier_Standalone( new Atelier_Repository(), $renderer, $settings );
+$standalone = new Lichtbild_Standalone( new Lichtbild_Repository(), $renderer, $settings );
 
-$site->options[ Atelier_Settings::OPTION_STANDALONE ] = 1;
+$site->options[ Lichtbild_Settings::OPTION_STANDALONE ] = 1;
 $site->current_post = $locked_id;
 $site->protected    = array();
 
 // Envira is active from here on (the eval above), which is exactly the state a fresh install
-// is in. On `auto` Atelier must stand aside on the gallery's own permalink too, not only for
+// is in. On `auto` Lichtbild must stand aside on the gallery's own permalink too, not only for
 // the shortcode -- Envira has a standalone filter of its own, so both running means the page
 // renders the gallery twice. That was live for about a minute before the deployment control
 // caught it.
-$site->options['atelier_takeover'] = 'auto';
+$site->options['lichtbild_takeover'] = 'auto';
 
 $checks->assert(
 	'standalone defers to envira on the gallery\'s own page',
@@ -4811,8 +4811,8 @@ $checks->assert(
 	'appended a second copy of the gallery alongside Envira\'s'
 );
 
-// The rest of this section is about what Atelier does when it *is* the one rendering.
-$site->options['atelier_takeover'] = 'always';
+// The rest of this section is about what Lichtbild does when it *is* the one rendering.
+$site->options['lichtbild_takeover'] = 'always';
 
 // The control. "Nothing was appended" is also what a standalone renderer that does not work
 // at all produces, so the guard below proves nothing until this has been seen to append.
@@ -4836,7 +4836,7 @@ $checks->assert(
 
 // The predicate's other leg, through this path. WordPress would not serve a draft page to a
 // visitor at all, so in production this is belt to core's braces — but that impossibility lives
-// in core's query rather than in `Atelier_Standalone`, and a guard whose only defence is another
+// in core's query rather than in `Lichtbild_Standalone`, and a guard whose only defence is another
 // module's behaviour is one nobody notices losing. Here the filter is called directly, so the
 // leg can be made to fail.
 $standalone_status = $site->galleries[ $locked_id ]['status'];
@@ -4861,23 +4861,23 @@ $checks->assert(
 
 // And the endpoints, which are reachable by anyone who knows the gallery ID whether or not
 // the page was ever rendered.
-$ajax = new Atelier_Ajax( new Atelier_Repository(), $renderer );
+$ajax = new Lichtbild_Ajax( new Lichtbild_Repository(), $renderer );
 
 /**
  * Calls an AJAX endpoint and returns what it sent.
  *
- * @param Atelier_Ajax $ajax   The handler.
+ * @param Lichtbild_Ajax $ajax   The handler.
  * @param string      $method Endpoint method name.
  *
  * @return array{halt:string,body:string} How it ended, and the JSON it emitted.
  */
-$call_ajax = function ( Atelier_Ajax $ajax, $method ) {
+$call_ajax = function ( Lichtbild_Ajax $ajax, $method ) {
 	ob_start();
 	$halt = '';
 
 	try {
 		$ajax->$method();
-	} catch ( Atelier_Test_Halt $e ) {
+	} catch ( Lichtbild_Test_Halt $e ) {
 		$halt = $e->getMessage();
 	}
 
@@ -4921,7 +4921,7 @@ $checks->assert(
 // an absent one because it is the state a real cached page produces -- present, well-formed,
 // and no longer valid.
 $site->protected     = array();
-$_REQUEST['nonce']   = 'nonce:atelier-generated-before-the-tick-rolled';
+$_REQUEST['nonce']   = 'nonce:lichtbild-generated-before-the-tick-rolled';
 
 $stale_items = $call_ajax( $ajax, 'handle_items' );
 $stale_page  = $call_ajax( $ajax, 'handle_page' );
@@ -4964,19 +4964,19 @@ $site->protected = array();
 /**
  * Calls an endpoint and reports a fatal as data rather than ending the run.
  *
- * @param Atelier_Ajax $ajax   The handler.
+ * @param Lichtbild_Ajax $ajax   The handler.
  * @param string      $method Endpoint method name.
  *
  * @return array{halt:string,body:string,fatal:string} How it ended, what it sent, what it threw.
  */
-$call_ajax_hard = function ( Atelier_Ajax $ajax, $method ) {
+$call_ajax_hard = function ( Lichtbild_Ajax $ajax, $method ) {
 	ob_start();
 	$halt  = '';
 	$fatal = '';
 
 	try {
 		$ajax->$method();
-	} catch ( Atelier_Test_Halt $stopped ) {
+	} catch ( Lichtbild_Test_Halt $stopped ) {
 		$halt = $stopped->getMessage();
 	} catch ( Throwable $thrown ) {
 		$fatal = get_class( $thrown ) . ': ' . $thrown->getMessage();
@@ -5036,7 +5036,7 @@ $checks->assert(
 $album_id = 0;
 
 foreach ( array_keys( $site->albums ) as $candidate ) {
-	$candidate_album = ( new Atelier_Repository() )->album( $candidate );
+	$candidate_album = ( new Lichtbild_Repository() )->album( $candidate );
 
 	if ( null !== $candidate_album && $candidate_album->count() > 0 ) {
 		$album_id = $candidate;
@@ -5064,11 +5064,11 @@ if ( $album_id > 0 ) {
 	// Asserted on the member's *title*, because that is content rather than a length: an
 	// earlier version of the album check compared `strlen()` against the input and passed just
 	// as happily on markup that leaked.
-	$album_members = atelier_album_found( $checks, ( new Atelier_Repository() )->album( $album_id ), "album #{$album_id} unreadable through the envira path" )->gallery_ids();
+	$album_members = lichtbild_album_found( $checks, ( new Lichtbild_Repository() )->album( $album_id ), "album #{$album_id} unreadable through the envira path" )->gallery_ids();
 	$victim        = 0;
 
 	foreach ( $album_members as $member ) {
-		$member_gallery = ( new Atelier_Repository() )->gallery( $member );
+		$member_gallery = ( new Lichtbild_Repository() )->gallery( $member );
 
 		if ( null !== $member_gallery && $member_gallery->count() > 0 && '' !== get_the_title( $member ) ) {
 			$victim = $member;
@@ -5081,10 +5081,10 @@ if ( $album_id > 0 ) {
 		$victim_title = get_the_title( $victim );
 
 		$site->protected = array();
-		$public_album    = atelier_render_album_found( $checks, $renderer, ( new Atelier_Repository() )->album( $album_id ), new Atelier_Repository(), "album #{$album_id} unreadable through the envira path" );
+		$public_album    = lichtbild_render_album_found( $checks, $renderer, ( new Lichtbild_Repository() )->album( $album_id ), new Lichtbild_Repository(), "album #{$album_id} unreadable through the envira path" );
 
 		$site->protected = array( $victim );
-		$locked_album    = atelier_render_album_found( $checks, $renderer, ( new Atelier_Repository() )->album( $album_id ), new Atelier_Repository(), "album #{$album_id} unreadable through the envira path" );
+		$locked_album    = lichtbild_render_album_found( $checks, $renderer, ( new Lichtbild_Repository() )->album( $album_id ), new Lichtbild_Repository(), "album #{$album_id} unreadable through the envira path" );
 
 		$site->protected = array();
 
@@ -5104,13 +5104,13 @@ if ( $album_id > 0 ) {
 
 		// The other half of the guard, and not covered by the password leg: a protected post is
 		// `publish`, and a draft one carries no password, so neither check implies the other.
-		// `Atelier_Repository::resolve_id()` matches a numeric ID on post type alone.
+		// `Lichtbild_Repository::resolve_id()` matches a numeric ID on post type alone.
 		$victim_status = $site->galleries[ $victim ]['status'];
 
 		$site->galleries[ $victim ]['status'] = 'draft';
 		$site->capabilities                   = false;
 
-		$draft_album = atelier_render_album_found( $checks, $renderer, ( new Atelier_Repository() )->album( $album_id ), new Atelier_Repository(), "album #{$album_id} unreadable through the envira path" );
+		$draft_album = lichtbild_render_album_found( $checks, $renderer, ( new Lichtbild_Repository() )->album( $album_id ), new Lichtbild_Repository(), "album #{$album_id} unreadable through the envira path" );
 
 		$site->galleries[ $victim ]['status'] = $victim_status;
 		$site->capabilities                   = true;
@@ -5142,7 +5142,7 @@ $prime_target = 0;
 $prime_size   = 0;
 
 foreach ( array_keys( $site->galleries ) as $candidate ) {
-	$candidate_gallery = ( new Atelier_Repository() )->gallery( $candidate );
+	$candidate_gallery = ( new Lichtbild_Repository() )->gallery( $candidate );
 
 	if ( null !== $candidate_gallery && $candidate_gallery->count() > $prime_size ) {
 		$prime_size   = $candidate_gallery->count();
@@ -5152,7 +5152,7 @@ foreach ( array_keys( $site->galleries ) as $candidate ) {
 
 if ( $prime_target > 0 ) {
 	$_REQUEST['gallery'] = $prime_target;
-	$_REQUEST['nonce']   = 'atelier';
+	$_REQUEST['nonce']   = 'lichtbild';
 
 	$site->primed = array();
 
@@ -5163,7 +5163,7 @@ if ( $prime_target > 0 ) {
 	ob_start();
 
 	try {
-		( new Atelier_Ajax( new Atelier_Repository(), $renderer ) )->handle_items();
+		( new Lichtbild_Ajax( new Lichtbild_Repository(), $renderer ) )->handle_items();
 	} catch ( Exception $stopped ) {
 		unset( $stopped );
 	}
@@ -5193,8 +5193,8 @@ if ( $prime_target > 0 ) {
 // The early scan exists so the stylesheet reaches the head rather than the footer. It used to
 // match `[envira-gallery]` unconditionally, which meant that with both plugins active and the
 // takeover on `auto` — the state a fresh install is in, and the one the setting exists for —
-// Atelier loaded a stylesheet and two scripts onto a page Envira was rendering. About 940 bytes
-// and three requests on the live site, no visual change, and enough to make "install Atelier and
+// Lichtbild loaded a stylesheet and two scripts onto a page Envira was rendering. About 940 bytes
+// and three requests on the live site, no visual change, and enough to make "install Lichtbild and
 // change nothing" false.
 //
 // Both directions are asserted. "It did not enqueue" is also what a scan that matches nothing
@@ -5220,14 +5220,14 @@ $site->post_content[ $locked_id ] = 'text [envira-gallery id="' . $locked_id . '
  * @return bool Whether the stylesheet was enqueued.
  */
 $scan_enqueues = function ( $mode ) {
-	$site = Atelier_Test_Site::$instance;
+	$site = Lichtbild_Test_Site::$instance;
 
-	$site->options['atelier_takeover'] = $mode;
-	$GLOBALS['atelier_test_enqueued']  = array();
+	$site->options['lichtbild_takeover'] = $mode;
+	$GLOBALS['lichtbild_test_enqueued']  = array();
 
-	( new Atelier_Assets( new Atelier_Settings() ) )->maybe_enqueue_early();
+	( new Lichtbild_Assets( new Lichtbild_Settings() ) )->maybe_enqueue_early();
 
-	return isset( $GLOBALS['atelier_test_enqueued']['style:atelier'] );
+	return isset( $GLOBALS['lichtbild_test_enqueued']['style:lichtbild'] );
 };
 
 $aside = $scan_enqueues( 'never' );
@@ -5248,16 +5248,16 @@ $checks->assert(
 
 // The control for the control: our own shortcode is never conditional, so a scan that had simply
 // stopped matching anything would pass the `never` case above and fail here.
-$site->post_content[ $locked_id ] = 'text [atelier-gallery id="' . $locked_id . '"] more text';
+$site->post_content[ $locked_id ] = 'text [lichtbild-gallery id="' . $locked_id . '"] more text';
 
 $checks->assert(
 	'the early scan still claims its own shortcodes',
 	true === $scan_enqueues( 'never' ),
-	'[atelier-gallery] is ours in every mode, and the scan missed it'
+	'[lichtbild-gallery] is ours in every mode, and the scan missed it'
 );
 
 $site->current_post              = 0;
-$GLOBALS['atelier_test_enqueued'] = array();
+$GLOBALS['lichtbild_test_enqueued'] = array();
 
 unset( $site->post_content[ $locked_id ] );
 
@@ -5266,8 +5266,8 @@ unset( $site->post_content[ $locked_id ] );
 //
 // Both classes were loaded by this suite for the first time in 26.8.3, because until the
 // harness-completeness guard above existed nothing noticed they were absent. That is worth
-// stating plainly: `Atelier_Shortcode` is a publishing path -- the one that deliberately does not
-// consult the visibility predicate -- and it had no coverage at all, while `Atelier` is where
+// stating plainly: `Lichtbild_Shortcode` is a publishing path -- the one that deliberately does not
+// consult the visibility predicate -- and it had no coverage at all, while `Lichtbild` is where
 // every constructor signature in the plugin is actually called.
 //
 // Requiring the files without exercising them would have satisfied the guard and covered
@@ -5282,7 +5282,7 @@ $checks->expect(
 );
 
 /**
- * Registers the shortcodes under one takeover mode and reports which tags Atelier claimed.
+ * Registers the shortcodes under one takeover mode and reports which tags Lichtbild claimed.
  *
  * The slug scheme is restored afterwards, and restoring it means *unsetting* it when it was
  * unset: `slug_scheme()` records its answer on first read, so a call made to observe the site
@@ -5295,27 +5295,27 @@ $checks->expect(
  * @return string[] Claimed tags, sorted.
  */
 $claimed_tags = function ( $mode, $scheme = null ) use ( $renderer ) {
-	$site = Atelier_Test_Site::$instance;
+	$site = Lichtbild_Test_Site::$instance;
 
-	$before = $site->options[ Atelier_Settings::OPTION_SLUG_SCHEME ] ?? null;
+	$before = $site->options[ Lichtbild_Settings::OPTION_SLUG_SCHEME ] ?? null;
 
 	if ( null !== $scheme ) {
-		$site->options[ Atelier_Settings::OPTION_SLUG_SCHEME ] = $scheme;
+		$site->options[ Lichtbild_Settings::OPTION_SLUG_SCHEME ] = $scheme;
 	}
 
-	$site->options['atelier_takeover']   = $mode;
-	$GLOBALS['atelier_test_shortcodes'] = array();
+	$site->options['lichtbild_takeover']   = $mode;
+	$GLOBALS['lichtbild_test_shortcodes'] = array();
 
-	$settings = new Atelier_Settings();
-	( new Atelier_Shortcode( new Atelier_Repository(), $renderer, $settings ) )->register_shortcodes();
+	$settings = new Lichtbild_Settings();
+	( new Lichtbild_Shortcode( new Lichtbild_Repository(), $renderer, $settings ) )->register_shortcodes();
 
-	$tags = array_keys( $GLOBALS['atelier_test_shortcodes'] );
+	$tags = array_keys( $GLOBALS['lichtbild_test_shortcodes'] );
 	sort( $tags );
 
 	if ( null === $before ) {
-		unset( $site->options[ Atelier_Settings::OPTION_SLUG_SCHEME ] );
+		unset( $site->options[ Lichtbild_Settings::OPTION_SLUG_SCHEME ] );
 	} else {
-		$site->options[ Atelier_Settings::OPTION_SLUG_SCHEME ] = $before;
+		$site->options[ Lichtbild_Settings::OPTION_SLUG_SCHEME ] = $before;
 	}
 
 	return $tags;
@@ -5326,7 +5326,7 @@ $always = $claimed_tags( 'always' );
 
 $checks->assert(
 	'the shortcode registry follows the takeover setting',
-	array( 'atelier-album', 'atelier-gallery' ) === $never,
+	array( 'lichtbild-album', 'lichtbild-gallery' ) === $never,
 	'on "never" it claimed: ' . implode( ', ', $never )
 );
 
@@ -5335,7 +5335,7 @@ $checks->assert(
 //
 // The expected array is in `sort()` order, not in the order the tags are registered, and that
 // distinction had never mattered until the plugin was renamed: under the old name the two orders
-// happened to coincide, so the literal could be read either way and nobody had to decide. `atelier`
+// happened to coincide, so the literal could be read either way and nobody had to decide. `lichtbild`
 // sorts BEFORE `envira` where the old name sorted after, and the mechanical rename -- correctly --
 // left the order alone, so this check went red. It was the only one of 220 that did.
 //
@@ -5345,7 +5345,7 @@ $checks->assert(
 // real ordering regression as well.
 $checks->assert(
 	'the shortcode registry follows the takeover setting',
-	array( 'atelier-album', 'atelier-gallery', 'envira-album', 'envira-gallery' ) === $always,
+	array( 'envira-album', 'envira-gallery', 'lichtbild-album', 'lichtbild-gallery' ) === $always,
 	'on "always" it claimed: ' . implode( ', ', $always )
 );
 
@@ -5363,23 +5363,23 @@ $envira_scheme  = $claimed_tags( 'always', 'envira' );
 
 $checks->assert(
 	'a site with no envira history claims no envira shortcodes',
-	array( 'atelier-album', 'atelier-gallery' ) === $generic_scheme,
+	array( 'lichtbild-album', 'lichtbild-gallery' ) === $generic_scheme,
 	'on a generic site with takeover "always" it claimed: ' . implode( ', ', $generic_scheme )
 );
 
 $checks->assert(
 	'a site with an envira history still claims them',
-	array( 'atelier-album', 'atelier-gallery', 'envira-album', 'envira-gallery' ) === $envira_scheme,
+	array( 'envira-album', 'envira-gallery', 'lichtbild-album', 'lichtbild-gallery' ) === $envira_scheme,
 	'on an envira site with takeover "always" it claimed: ' . implode( ', ', $envira_scheme )
 );
 
-$shortcode = new Atelier_Shortcode( new Atelier_Repository(), $renderer, new Atelier_Settings() );
+$shortcode = new Lichtbild_Shortcode( new Lichtbild_Repository(), $renderer, new Lichtbild_Settings() );
 $rendered  = $shortcode->gallery( array( 'id' => (string) $locked_id ) );
 
 $checks->assert(
 	'the gallery shortcode renders its gallery',
-	false !== strpos( $rendered, 'class="atelier-wrap"' )
-		&& false !== strpos( $rendered, 'id="atelier-' . $locked_id . '-wrap"' ),
+	false !== strpos( $rendered, 'class="lichtbild-wrap"' )
+		&& false !== strpos( $rendered, 'id="lichtbild-' . $locked_id . '-wrap"' ),
 	sprintf( 'shortcode for gallery %d produced %d bytes', $locked_id, strlen( $rendered ) )
 );
 
@@ -5422,7 +5422,7 @@ $site->galleries[ $locked_id ]['status'] = 'draft';
 $site->capabilities                      = false;
 $site->build_tables();
 
-$draft_shortcode = ( new Atelier_Shortcode( new Atelier_Repository(), $renderer, new Atelier_Settings() ) )
+$draft_shortcode = ( new Lichtbild_Shortcode( new Lichtbild_Repository(), $renderer, new Lichtbild_Settings() ) )
 	->gallery( array( 'id' => (string) $locked_id ) );
 
 $site->galleries[ $locked_id ]['status'] = $shortcode_status;
@@ -5440,7 +5440,7 @@ $checks->assert(
 $shortcode_album = 0;
 
 foreach ( array_keys( $site->albums ) as $album_candidate ) {
-	if ( null !== ( new Atelier_Repository() )->album( (int) $album_candidate ) ) {
+	if ( null !== ( new Lichtbild_Repository() )->album( (int) $album_candidate ) ) {
 		$shortcode_album = (int) $album_candidate;
 
 		break;
@@ -5452,7 +5452,7 @@ if ( $shortcode_album > 0 ) {
 
 	$site->protected = array( $shortcode_album );
 
-	$album_locked = ( new Atelier_Shortcode( new Atelier_Repository(), $renderer, new Atelier_Settings() ) )
+	$album_locked = ( new Lichtbild_Shortcode( new Lichtbild_Repository(), $renderer, new Lichtbild_Settings() ) )
 		->album( array( 'id' => (string) $shortcode_album ) );
 
 	$site->protected = array();
@@ -5467,7 +5467,7 @@ if ( $shortcode_album > 0 ) {
 // ============================================================================
 // The blocks, which are the fifth publishing path -- and render none of it themselves.
 //
-// There is exactly one property worth asserting about `Atelier_Block`, and it is stated as an
+// There is exactly one property worth asserting about `Lichtbild_Block`, and it is stated as an
 // equality rather than as a list of behaviours: what a block renders is byte-for-byte what the
 // shortcode renders. Everything the four earlier paths had to be taught separately -- the
 // password gate, the status gate, the empty answer for a row that is not there -- follows from
@@ -5492,22 +5492,22 @@ $checks->expect(
 	'the picker offers the albums the reader can read'
 );
 
-$GLOBALS['atelier_test_blocks']     = array();
-$GLOBALS['atelier_test_inline']     = array();
-$GLOBALS['atelier_test_registered'] = array(
+$GLOBALS['lichtbild_test_blocks']     = array();
+$GLOBALS['lichtbild_test_inline']     = array();
+$GLOBALS['lichtbild_test_registered'] = array(
 	'style'  => array(),
 	'script' => array(),
 );
-$GLOBALS['atelier_test_hooks']      = array();
+$GLOBALS['lichtbild_test_hooks']      = array();
 
-// Both halves of what `init` does in production, in the order `Atelier::boot()` puts them in.
-// Registering the blocks alone would leave `atelier` unregistered and the dependency check below
+// Both halves of what `init` does in production, in the order `Lichtbild::boot()` puts them in.
+// Registering the blocks alone would leave `lichtbild` unregistered and the dependency check below
 // would fail for a reason that has nothing to do with the blocks.
-$block_assets = new Atelier_Test_Assets( new Atelier_Settings() );
+$block_assets = new Lichtbild_Test_Assets( new Lichtbild_Settings() );
 $block_assets->register();
 $block_assets->register_assets();
 
-$block = new Atelier_Block( $shortcode, new Atelier_Repository() );
+$block = new Lichtbild_Block( $shortcode, new Lichtbild_Repository() );
 
 // Registration on its own must read nothing. It runs on `init`, so on every request including
 // every front-end page view -- and building the picker's choices reads each gallery row through
@@ -5515,28 +5515,28 @@ $block = new Atelier_Block( $shortcode, new Atelier_Repository() );
 // block editor looks at. It cost nothing visible: no rendered byte changes either way, which is
 // why the only way to state it is as a count. Found by measuring before deploying, not by a
 // check, and this is the check.
-$GLOBALS['atelier_test_queries'] = 0;
+$GLOBALS['lichtbild_test_queries'] = 0;
 
 $block->register();
 $block->register_blocks();
 
-$register_reads = $GLOBALS['atelier_test_queries'];
+$register_reads = $GLOBALS['lichtbild_test_queries'];
 
 $block->enqueue_editor_data();
 
-$editor_reads = $GLOBALS['atelier_test_queries'] - $register_reads;
+$editor_reads = $GLOBALS['lichtbild_test_queries'] - $register_reads;
 
-$block_meta  = json_decode( (string) file_get_contents( ATELIER_DIR . 'blocks/gallery/block.json' ), true );
-$album_meta  = json_decode( (string) file_get_contents( ATELIER_DIR . 'blocks/album/block.json' ), true );
-$registered  = $GLOBALS['atelier_test_blocks'];
+$block_meta  = json_decode( (string) file_get_contents( LICHTBILD_DIR . 'blocks/gallery/block.json' ), true );
+$album_meta  = json_decode( (string) file_get_contents( LICHTBILD_DIR . 'blocks/album/block.json' ), true );
+$registered  = $GLOBALS['lichtbild_test_blocks'];
 
 $checks->assert(
 	'both blocks are registered from their metadata',
-	isset( $registered['atelier/gallery'], $registered['atelier/album'] )
-		&& 'number' === ( $registered['atelier/gallery']['attributes']['id']['type'] ?? '' )
-		&& 'number' === ( $registered['atelier/album']['attributes']['id']['type'] ?? '' )
-		&& is_callable( $registered['atelier/gallery']['render_callback'] ?? null )
-		&& is_callable( $registered['atelier/album']['render_callback'] ?? null ),
+	isset( $registered['lichtbild/gallery'], $registered['lichtbild/album'] )
+		&& 'number' === ( $registered['lichtbild/gallery']['attributes']['id']['type'] ?? '' )
+		&& 'number' === ( $registered['lichtbild/album']['attributes']['id']['type'] ?? '' )
+		&& is_callable( $registered['lichtbild/gallery']['render_callback'] ?? null )
+		&& is_callable( $registered['lichtbild/album']['render_callback'] ?? null ),
 	'registered: ' . ( empty( $registered ) ? '(nothing)' : implode( ', ', array_keys( $registered ) ) )
 );
 
@@ -5600,7 +5600,7 @@ $site->galleries[ $locked_id ]['status'] = 'draft';
 $site->capabilities                      = false;
 $site->build_tables();
 
-$block_draft = ( new Atelier_Block( $shortcode, new Atelier_Repository() ) )
+$block_draft = ( new Lichtbild_Block( $shortcode, new Lichtbild_Repository() ) )
 	->render_gallery( array( 'id' => $locked_id ) );
 
 $site->galleries[ $locked_id ]['status'] = $block_status;
@@ -5617,19 +5617,19 @@ $checks->assert(
 //
 // The handles are read out of `block.json` rather than repeated here, so this compares the two
 // files that have to agree instead of comparing each against a third copy of the same string.
-// Get it wrong and `window.AtelierBlocks` is never printed, the editor script returns at its
+// Get it wrong and `window.LichtbildBlocks` is never printed, the editor script returns at its
 // first line, and both blocks are simply absent from the inserter -- with no error anywhere.
 $block_inline = null;
 
-foreach ( $GLOBALS['atelier_test_inline'] as $entry ) {
-	if ( 0 === strpos( $entry['data'], 'window.AtelierBlocks' ) ) {
+foreach ( $GLOBALS['lichtbild_test_inline'] as $entry ) {
+	if ( 0 === strpos( $entry['data'], 'window.LichtbildBlocks' ) ) {
 		$block_inline = $entry;
 	}
 }
 
 $block_data = null;
 
-if ( null !== $block_inline && preg_match( '/^window\.AtelierBlocks = (.*);$/s', $block_inline['data'], $block_json ) ) {
+if ( null !== $block_inline && preg_match( '/^window\.LichtbildBlocks = (.*);$/s', $block_inline['data'], $block_json ) ) {
 	$block_data = json_decode( $block_json[1], true );
 }
 
@@ -5639,10 +5639,10 @@ $checks->assert(
 		&& $block_inline['handle'] === ( $block_meta['editorScript'] ?? '' )
 		&& $block_meta['editorScript'] === ( $album_meta['editorScript'] ?? '' )
 		&& 'before' === $block_inline['position']
-		&& isset( $GLOBALS['atelier_test_registered']['script'][ $block_meta['editorScript'] ] )
+		&& isset( $GLOBALS['lichtbild_test_registered']['script'][ $block_meta['editorScript'] ] )
 		&& is_array( $block_data ),
 	null === $block_inline
-		? 'no window.AtelierBlocks was printed at all'
+		? 'no window.LichtbildBlocks was printed at all'
 		: sprintf( 'attached to "%s" %s, block.json names "%s"', $block_inline['handle'], $block_inline['position'], $block_meta['editorScript'] )
 );
 
@@ -5651,7 +5651,7 @@ $checks->assert(
 // the one screen that reads the answer.
 $editor_data_hook = '';
 
-foreach ( $GLOBALS['atelier_test_hooks'] as $entry ) {
+foreach ( $GLOBALS['lichtbild_test_hooks'] as $entry ) {
 	if ( is_array( $entry['callback'] ) && 'enqueue_editor_data' === ( $entry['callback'][1] ?? '' ) ) {
 		$editor_data_hook = $entry['hook'];
 	}
@@ -5672,10 +5672,10 @@ $checks->assert(
 
 // `WP_Styles` drops a dependency that was never registered without a word, so the failure mode
 // is an unstyled preview and a clean error log. Asserted against the registry rather than
-// against the literal string `atelier`: what matters is that every dependency it names exists.
-$block_style = $GLOBALS['atelier_test_registered']['style'][ $block_meta['editorStyle'] ] ?? null;
+// against the literal string `lichtbild`: what matters is that every dependency it names exists.
+$block_style = $GLOBALS['lichtbild_test_registered']['style'][ $block_meta['editorStyle'] ] ?? null;
 $style_deps  = null === $block_style ? array() : $block_style['deps'];
-$missing_dep = array_values( array_diff( $style_deps, array_keys( $GLOBALS['atelier_test_registered']['style'] ) ) );
+$missing_dep = array_values( array_diff( $style_deps, array_keys( $GLOBALS['lichtbild_test_registered']['style'] ) ) );
 
 $checks->assert(
 	'the editor stylesheet is laid out by the front-end one',
@@ -5686,12 +5686,12 @@ $checks->assert(
 );
 
 // And the hook that makes the dependency above resolvable at all. `wp_enqueue_scripts` never
-// fires in the admin, so registering there leaves `atelier` unknown in the editor and the
+// fires in the admin, so registering there leaves `lichtbild` unknown in the editor and the
 // stylesheet the check above just proved is depended upon is dropped anyway. The two together
 // are the property; either alone is satisfied by an unstyled preview.
 $asset_hook = '';
 
-foreach ( $GLOBALS['atelier_test_hooks'] as $entry ) {
+foreach ( $GLOBALS['lichtbild_test_hooks'] as $entry ) {
 	if ( is_array( $entry['callback'] ) && 'register_assets' === ( $entry['callback'][1] ?? '' ) ) {
 		$asset_hook = $entry['hook'];
 	}
@@ -5718,7 +5718,7 @@ foreach ( (array) ( $block_data['galleries'] ?? array() ) as $option ) {
 $readable_ids = array();
 
 foreach ( array_keys( $site->galleries ) as $candidate ) {
-	if ( null !== ( new Atelier_Repository() )->gallery( (int) $candidate ) ) {
+	if ( null !== ( new Lichtbild_Repository() )->gallery( (int) $candidate ) ) {
 		$readable_ids[] = (int) $candidate;
 	}
 }
@@ -5748,7 +5748,7 @@ foreach ( (array) ( $block_data['albums'] ?? array() ) as $option ) {
 $readable_albums = array();
 
 foreach ( array_keys( $site->albums ) as $candidate ) {
-	if ( null !== ( new Atelier_Repository() )->album( (int) $candidate ) ) {
+	if ( null !== ( new Lichtbild_Repository() )->album( (int) $candidate ) ) {
 		$readable_albums[] = (int) $candidate;
 	}
 }
@@ -5762,15 +5762,15 @@ $checks->assert(
 	sprintf( '%d offered, %d readable', count( $pickable_albums ), count( $readable_albums ) )
 );
 
-$GLOBALS['atelier_test_hooks']      = array();
-$GLOBALS['atelier_test_shortcodes'] = array();
+$GLOBALS['lichtbild_test_hooks']      = array();
+$GLOBALS['lichtbild_test_shortcodes'] = array();
 
-$container = new Atelier();
+$container = new Lichtbild();
 $container->boot();
 
 $hooked = array();
 
-foreach ( $GLOBALS['atelier_test_hooks'] as $entry ) {
+foreach ( $GLOBALS['lichtbild_test_hooks'] as $entry ) {
 	$hooked[] = $entry['hook'];
 }
 
@@ -5781,14 +5781,14 @@ $absent  = array_values( array_diff( $wanted, $hooked ) );
 
 $checks->assert(
 	'the container constructs and registers its hooks',
-	empty( $absent ) && $container->repository() instanceof Atelier_Repository,
+	empty( $absent ) && $container->repository() instanceof Lichtbild_Repository,
 	'hooks never registered: ' . ( empty( $absent ) ? '(none)' : implode( ', ', $absent ) )
 );
 
-$GLOBALS['atelier_test_hooks']      = array();
-$GLOBALS['atelier_test_shortcodes'] = array();
+$GLOBALS['lichtbild_test_hooks']      = array();
+$GLOBALS['lichtbild_test_shortcodes'] = array();
 
-unset( $_REQUEST['gallery'], $_REQUEST['nonce'], $site->options[ Atelier_Settings::OPTION_STANDALONE ], $site->options['atelier_takeover'] );
+unset( $_REQUEST['gallery'], $_REQUEST['nonce'], $site->options[ Lichtbild_Settings::OPTION_STANDALONE ], $site->options['lichtbild_takeover'] );
 
 printf( "\nfixture: %s\n", basename( $fixture ) );
 printf( "galleries in fixture: %d, rendered: %d, skipped: %d\n", count( $site->galleries ), $galleries_seen, count( $skipped ) );

@@ -3,20 +3,20 @@
 
     uv run --with pymysql --with phpserialize python tools/export-custom-css.py > custom.css
 
-Atelier stored a free-text CSS block per gallery through 26.8.21 and printed it in an inline
+Lichtbild stored a free-text CSS block per gallery through 26.8.21 and printed it in an inline
 `<style>` element. 26.8.22 removed that: the wordpress.org guidelines do not permit a plugin to
 store and emit arbitrary CSS entered through its own UI. This is how the CSS comes back out --
 rewritten onto the ids it will need, one commented block per gallery, for
 **Appearance -> Customize -> Additional CSS**.
 
-It is lossless because the element ids do not move: a gallery is `#atelier-<id>` and its wrapper
-`#atelier-<id>-wrap` whether the rule arrives inline from a plugin or from the Customizer. Only
+It is lossless because the element ids do not move: a gallery is `#lichtbild-<id>` and its wrapper
+`#lichtbild-<id>-wrap` whether the rule arrives inline from a plugin or from the Customizer. Only
 the delivery changes.
 
 **THERE ARE TWO PLACES THE CSS CAN BE, and reading only the obvious one silently returns a stale
 value.** A migrated site keeps Envira's `_eg_gallery_data` untouched -- which is what makes the
-migration reversible -- but the record Atelier actually *renders* from is `_atelier_gallery`, and
-Atelier's own editor wrote CSS into that one. So a gallery whose CSS was edited through Atelier
+migration reversible -- but the record Lichtbild actually *renders* from is `_lichtbild_gallery`, and
+Lichtbild's own editor wrote CSS into that one. So a gallery whose CSS was edited through Lichtbild
 after the migration has the current value in the v2 record and a pre-migration value in Envira's.
 Reading Envira's alone would hand back the older text while reporting success.
 
@@ -41,21 +41,21 @@ CONFIG = ROOT / "tests" / ".db.json"
 
 
 def rewrite(css: str) -> str:
-    """Rewrites Envira's element ids onto Atelier's.
+    """Rewrites Envira's element ids onto Lichtbild's.
 
-    This is `Atelier_Config::rewrite_css()`, which was deleted with the feature, and the order of
+    This is `Lichtbild_Config::rewrite_css()`, which was deleted with the feature, and the order of
     the two substitutions is the whole of it: `#envira-gallery-wrap-` also starts with
     `#envira-gallery-`, so applying the general rule first consumes the wrapper form and produces
-    `#atelier-wrap-12`, which matches nothing -- the renderer emits `id="atelier-12-wrap"`. That
+    `#lichtbild-wrap-12`, which matches nothing -- the renderer emits `id="lichtbild-12-wrap"`. That
     exact bug shipped for months once; it is not hypothetical.
 
     Applied ONLY to Envira's copy. The v2 record was written either by the conversion, which had
-    already applied this, or by hand in Atelier's editor against Atelier's own ids. Rewriting it
+    already applied this, or by hand in Lichtbild's editor against Lichtbild's own ids. Rewriting it
     again is a no-op on correct input and corrupts nothing, but it would hide the case where the
     two copies genuinely differ, which is the thing this script exists to surface.
     """
-    css = re.sub(r"#envira-gallery-wrap-(\d+)", r"#atelier-\1-wrap", css)
-    return css.replace("#envira-gallery-", "#atelier-")
+    css = re.sub(r"#envira-gallery-wrap-(\d+)", r"#lichtbild-\1-wrap", css)
+    return css.replace("#envira-gallery-", "#lichtbild-")
 
 
 def comment_safe(text: str) -> str:
@@ -80,29 +80,29 @@ def unpack(meta) -> dict:
     return value if isinstance(value, dict) else {}
 
 
-def choose(envira: str, atelier: str, migrated: bool):
+def choose(envira: str, lichtbild: str, migrated: bool):
     """Decides which of the two stored copies is the one the site is rendering.
 
     Returns `(css, source, conflict)`; `css` is the empty string when the gallery has none.
 
-    The rule is `Atelier_Repository`'s, not an invention: on a migrated site the v2 record wins
+    The rule is `Lichtbild_Repository`'s, not an invention: on a migrated site the v2 record wins
     whenever it carries settings, and Envira's copy is the fallback. Getting this backwards
-    returns the pre-migration text for any gallery edited through Atelier since -- which looks
+    returns the pre-migration text for any gallery edited through Lichtbild since -- which looks
     exactly like a correct export, because the older CSS is perfectly valid CSS.
 
     `conflict` is true only when both copies exist and differ. It is not an error in the data:
-    the migration copied Envira's value across, and editing it in Atelier afterwards was always
+    the migration copied Envira's value across, and editing it in Lichtbild afterwards was always
     going to leave the two disagreeing. It is a case a human has to resolve, so it is surfaced
     rather than decided.
     """
-    conflict = bool(envira) and bool(atelier) and envira != atelier
+    conflict = bool(envira) and bool(lichtbild) and envira != lichtbild
 
-    if migrated and atelier:
-        return atelier, "Atelier's own record (what the site renders today)", conflict
+    if migrated and lichtbild:
+        return lichtbild, "Lichtbild's own record (what the site renders today)", conflict
     if envira:
         return envira, "Envira's record", conflict
-    if atelier:
-        return atelier, "Atelier's own record", conflict
+    if lichtbild:
+        return lichtbild, "Lichtbild's own record", conflict
     return "", "", False
 
 
@@ -122,19 +122,19 @@ connection = pymysql.connect(
 cursor = connection.cursor()
 
 cursor.execute(
-    f"SELECT option_value FROM {prefix}options WHERE option_name = 'atelier_schema_version'"
+    f"SELECT option_value FROM {prefix}options WHERE option_name = 'lichtbild_schema_version'"
 )
 row = cursor.fetchone()
 migrated = bool(row) and int(row[0]) >= 2
 
 # Both records, in one pass, keyed by post. Selecting on the meta keys rather than on a post type
-# is deliberate: the post type is `envira` before the migration and `atelier_gallery` after, and
+# is deliberate: the post type is `envira` before the migration and `lichtbild_gallery` after, and
 # the whole point of this script is to work in both states.
 cursor.execute(
     f"""SELECT m.post_id, p.post_title, p.post_name, m.meta_key, m.meta_value
         FROM {prefix}postmeta m
         JOIN {prefix}posts p ON p.ID = m.post_id
-        WHERE m.meta_key IN ('_eg_gallery_data', '_atelier_gallery')
+        WHERE m.meta_key IN ('_eg_gallery_data', '_lichtbild_gallery')
         ORDER BY m.post_id"""
 )
 rows = cursor.fetchall()
@@ -149,7 +149,7 @@ galleries: dict[int, dict] = {}
 
 for post_id, title, slug, meta_key, meta_value in rows:
     entry = galleries.setdefault(
-        int(post_id), {"title": title or slug or post_id, "envira": "", "atelier": ""}
+        int(post_id), {"title": title or slug or post_id, "envira": "", "lichtbild": ""}
     )
     record = unpack(meta_value)
 
@@ -158,14 +158,14 @@ for post_id, title, slug, meta_key, meta_value in rows:
         entry["envira"] = rewrite(str(config.get("custom_css") or "").strip())
     else:
         settings = record.get("settings") or {}
-        entry["atelier"] = str(settings.get("custom_css") or "").strip()
+        entry["lichtbild"] = str(settings.get("custom_css") or "").strip()
 
 blocks: list[tuple[int, str, str, str]] = []
 conflicts: list[int] = []
 
 for post_id, entry in sorted(galleries.items()):
-    envira, atelier = entry["envira"], entry["atelier"]
-    chosen, source, conflict = choose(envira, atelier, migrated)
+    envira, lichtbild = entry["envira"], entry["lichtbild"]
+    chosen, source, conflict = choose(envira, lichtbild, migrated)
 
     if not chosen:
         continue
@@ -177,7 +177,7 @@ for post_id, entry in sorted(galleries.items()):
     blocks.append((post_id, str(entry["title"]), chosen, source))
 
     if conflict:
-        other = envira if chosen == atelier else atelier
+        other = envira if chosen == lichtbild else lichtbild
         blocks.append(
             (post_id, str(entry["title"]), other, "the other copy, for comparison -- DELETE ONE")
         )
@@ -201,10 +201,10 @@ if not blocks:
     print("[INFO] nothing to move; this site has no per-gallery custom CSS", file=sys.stderr)
     sys.exit(0)
 
-print("/* Per-gallery CSS, moved out of the Atelier plugin in 26.8.22.")
+print("/* Per-gallery CSS, moved out of the Lichtbild plugin in 26.8.22.")
 print(" *")
 print(" * Paste into Appearance -> Customize -> Additional CSS.")
-print(" * A gallery is #atelier-<id>; its wrapper is #atelier-<id>-wrap.")
+print(" * A gallery is #lichtbild-<id>; its wrapper is #lichtbild-<id>-wrap.")
 print(" */")
 
 for post_id, title, css, source in blocks:

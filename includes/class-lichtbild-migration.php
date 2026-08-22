@@ -1,14 +1,14 @@
 <?php
 /**
- * Moves galleries off Envira's post types and onto Atelier's.
+ * Moves galleries off Envira's post types and onto Lichtbild's.
  *
- * @package Atelier
+ * @package Lichtbild
  */
 
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Plans, performs and reverses the migration onto Atelier's own storage.
+ * Plans, performs and reverses the migration onto Lichtbild's own storage.
  *
  * This is the first thing in the plugin that writes to the database, so its shape is
  * governed by what happens when it goes wrong rather than by what happens when it works:
@@ -29,26 +29,26 @@ defined( 'ABSPATH' ) || exit;
  * The one thing that genuinely cannot be undone by this class is a rewrite flush, which is
  * why it is done last and unconditionally in both directions.
  */
-class Atelier_Migration {
+class Lichtbild_Migration {
 
 	/**
 	 * Plugin settings.
 	 *
-	 * @var Atelier_Settings
+	 * @var Lichtbild_Settings
 	 */
 	private $settings;
 
 	/**
 	 * Builds the migrator.
 	 *
-	 * @param Atelier_Settings $settings Plugin settings.
+	 * @param Lichtbild_Settings $settings Plugin settings.
 	 */
-	public function __construct( Atelier_Settings $settings ) {
+	public function __construct( Lichtbild_Settings $settings ) {
 		$this->settings = $settings;
 	}
 
 	/**
-	 * Converts one stored Envira gallery record into Atelier's own.
+	 * Converts one stored Envira gallery record into Lichtbild's own.
 	 *
 	 * Pure: it reads no database and writes nothing, so the migration's correctness can be
 	 * asserted by rendering both records and comparing the markup.
@@ -56,7 +56,7 @@ class Atelier_Migration {
 	 * @param array $data    The `_eg_gallery_data` value.
 	 * @param int   $post_id Gallery post ID.
 	 *
-	 * @return array|null A `_atelier_gallery` record, or null for Envira's defaults row.
+	 * @return array|null A `_lichtbild_gallery` record, or null for Envira's defaults row.
 	 */
 	public static function build_record( array $data, $post_id ) {
 		$config = isset( $data['config'] ) && is_array( $data['config'] ) ? $data['config'] : array();
@@ -76,7 +76,7 @@ class Atelier_Migration {
 				continue;
 			}
 
-			// Envira's map is keyed by attachment ID; Atelier's list carries the ID as a
+			// Envira's map is keyed by attachment ID; Lichtbild's list carries the ID as a
 			// field, so order belongs to the record and an image may appear twice.
 			$items[] = array(
 				'id'      => is_numeric( $key ) ? (int) $key : 0,
@@ -90,14 +90,14 @@ class Atelier_Migration {
 		}
 
 		return array(
-			'version'  => Atelier_Config::VERSION,
-			'settings' => Atelier_Config::from_envira( $config, $post_id ),
+			'version'  => Lichtbild_Config::VERSION,
+			'settings' => Lichtbild_Config::from_envira( $config, $post_id ),
 			'items'    => $items,
 		);
 	}
 
 	/**
-	 * Converts every record of one post type into Atelier's own format.
+	 * Converts every record of one post type into Lichtbild's own format.
 	 *
 	 * Shared by galleries and albums so that the read-back verification below exists once. It was
 	 * written for galleries and, when albums were finally given a record of their own, copying it
@@ -106,7 +106,7 @@ class Atelier_Migration {
 	 *
 	 * @param string   $post_type  Post type to walk.
 	 * @param string   $source_key Meta key holding Envira's record.
-	 * @param string   $target_key Meta key to write Atelier's record to.
+	 * @param string   $target_key Meta key to write Lichtbild's record to.
 	 * @param string   $failure    Error message template taking the post ID.
 	 * @param callable $builder    Builds a record from `(array $data, int $id)`, or null to skip.
 	 * @param string[] $errors     Errors, appended to.
@@ -175,12 +175,12 @@ class Atelier_Migration {
 	}
 
 	/**
-	 * Builds the record Atelier stores for one album.
+	 * Builds the record Lichtbild stores for one album.
 	 *
 	 * @param array $data    The `_eg_album_data` value.
 	 * @param int   $post_id Album post ID.
 	 *
-	 * @return array|null A `_atelier_album` record, or null for Envira's defaults row.
+	 * @return array|null A `_lichtbild_album` record, or null for Envira's defaults row.
 	 */
 	public static function build_album_record( array $data, $post_id ) {
 		unset( $post_id );
@@ -193,13 +193,13 @@ class Atelier_Migration {
 
 		$items = array();
 
-		foreach ( Atelier_Repository::envira_album_entries( $data ) as $gallery_id => $entry ) {
-			$items[] = Atelier_Album_Config::item_from_envira( $gallery_id, is_array( $entry ) ? $entry : array() );
+		foreach ( Lichtbild_Repository::envira_album_entries( $data ) as $gallery_id => $entry ) {
+			$items[] = Lichtbild_Album_Config::item_from_envira( $gallery_id, is_array( $entry ) ? $entry : array() );
 		}
 
 		return array(
-			'version'  => Atelier_Album_Config::VERSION,
-			'settings' => Atelier_Album_Config::from_envira( $config ),
+			'version'  => Lichtbild_Album_Config::VERSION,
+			'settings' => Lichtbild_Album_Config::from_envira( $config ),
 			'items'    => $items,
 		);
 	}
@@ -222,18 +222,18 @@ class Atelier_Migration {
 	public function plan() {
 		$migrated = $this->settings->has_migrated();
 
-		$gallery_type = $migrated ? Atelier_Post_Types::GALLERY : Atelier_Repository::GALLERY_POST_TYPE;
-		$album_type   = $migrated ? Atelier_Post_Types::ALBUM : Atelier_Repository::ALBUM_POST_TYPE;
-		$tag_taxonomy = $migrated ? Atelier_Post_Types::TAG : Atelier_Repository::TAG_TAXONOMY;
+		$gallery_type = $migrated ? Lichtbild_Post_Types::GALLERY : Lichtbild_Repository::GALLERY_POST_TYPE;
+		$album_type   = $migrated ? Lichtbild_Post_Types::ALBUM : Lichtbild_Repository::ALBUM_POST_TYPE;
+		$tag_taxonomy = $migrated ? Lichtbild_Post_Types::TAG : Lichtbild_Repository::TAG_TAXONOMY;
 
 		$counts = $this->rows_under( $gallery_type, $album_type, $tag_taxonomy );
 
 		// A mixed state is the one the screen most needs to describe and the one a directional
 		// plan structurally cannot: a request that died between the first rename and the
-		// schema option leaves rows under Atelier's types while the option still says 1, so the
+		// schema option leaves rows under Lichtbild's types while the option still says 1, so the
 		// plan would report "0 galleries to migrate" over 52 stranded rows and offer no way
 		// back. Counted separately, and never inferred from the flag.
-		$stranded = $migrated ? 0 : $this->atelier_rows();
+		$stranded = $migrated ? 0 : $this->lichtbild_rows();
 		$left     = $migrated ? $this->envira_rows() : 0;
 
 		return array_merge(
@@ -253,7 +253,7 @@ class Atelier_Migration {
 	 * Counts the posts and taxonomy rows stored under one set of names.
 	 *
 	 * The one place the counting rules live. `plan()` reports the three numbers separately and
-	 * `atelier_rows()` wants only their total, so the split is between what the counts *are* and
+	 * `lichtbild_rows()` wants only their total, so the split is between what the counts *are* and
 	 * what each caller does with them — rather than two copies of the same three queries, which
 	 * is what this was and is exactly how a plan comes to describe something the migration does
 	 * not do.
@@ -293,7 +293,7 @@ class Atelier_Migration {
 	/**
 	 * Counts the rows still stored under Envira's types and taxonomy.
 	 *
-	 * The mirror of `atelier_rows()`: after a successful migration this must be zero, and a
+	 * The mirror of `lichtbild_rows()`: after a successful migration this must be zero, and a
 	 * non-zero answer means a rename did not finish.
 	 *
 	 * @return int Number of posts and taxonomy rows under Envira's names.
@@ -301,9 +301,9 @@ class Atelier_Migration {
 	private function envira_rows() {
 		return array_sum(
 			$this->rows_under(
-				Atelier_Repository::GALLERY_POST_TYPE,
-				Atelier_Repository::ALBUM_POST_TYPE,
-				Atelier_Repository::TAG_TAXONOMY
+				Lichtbild_Repository::GALLERY_POST_TYPE,
+				Lichtbild_Repository::ALBUM_POST_TYPE,
+				Lichtbild_Repository::TAG_TAXONOMY
 			)
 		);
 	}
@@ -349,11 +349,11 @@ class Atelier_Migration {
 		update_meta_cache( 'post', $ids );
 
 		foreach ( $ids as $id ) {
-			if ( is_array( get_post_meta( $id, Atelier_Repository::GALLERY_META_V2, true ) ) ) {
+			if ( is_array( get_post_meta( $id, Lichtbild_Repository::GALLERY_META_V2, true ) ) ) {
 				$survey['converted']++;
 			}
 
-			$data = get_post_meta( $id, Atelier_Repository::GALLERY_META, true );
+			$data = get_post_meta( $id, Lichtbild_Repository::GALLERY_META, true );
 
 			if ( ! is_array( $data ) ) {
 				$survey['unreadable']++;
@@ -424,7 +424,7 @@ class Atelier_Migration {
 		);
 
 		if ( $this->settings->has_migrated() ) {
-			$result['errors'][] = __( 'The galleries have already been migrated.', 'atelier' );
+			$result['errors'][] = __( 'The galleries have already been migrated.', 'lichtbild-gallery' );
 
 			return $result;
 		}
@@ -433,7 +433,7 @@ class Atelier_Migration {
 		// which would leave its own screens empty and its shortcode rendering nothing — and
 		// the person who would notice is a visitor, not whoever clicked the button.
 		if ( $this->settings->envira_is_active() ) {
-			$result['errors'][] = __( 'Deactivate Envira Gallery before migrating.', 'atelier' );
+			$result['errors'][] = __( 'Deactivate Envira Gallery before migrating.', 'lichtbild-gallery' );
 
 			return $result;
 		}
@@ -441,11 +441,11 @@ class Atelier_Migration {
 		// Convert the records first. Doing this before the post types move means a failure
 		// here leaves a site that is entirely unchanged rather than half-renamed.
 		$converted = $this->convert(
-			Atelier_Repository::GALLERY_POST_TYPE,
-			Atelier_Repository::GALLERY_META,
-			Atelier_Repository::GALLERY_META_V2,
+			Lichtbild_Repository::GALLERY_POST_TYPE,
+			Lichtbild_Repository::GALLERY_META,
+			Lichtbild_Repository::GALLERY_META_V2,
 			/* translators: %d: gallery post ID. */
-			__( 'Gallery %d could not be converted, so the migration was stopped before anything was renamed.', 'atelier' ),
+			__( 'Gallery %d could not be converted, so the migration was stopped before anything was renamed.', 'lichtbild-gallery' ),
 			array( self::class, 'build_record' ),
 			$result['errors']
 		);
@@ -462,11 +462,11 @@ class Atelier_Migration {
 		// format. It surfaced only when an album editor was wanted, because writing one would
 		// have meant writing Envira's format back.
 		$converted = $this->convert(
-			Atelier_Repository::ALBUM_POST_TYPE,
-			Atelier_Repository::ALBUM_META,
-			Atelier_Repository::ALBUM_META_V2,
+			Lichtbild_Repository::ALBUM_POST_TYPE,
+			Lichtbild_Repository::ALBUM_META,
+			Lichtbild_Repository::ALBUM_META_V2,
 			/* translators: %d: album post ID. */
-			__( 'Album %d could not be converted, so the migration was stopped before anything was renamed.', 'atelier' ),
+			__( 'Album %d could not be converted, so the migration was stopped before anything was renamed.', 'lichtbild-gallery' ),
 			array( self::class, 'build_album_record' ),
 			$result['errors']
 		);
@@ -480,24 +480,24 @@ class Atelier_Migration {
 		$result['galleries'] = $this->move(
 			$wpdb->posts,
 			'post_type',
-			Atelier_Repository::GALLERY_POST_TYPE,
-			Atelier_Post_Types::GALLERY,
+			Lichtbild_Repository::GALLERY_POST_TYPE,
+			Lichtbild_Post_Types::GALLERY,
 			$result['errors']
 		);
 
 		$result['albums'] = $this->move(
 			$wpdb->posts,
 			'post_type',
-			Atelier_Repository::ALBUM_POST_TYPE,
-			Atelier_Post_Types::ALBUM,
+			Lichtbild_Repository::ALBUM_POST_TYPE,
+			Lichtbild_Post_Types::ALBUM,
 			$result['errors']
 		);
 
 		$result['terms'] = $this->move(
 			$wpdb->term_taxonomy,
 			'taxonomy',
-			Atelier_Repository::TAG_TAXONOMY,
-			Atelier_Post_Types::TAG,
+			Lichtbild_Repository::TAG_TAXONOMY,
+			Lichtbild_Post_Types::TAG,
 			$result['errors']
 		);
 
@@ -509,13 +509,13 @@ class Atelier_Migration {
 			// record of a choice the site owner made, and uninstalling Envira would take it —
 			// blanking every gallery permalink on a site that had them switched on.
 			update_option(
-				Atelier_Settings::OPTION_STANDALONE,
-				(int) (bool) get_option( Atelier_Settings::OPTION_STANDALONE_ENVIRA, false )
+				Lichtbild_Settings::OPTION_STANDALONE,
+				(int) (bool) get_option( Lichtbild_Settings::OPTION_STANDALONE_ENVIRA, false )
 			);
 
 			$result['seo_keys'] = $this->carry_seo_settings();
 
-			$this->set_schema( Atelier_Settings::SCHEMA_MIGRATED, $result['errors'] );
+			$this->set_schema( Lichtbild_Settings::SCHEMA_MIGRATED, $result['errors'] );
 		}
 
 		$this->finish();
@@ -560,11 +560,11 @@ class Atelier_Migration {
 		}
 
 		$types = array(
-			Atelier_Repository::GALLERY_POST_TYPE => Atelier_Post_Types::GALLERY,
-			Atelier_Repository::ALBUM_POST_TYPE   => Atelier_Post_Types::ALBUM,
+			Lichtbild_Repository::GALLERY_POST_TYPE => Lichtbild_Post_Types::GALLERY,
+			Lichtbild_Repository::ALBUM_POST_TYPE   => Lichtbild_Post_Types::ALBUM,
 		);
 
-		$taxes = array( Atelier_Repository::TAG_TAXONOMY => Atelier_Post_Types::TAG );
+		$taxes = array( Lichtbild_Repository::TAG_TAXONOMY => Lichtbild_Post_Types::TAG );
 		$added = array();
 
 		foreach ( $titles as $key => $value ) {
@@ -636,15 +636,15 @@ class Atelier_Migration {
 	 * @return bool Whether the option now holds the value.
 	 */
 	private function set_schema( $value, array &$errors ) {
-		update_option( Atelier_Settings::OPTION_SCHEMA, $value );
+		update_option( Lichtbild_Settings::OPTION_SCHEMA, $value );
 
-		if ( (int) get_option( Atelier_Settings::OPTION_SCHEMA, 0 ) === (int) $value ) {
+		if ( (int) get_option( Lichtbild_Settings::OPTION_SCHEMA, 0 ) === (int) $value ) {
 			return true;
 		}
 
 		$errors[] = sprintf(
 			/* translators: %d: schema version that could not be stored. */
-			__( 'The rows were renamed but the schema version could not be set to %d. The site is still reading the old post types; do not deactivate anything until this is resolved.', 'atelier' ),
+			__( 'The rows were renamed but the schema version could not be set to %d. The site is still reading the old post types; do not deactivate anything until this is resolved.', 'lichtbild-gallery' ),
 			(int) $value
 		);
 
@@ -684,7 +684,7 @@ class Atelier_Migration {
 			// line per ordinary operation is a log nobody reads.
 			error_log( // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 				sprintf(
-					'Atelier: could not rename %1$s "%2$s" to "%3$s" in %4$s: %5$s',
+					'Lichtbild: could not rename %1$s "%2$s" to "%3$s" in %4$s: %5$s',
 					$column,
 					$from,
 					$to,
@@ -695,7 +695,7 @@ class Atelier_Migration {
 
 			$errors[] = sprintf(
 				/* translators: 1: value being renamed, 2: table name. */
-				__( 'Renaming %1$s in %2$s failed. Roll back from this screen and try again.', 'atelier' ),
+				__( 'Renaming %1$s in %2$s failed. Roll back from this screen and try again.', 'lichtbild-gallery' ),
 				$from,
 				$table
 			);
@@ -720,14 +720,14 @@ class Atelier_Migration {
 		global $wpdb;
 
 		// Deliberately not `has_migrated()`. There is no transaction here, so a request that
-		// dies between the first rename and the schema option leaves rows under Atelier's
+		// dies between the first rename and the schema option leaves rows under Lichtbild's
 		// types while the option still says 1 — and a rollback gated on the option would
 		// refuse exactly then, in the one state where it is the only way back. The question
-		// that matters is whether any row is under Atelier's types, so that is the one asked.
-		$stranded = $this->atelier_rows();
+		// that matters is whether any row is under Lichtbild's types, so that is the one asked.
+		$stranded = $this->lichtbild_rows();
 
 		// A site that never had Envira has nothing to roll back TO. Since such a site now starts
-		// life already on Atelier's storage, `has_migrated()` is true there and the row count is
+		// life already on Lichtbild's storage, `has_migrated()` is true there and the row count is
 		// whatever the owner has built -- so without this the screen would happily offer to move
 		// a fresh install's galleries onto post types named after a plugin it has never had.
 		// Refused in the handler rather than merely hidden in the markup, for the reason the
@@ -737,7 +737,7 @@ class Atelier_Migration {
 				'galleries' => 0,
 				'albums'    => 0,
 				'terms'     => 0,
-				'errors'    => array( __( 'This site has no Envira records, so there is nothing to roll back to.', 'atelier' ) ),
+				'errors'    => array( __( 'This site has no Envira records, so there is nothing to roll back to.', 'lichtbild-gallery' ) ),
 			);
 		}
 
@@ -746,7 +746,7 @@ class Atelier_Migration {
 				'galleries' => 0,
 				'albums'    => 0,
 				'terms'     => 0,
-				'errors'    => array( __( 'The galleries are not migrated, so there is nothing to roll back.', 'atelier' ) ),
+				'errors'    => array( __( 'The galleries are not migrated, so there is nothing to roll back.', 'lichtbild-gallery' ) ),
 			);
 		}
 
@@ -755,30 +755,30 @@ class Atelier_Migration {
 		$result['galleries'] = $this->move(
 			$wpdb->posts,
 			'post_type',
-			Atelier_Post_Types::GALLERY,
-			Atelier_Repository::GALLERY_POST_TYPE,
+			Lichtbild_Post_Types::GALLERY,
+			Lichtbild_Repository::GALLERY_POST_TYPE,
 			$result['errors']
 		);
 
 		$result['albums'] = $this->move(
 			$wpdb->posts,
 			'post_type',
-			Atelier_Post_Types::ALBUM,
-			Atelier_Repository::ALBUM_POST_TYPE,
+			Lichtbild_Post_Types::ALBUM,
+			Lichtbild_Repository::ALBUM_POST_TYPE,
 			$result['errors']
 		);
 
 		$result['terms'] = $this->move(
 			$wpdb->term_taxonomy,
 			'taxonomy',
-			Atelier_Post_Types::TAG,
-			Atelier_Repository::TAG_TAXONOMY,
+			Lichtbild_Post_Types::TAG,
+			Lichtbild_Repository::TAG_TAXONOMY,
 			$result['errors']
 		);
 
 		// Same rule in this direction, and it matters more: writing the flag back to 1 after a
 		// failed rename would send the screen to its pre-migration state while rows are still
-		// stranded under Atelier's types, hiding the rollback button that is the way out.
+		// stranded under Lichtbild's types, hiding the rollback button that is the way out.
 		if ( empty( $result['errors'] ) ) {
 			$this->set_schema( 1, $result['errors'] );
 		}
@@ -789,16 +789,16 @@ class Atelier_Migration {
 	}
 
 	/**
-	 * Counts the rows currently stored under Atelier's own types.
+	 * Counts the rows currently stored under Lichtbild's own types.
 	 *
 	 * Used to decide whether there is anything to roll back, independently of what the schema
 	 * option claims — the two disagree precisely when a migration was interrupted.
 	 *
-	 * @return int Number of posts and taxonomy rows under Atelier's names.
+	 * @return int Number of posts and taxonomy rows under Lichtbild's names.
 	 */
-	private function atelier_rows() {
+	private function lichtbild_rows() {
 		return array_sum(
-			$this->rows_under( Atelier_Post_Types::GALLERY, Atelier_Post_Types::ALBUM, Atelier_Post_Types::TAG )
+			$this->rows_under( Lichtbild_Post_Types::GALLERY, Lichtbild_Post_Types::ALBUM, Lichtbild_Post_Types::TAG )
 		);
 	}
 

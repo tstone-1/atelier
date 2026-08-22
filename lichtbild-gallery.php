@@ -1,25 +1,25 @@
 <?php
 /**
- * Plugin Name: Atelier
- * Plugin URI:  https://github.com/tstone-1/atelier
+ * Plugin Name: Lichtbild Gallery
+ * Plugin URI:  https://github.com/tstone-1/lichtbild-gallery
  * Description: Responsive galleries for WordPress. Reads existing Envira Gallery data in place, so galleries keep working without migration or a licence.
- * Version:     26.8.23
+ * Version:     26.8.24
  * Author:      tstone-1
  * License:     GPL-2.0-or-later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
- * Text Domain: atelier
+ * Text Domain: lichtbild-gallery
  * Domain Path: /languages
  * Requires at least: 6.0
  * Requires PHP: 8.1
  *
- * Atelier is a drop-in replacement for Envira Gallery Pro. It does not own its data:
+ * Lichtbild is a drop-in replacement for Envira Gallery Pro. It does not own its data:
  * galleries live in the `envira` post type under the `_eg_gallery_data` post meta
- * exactly as Envira wrote them, and Atelier renders from that. Deactivating Atelier and
+ * exactly as Envira wrote them, and Lichtbild renders from that. Deactivating Lichtbild and
  * reactivating Envira is therefore lossless in both directions, which is what makes an
  * A/B comparison on a live site safe.
  *
  * NOT AFFILIATED WITH, ENDORSED BY, OR CONNECTED TO ENVIRA GALLERY OR AWESOME MOTIVE.
- * "Envira Gallery" is their product and their trademark. Atelier is independent, contains
+ * "Envira Gallery" is their product and their trademark. Lichtbild is independent, contains
  * no Envira code, and names Envira only to say what it reads and what it replaces. The
  * `envira` post type, the `_eg_gallery_data` meta key and the `/envira/` URL paths appear
  * here because they are the data and the addresses of a site that already exists, and
@@ -58,47 +58,47 @@ defined( 'ABSPATH' ) || exit;
  * on the local WordPress before relying on it.
  */
 
-define( 'ATELIER_VERSION', '26.8.23' );
-define( 'ATELIER_FILE', __FILE__ );
-define( 'ATELIER_DIR', plugin_dir_path( __FILE__ ) );
-define( 'ATELIER_URL', plugin_dir_url( __FILE__ ) );
+define( 'LICHTBILD_VERSION', '26.8.24' );
+define( 'LICHTBILD_FILE', __FILE__ );
+define( 'LICHTBILD_DIR', plugin_dir_path( __FILE__ ) );
+define( 'LICHTBILD_URL', plugin_dir_url( __FILE__ ) );
 
-require_once ATELIER_DIR . 'includes/class-atelier-config.php';
-require_once ATELIER_DIR . 'includes/class-atelier-album-config.php';
-require_once ATELIER_DIR . 'includes/class-atelier-item.php';
-require_once ATELIER_DIR . 'includes/class-atelier-gallery.php';
-require_once ATELIER_DIR . 'includes/class-atelier-album.php';
-require_once ATELIER_DIR . 'includes/class-atelier-post-types.php';
-require_once ATELIER_DIR . 'includes/class-atelier-repository.php';
-require_once ATELIER_DIR . 'includes/class-atelier-exif.php';
-require_once ATELIER_DIR . 'includes/class-atelier-renderer.php';
-require_once ATELIER_DIR . 'includes/class-atelier-assets.php';
-require_once ATELIER_DIR . 'includes/class-atelier-shortcode.php';
-require_once ATELIER_DIR . 'includes/class-atelier-block.php';
-require_once ATELIER_DIR . 'includes/class-atelier-standalone.php';
-require_once ATELIER_DIR . 'includes/class-atelier-ajax.php';
-require_once ATELIER_DIR . 'includes/class-atelier-settings.php';
-require_once ATELIER_DIR . 'includes/class-atelier-migration.php';
-require_once ATELIER_DIR . 'includes/class-atelier-migration-screen.php';
-require_once ATELIER_DIR . 'includes/class-atelier-metabox-editor.php';
-require_once ATELIER_DIR . 'includes/class-atelier-editor.php';
-require_once ATELIER_DIR . 'includes/class-atelier-album-editor.php';
-require_once ATELIER_DIR . 'includes/class-atelier.php';
+require_once LICHTBILD_DIR . 'includes/class-lichtbild-config.php';
+require_once LICHTBILD_DIR . 'includes/class-lichtbild-album-config.php';
+require_once LICHTBILD_DIR . 'includes/class-lichtbild-item.php';
+require_once LICHTBILD_DIR . 'includes/class-lichtbild-gallery.php';
+require_once LICHTBILD_DIR . 'includes/class-lichtbild-album.php';
+require_once LICHTBILD_DIR . 'includes/class-lichtbild-post-types.php';
+require_once LICHTBILD_DIR . 'includes/class-lichtbild-repository.php';
+require_once LICHTBILD_DIR . 'includes/class-lichtbild-exif.php';
+require_once LICHTBILD_DIR . 'includes/class-lichtbild-renderer.php';
+require_once LICHTBILD_DIR . 'includes/class-lichtbild-assets.php';
+require_once LICHTBILD_DIR . 'includes/class-lichtbild-shortcode.php';
+require_once LICHTBILD_DIR . 'includes/class-lichtbild-block.php';
+require_once LICHTBILD_DIR . 'includes/class-lichtbild-standalone.php';
+require_once LICHTBILD_DIR . 'includes/class-lichtbild-ajax.php';
+require_once LICHTBILD_DIR . 'includes/class-lichtbild-settings.php';
+require_once LICHTBILD_DIR . 'includes/class-lichtbild-migration.php';
+require_once LICHTBILD_DIR . 'includes/class-lichtbild-migration-screen.php';
+require_once LICHTBILD_DIR . 'includes/class-lichtbild-metabox-editor.php';
+require_once LICHTBILD_DIR . 'includes/class-lichtbild-editor.php';
+require_once LICHTBILD_DIR . 'includes/class-lichtbild-album-editor.php';
+require_once LICHTBILD_DIR . 'includes/class-lichtbild.php';
 
 /**
  * Returns the shared plugin instance, booting it on first call.
  *
- * @return Atelier The plugin container.
+ * @return Lichtbild The plugin container.
  */
-function atelier() {
+function lichtbild() {
 	static $instance = null;
 
 	if ( null === $instance ) {
-		$instance = new Atelier();
+		$instance = new Lichtbild();
 		$instance->boot();
 	}
 
 	return $instance;
 }
 
-add_action( 'plugins_loaded', 'atelier', 20 );
+add_action( 'plugins_loaded', 'lichtbild', 20 );

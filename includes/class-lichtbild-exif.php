@@ -2,7 +2,7 @@
 /**
  * Formats camera metadata for display in the lightbox.
  *
- * @package Atelier
+ * @package Lichtbild
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -15,7 +15,7 @@ defined( 'ABSPATH' ) || exit;
  * `image_meta` key of the attachment metadata, so the same values are available with no
  * file access at all.
  */
-class Atelier_Exif {
+class Lichtbild_Exif {
 
 	/**
 	 * Fields WordPress can report, in the order they are displayed.
@@ -65,7 +65,7 @@ class Atelier_Exif {
 
 			if ( '' !== $camera ) {
 				$fields[] = array(
-					'label' => __( 'Camera', 'atelier' ),
+					'label' => __( 'Camera', 'lichtbild-gallery' ),
 					'value' => $camera,
 				);
 			}
@@ -76,9 +76,9 @@ class Atelier_Exif {
 
 			if ( $focal > 0 ) {
 				$fields[] = array(
-					'label' => __( 'Focal length', 'atelier' ),
+					'label' => __( 'Focal length', 'lichtbild-gallery' ),
 					/* translators: %s: focal length in millimetres. */
-					'value' => sprintf( __( '%s mm', 'atelier' ), self::trim_zeros( $focal ) ),
+					'value' => sprintf( __( '%s mm', 'lichtbild-gallery' ), self::trim_zeros( $focal ) ),
 				);
 			}
 		}
@@ -88,7 +88,7 @@ class Atelier_Exif {
 
 			if ( $aperture > 0 ) {
 				$fields[] = array(
-					'label' => __( 'Aperture', 'atelier' ),
+					'label' => __( 'Aperture', 'lichtbild-gallery' ),
 					'value' => 'f/' . self::trim_zeros( $aperture ),
 				);
 			}
@@ -99,7 +99,7 @@ class Atelier_Exif {
 
 			if ( $shutter > 0 ) {
 				$fields[] = array(
-					'label' => __( 'Shutter speed', 'atelier' ),
+					'label' => __( 'Shutter speed', 'lichtbild-gallery' ),
 					'value' => self::format_shutter( $shutter ),
 				);
 			}
@@ -110,7 +110,7 @@ class Atelier_Exif {
 
 			if ( $iso > 0 ) {
 				$fields[] = array(
-					'label' => __( 'ISO', 'atelier' ),
+					'label' => __( 'ISO', 'lichtbild-gallery' ),
 					'value' => (string) $iso,
 				);
 			}
@@ -123,7 +123,7 @@ class Atelier_Exif {
 				$format = '' !== $date_format ? $date_format : (string) get_option( 'date_format' );
 
 				$fields[] = array(
-					'label' => __( 'Taken', 'atelier' ),
+					'label' => __( 'Taken', 'lichtbild-gallery' ),
 					'value' => date_i18n( $format, $taken ),
 				);
 			}
@@ -136,7 +136,7 @@ class Atelier_Exif {
 		 * @param int   $attachment_id Attachment ID.
 		 * @param array $exif          Raw `image_meta` array from WordPress.
 		 */
-		return (array) apply_filters( 'atelier_exif_fields', $fields, $attachment_id, $exif );
+		return (array) apply_filters( 'lichtbild_exif_fields', $fields, $attachment_id, $exif );
 	}
 
 	/**
@@ -152,7 +152,7 @@ class Atelier_Exif {
 	private static function format_shutter( $seconds ) {
 		if ( $seconds >= 1.0 ) {
 			/* translators: %s: exposure time in seconds. */
-			return sprintf( __( '%s s', 'atelier' ), self::trim_zeros( $seconds ) );
+			return sprintf( __( '%s s', 'lichtbild-gallery' ), self::trim_zeros( $seconds ) );
 		}
 
 		$denominator = (int) round( 1 / $seconds );
