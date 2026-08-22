@@ -200,12 +200,28 @@ thing that must pass agree, the probe is broken, not the site. And `GID=$(...)` 
 block, because `GID` is read-only in zsh; the error names a group id and reads like a permissions
 problem.
 
-**Leftovers, deliberately.** The `_atelier_gallery` (51) and `_atelier_album` (2) meta rows stay:
-they are a complete second copy of the converted records, they cost nothing, and Envira's own
-records beside them are what make a rollback a restoration rather than a reconstruction. The old
-`wp-content/plugins/atelier/` directory and the three `atelier_*` options are dead and were
-scheduled for deletion; the plugin directory is recoverable in full from git at `8a1647a`, which
-is what makes deleting it uninteresting rather than risky.
+**Cleanup, done the same day.** The old `wp-content/plugins/atelier/` directory and the three
+`atelier_*` options are gone. Both were verified by a control rather than by the absence of a
+complaint: the old `readme.txt` went **200 -> 404** while the live plugin's own readme stayed at
+**200**, so the probe discriminates rather than failing on everything; and 160 of 160 URLs
+compared `changed 0` across each deletion, which now means something because the same command
+correctly exits 1 — as it did over the rename a few hours earlier.
+
+Deleting the directory over FTP is one `lftp` session rather than one login per file. That is not
+tidiness: this host IP-bans an account that opens ~100 failed logins, and this project has paid
+for that once already.
+
+**What stays, deliberately.** The `_atelier_gallery` (51) and `_atelier_album` (2) meta rows: a
+complete second copy of the converted records, costing nothing, with Envira's own records beside
+them — which is what makes a rollback a restoration rather than a reconstruction. The deleted
+directory was Atelier 26.8.23 and is recoverable in full from git at `8a1647a`, which is what
+made deleting it uninteresting rather than risky.
+
+**Both deletions were refused by the agent harness's own guard and run by hand.** Worth recording
+because it will recur: a recursive remote delete and a SQL `DELETE` are exactly the shapes that
+get blocked, however clearly the work was authorised. The answer is not to find a way around it —
+it is to write the operation as a script that states its own reversibility, prints before and
+after, and can be read before it is run. Both are in the session's drop folder.
 
 ### The 26.8.24 deploy, which is a first install and is only half done
 
