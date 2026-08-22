@@ -113,22 +113,62 @@ CHUNK=8192
 # asset changed this release, so the window is harmless either way; the position costs nothing
 # and stating a rule once per release is cheaper than deciding whether it applies.
 #
-# The set is derived from the SERVER, not from the release commit: all 40 shipped files were
-# downloaded back and digest-compared, and the server proved to be exactly the 26.8.22 deploy --
-# 34 identical, 6 changed, none absent, none unreadable. That audit is what this list is, and it
-# is run every release because the two times it was skipped the list was four releases stale.
-# Unlike 26.8.22, no unshipped commit turned up: the six are exactly what 26.8.23 touched.
+# 26.8.24 is the one release where this list is NOT the answer to "what changed": the plugin was
+# renamed, so every file has a new name and the whole plugin goes into a NEW directory that the
+# server does not have. The set is therefore the complete deployed set -- the archive's files
+# minus SERVER_ABSENT, plus SERVER_EXTRA -- and an audit of the old directory could not have
+# produced it, because not one of these paths exists there.
+#
+# Ordering cannot break anything on this deploy and the bootstrap is still last. The new
+# directory is inert until someone activates the plugin in wp-admin, so a half-uploaded set is a
+# plugin nobody is running, which is the opposite of 26.8.7's hazard. Verify by digest anyway:
+# the transport drops large transfers, and an inactive plugin with a 0-byte class is a fatal the
+# moment it IS activated.
 #
 # LICENSE, languages/lichtbild-gallery-de_DE.po and languages/lichtbild-gallery.pot are ABSENT from the server and
 # deliberately stay that way: none is read at runtime, none has ever been deployed, and each is
 # one more transfer that can fail for no behavioural gain. LICENSE ships in the wordpress.org
 # ZIP, which is a different artifact.
 UPLOAD_ORDER=(
+	"assets/css/blocks.css"
+	"assets/css/editor.css"
+	"assets/css/lichtbild.css"
+	"assets/js/album-editor.js"
+	"assets/js/blocks.js"
+	"assets/js/editor.js"
+	"assets/js/lichtbild.js"
+	"assets/vendor/photoswipe/LICENSE"
+	"assets/vendor/photoswipe/photoswipe-lightbox.esm.js"
+	"assets/vendor/photoswipe/photoswipe-lightbox.esm.min.js"
+	"assets/vendor/photoswipe/photoswipe.css"
+	"assets/vendor/photoswipe/photoswipe.esm.js"
+	"assets/vendor/photoswipe/photoswipe.esm.min.js"
+	"blocks/album/block.json"
+	"blocks/gallery/block.json"
+	"includes/class-lichtbild-ajax.php"
+	"includes/class-lichtbild-album-config.php"
+	"includes/class-lichtbild-album-editor.php"
+	"includes/class-lichtbild-album.php"
+	"includes/class-lichtbild-assets.php"
+	"includes/class-lichtbild-block.php"
+	"includes/class-lichtbild-config.php"
+	"includes/class-lichtbild-editor.php"
+	"includes/class-lichtbild-exif.php"
+	"includes/class-lichtbild-gallery.php"
+	"includes/class-lichtbild-item.php"
+	"includes/class-lichtbild-metabox-editor.php"
+	"includes/class-lichtbild-migration-screen.php"
+	"includes/class-lichtbild-migration.php"
+	"includes/class-lichtbild-post-types.php"
+	"includes/class-lichtbild-renderer.php"
+	"includes/class-lichtbild-repository.php"
 	"includes/class-lichtbild-settings.php"
 	"includes/class-lichtbild-shortcode.php"
-	"includes/class-lichtbild-assets.php"
-	"includes/class-lichtbild-config.php"
+	"includes/class-lichtbild-standalone.php"
+	"includes/class-lichtbild.php"
+	"languages/lichtbild-gallery-de_DE.mo"
 	"readme.txt"
+	"uninstall.php"
 	"lichtbild-gallery.php"
 )
 
