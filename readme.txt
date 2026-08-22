@@ -152,10 +152,9 @@ than only in one gallery.
 == Upgrade Notice ==
 
 = 26.8.22 =
-Read before upgrading if you set Custom CSS on any gallery: the field is gone, so those rules
-stop being applied. The upgrade deletes nothing, and the CSS moves to Appearance > Customize >
-Additional CSS unchanged, since the element ids have not changed. Move it before you next save
-an affected gallery, which is the point at which the newer of its two stored copies is dropped.
+Read this if you set Custom CSS on a gallery: the field is gone, so those rules no longer
+apply. Nothing is deleted. Move the CSS to Appearance > Customize > Additional CSS, unchanged
+- the element ids are the same. Do it before you next save that gallery, which drops the newer copy.
 
 = 26.8.21 =
 Important for new installs: a gallery's own permalink rendered an empty page. Sites migrated
