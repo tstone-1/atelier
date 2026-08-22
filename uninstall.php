@@ -3,7 +3,7 @@
  * Removes Lichtbild's settings when the plugin is deleted.
  *
  * WordPress runs this only on deletion — not on deactivation — and only for a plugin that
- * ships it. Without it, the three options below survive deletion forever, which is exactly the
+ * ships it. Without it, the four options below survive deletion forever, which is exactly the
  * leftover Envira left behind: 37 `envira*` rows still sitting in `wp_options` months after it
  * was uninstalled.
  *
@@ -13,7 +13,13 @@
  * **The gallery and album records.** On a migrated site the rows are `lichtbild_gallery` and
  * `lichtbild_album` posts carrying `_lichtbild_gallery` / `_lichtbild_album` meta, and those are the
  * photographs — content, not settings. Deleting the plugin unregisters the post types, so the
- * posts stop being visible; reinstalling makes every one of them reappear untouched. Deleting
+ * posts stop being visible; reinstalling makes every one of them reappear untouched -- which is
+ * true because `Lichtbild_Settings::initialise()` rebuilds the schema from the rows themselves
+ * when the option is gone. It was NOT true until 26.8.25: this file deleted the two options that
+ * decide which post types get registered, and reinstalling then read the retained Envira meta,
+ * concluded the site had never migrated, and registered `envira` against rows named
+ * `lichtbild_gallery`. Every retained gallery was present and unreachable, which is the precise
+ * opposite of the promise in this paragraph. Deleting
  * the meta here would turn "I removed the plugin" into "I destroyed 53 galleries", with no
  * warning and no undo. WordPress's own convention is that uninstall removes a plugin's
  * settings, never the user's content, and this is the case that convention exists for.

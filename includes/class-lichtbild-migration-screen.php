@@ -315,6 +315,33 @@ class Lichtbild_Migration_Screen {
 			);
 
 		echo '<div class="notice notice-success"><p>' . esc_html( $message ) . '</p></div>';
+
+		// Beside the success notice rather than instead of it, because both are true: the rows
+		// moved, and something the migration copies alongside them did not. Printing only the
+		// success message is what made an auxiliary write failure silent -- the site owner was
+		// told the migration worked and never told that their permalink setting or their Yoast
+		// titles had not come across.
+		$warnings = isset( $result['warnings'] ) && is_array( $result['warnings'] ) ? $result['warnings'] : array();
+
+		if ( empty( $warnings ) ) {
+			return;
+		}
+
+		echo '<div class="notice notice-warning">';
+
+		if ( 1 === count( $warnings ) ) {
+			echo '<p>' . esc_html( reset( $warnings ) ) . '</p>';
+		} else {
+			echo '<ul class="ul-disc">';
+
+			foreach ( $warnings as $warning ) {
+				echo '<li>' . esc_html( $warning ) . '</li>';
+			}
+
+			echo '</ul>';
+		}
+
+		echo '</div>';
 	}
 
 	/**

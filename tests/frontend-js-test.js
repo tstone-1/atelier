@@ -199,6 +199,40 @@ check(
 	phpBag === jsBag ? `both '${ phpBag }'` : `PHP localizes '${ phpBag }', JS reads '${ jsBag }'`
 );
 
-console.log( `\nchecks: ${ 9 }, failing: ${ failures }` );
+// A rejected promise is a SETTLED promise, so caching one caches the failure. `loadPhotoSwipe()`
+// stores the import promise and every click reuses it, and the click handler has already called
+// `preventDefault()` by then -- so one transient module-load failure made every later click on
+// every image do nothing at all, permanently, with no way back short of a page reload. Nothing
+// is logged and nothing is drawn; it is indistinguishable from a dead page.
+//
+// These three are source assertions, which is the weaker half this file is explicit about: they
+// prove the recovery is written, never that the runtime path reaches it. Driving it for real
+// needs a DOM, a module loader and a rejected dynamic import, which is the harness this
+// repository has decided twice not to build for a static grid.
+const loader = ( source.match( /function loadPhotoSwipe\(\)[\s\S]*?\n\t}/ ) || [ '' ] )[ 0 ];
+
+check(
+	'a failed module load clears its own cache',
+	/\.catch\(/.test( loader ) && /photoSwipePromise = null/.test( loader ),
+	loader ? 'catch and reset both present in loadPhotoSwipe()' : 'loadPhotoSwipe() could not be located'
+);
+
+const openBody = ( source.match( /Gallery\.prototype\.open = function[\s\S]*?\n\t};/ ) || [ '' ] )[ 0 ];
+
+check(
+	'a click that cannot open the lightbox follows the link',
+	/\.catch\(/.test( openBody ) && /window\.location\.href/.test( openBody ),
+	openBody ? 'open() falls back to the href' : 'open() could not be located'
+);
+
+const restoreBody = ( source.match( /Gallery\.prototype\.restoreFromHash = function[\s\S]*?\n\t};/ ) || [ '' ] )[ 0 ];
+
+check(
+	'the deep-link path consumes its rejection',
+	/\.catch\(/.test( restoreBody ),
+	restoreBody ? 'restoreFromHash() handles a rejected import' : 'restoreFromHash() could not be located'
+);
+
+console.log( `\nchecks: ${ 12 }, failing: ${ failures }` );
 
 process.exit( failures ? 1 : 0 );

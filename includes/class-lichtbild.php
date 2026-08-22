@@ -16,7 +16,8 @@ defined( 'ABSPATH' ) || exit;
 class Lichtbild {
 
 	/**
-	 * Reads galleries and albums out of the Envira post meta.
+	 * Reads galleries and albums out of whichever storage this site is on -- Envira's records
+	 * before the migration, Lichtbild's own afterwards.
 	 *
 	 * @var Lichtbild_Repository
 	 */

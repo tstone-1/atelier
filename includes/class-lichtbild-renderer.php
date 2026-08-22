@@ -333,14 +333,20 @@ class Lichtbild_Renderer {
 
 		$out = '<div class="lichtbild-tags" role="group" aria-label="' . esc_attr__( 'Filter by tag', 'lichtbild-gallery' ) . '">';
 
+		// `aria-pressed` on every button, not a class alone. The class is what CSS draws with
+		// and carries no meaning to a screen reader, so which filter is currently applied was
+		// simply not announced -- while the pagination three lines down had exposed its active
+		// page with `aria-current` all along. Emitted on ALL of them, including the ones that
+		// are false: a toggle group where only the active button carries the attribute reads as
+		// a set of buttons with unknown state rather than one selected out of several.
 		if ( $gallery->tags_all_enabled() ) {
-			$out .= '<button type="button" class="lichtbild-tag is-current" data-lichtbild-tag="">' .
+			$out .= '<button type="button" class="lichtbild-tag is-current" aria-pressed="true" data-lichtbild-tag="">' .
 				esc_html( $gallery->tags_all_label() ) . '</button>';
 		}
 
 		foreach ( $tags as $slug => $name ) {
 			$out .= sprintf(
-				'<button type="button" class="lichtbild-tag" data-lichtbild-tag="%s">%s</button>',
+				'<button type="button" class="lichtbild-tag" aria-pressed="false" data-lichtbild-tag="%s">%s</button>',
 				esc_attr( $slug ),
 				esc_html( $name )
 			);

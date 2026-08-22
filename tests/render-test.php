@@ -392,6 +392,7 @@ $checks->expect(
 	'one button per page',
 	'page one is the first slice of the gallery',
 	'tag bar renders buttons',
+	'the tag bar announces which filter is applied',
 	'tagged items carry their tag slugs',
 	'tag bar uses the stored all label',
 	'filtered page one is not empty',
@@ -1636,6 +1637,27 @@ if ( null !== $tagged_source ) {
 		'first button was "' . ( $buttons->length ? $buttons->item( 0 )->textContent : '' ) . '"'
 	);
 
+	// The selected filter has to be announced, not merely drawn. `is-current` is a CSS hook and
+	// carries nothing to a screen reader, so which tag was applied was unavailable -- on a
+	// control group whose sibling pagination has exposed its active page with `aria-current`
+	// since it was written. Both halves are asserted: exactly one button pressed, and every
+	// other one explicitly not, because a group where the inactive buttons simply omit the
+	// attribute reads as unknown state rather than as one of several selected.
+	$pressed     = $xpath->query( '//div[contains(@class,"lichtbild-tags")]/button[@aria-pressed="true"]' );
+	$not_pressed = $xpath->query( '//div[contains(@class,"lichtbild-tags")]/button[@aria-pressed="false"]' );
+
+	$pressed_is_current = 1 === $pressed->length
+		&& false !== strpos( (string) $pressed->item( 0 )->getAttribute( 'class' ), 'is-current' );
+
+	$checks->assert(
+		'the tag bar announces which filter is applied',
+		1 === $pressed->length
+			&& $buttons->length === $pressed->length + $not_pressed->length
+			&& $pressed_is_current,
+		$pressed->length . ' pressed and ' . $not_pressed->length . ' unpressed of ' . $buttons->length
+			. ' buttons; the pressed one ' . ( $pressed_is_current ? 'is' : 'is NOT' ) . ' the drawn one'
+	);
+
 	$tagged_items = $xpath->query( '//figure[@data-lichtbild-tags]' );
 
 	$checks->assert(
@@ -2443,7 +2465,13 @@ $checks->assert(
 // removing it demonstrated. An unmigrated site is one where both agree.
 $unmigrated_record = $site->galleries[ $editor_id ]['lichtbild'];
 
-unset( $site->options[ Lichtbild_Settings::OPTION_SCHEMA ] );
+// Schema 1, not an absent option. Since 26.8.25 an absent schema on a site that still holds
+// `lichtbild_gallery` rows means "uninstalled and reinstalled" and is repaired back to 2, so
+// unsetting it here stopped producing an unmigrated site: `has_migrated()` stayed true, the
+// post-type guard did all the refusing, and mutation E5 survived because the guard it removes
+// was never the one being exercised. That is the failure the paragraph above warns about,
+// arriving from the other direction.
+$site->options[ Lichtbild_Settings::OPTION_SCHEMA ] = 1;
 $site->posts[ $editor_id ]['post_type'] = Lichtbild_Repository::GALLERY_POST_TYPE;
 
 $unmigrated                 = $editor_payload( $editor_id );
@@ -2941,7 +2969,11 @@ $site->galleries[ $editor_id ]['lichtbild'] = $order_record;
 // The edit screen itself.
 // ---------------------------------------------------------------------------
 
-unset( $site->options[ Lichtbild_Settings::OPTION_SCHEMA ] );
+// Schema 1 explicitly, rather than deleting the option. On a fixture the suite has already
+// migrated, an ABSENT schema no longer means "unmigrated" -- it is the uninstall/reinstall
+// state, and `initialise()` now correctly repairs it back to 2 from the rows themselves.
+// Deleting it here would therefore assert the defect this release fixed.
+$site->options[ Lichtbild_Settings::OPTION_SCHEMA ] = 1;
 
 ob_start();
 $editor->render_images_box( (object) array( 'ID' => $editor_id ) );
@@ -3020,7 +3052,13 @@ $checks->assert(
 $gallery_column_record = $site->galleries[ $editor_id ]['lichtbild'];
 
 unset( $site->galleries[ $editor_id ]['lichtbild'] );
-unset( $site->options[ Lichtbild_Settings::OPTION_SCHEMA ] );
+// Schema 1, not an absent option. Since 26.8.25 an absent schema on a site that still holds
+// `lichtbild_gallery` rows means "uninstalled and reinstalled" and is repaired back to 2, so
+// unsetting it here stopped producing an unmigrated site: `has_migrated()` stayed true, the
+// post-type guard did all the refusing, and mutation E5 survived because the guard it removes
+// was never the one being exercised. That is the failure the paragraph above warns about,
+// arriving from the other direction.
+$site->options[ Lichtbild_Settings::OPTION_SCHEMA ] = 1;
 $site->posts[ $editor_id ]['post_type'] = Lichtbild_Repository::GALLERY_POST_TYPE;
 
 ob_start();
@@ -3172,6 +3210,18 @@ foreach ( array_keys( $pre_migration_albums ) as $candidate_id ) {
 	}
 }
 
+// Declared at top level, outside every conditional below, because these three checks sit inside
+// two nested ones -- `if ( $album_edit_id > 0 )` and the search for a gallery outside the album.
+// A check that stops running VANISHES from the report rather than failing, which reads as "not
+// applicable" and is indistinguishable from coverage lapsing. Four mutations demonstrated that
+// while this declaration was one level too deep: they reported 240 checks against a baseline of
+// 243 and killed nothing.
+$checks->expect(
+	'a gallery the person cannot edit is not stored as a member',
+	'the gallery picker omits what the person cannot edit',
+	'a stored member the person cannot edit is not drawn'
+);
+
 if ( $album_edit_id > 0 ) {
 	$album_record = get_post_meta( $album_edit_id, Lichtbild_Repository::ALBUM_META_V2, true );
 	$album_before = lichtbild_render_album_found( $checks, $renderer, $album_reader()->album( $album_edit_id ), $album_reader(), "album #{$album_edit_id} unreadable through the editing reader" );
@@ -3302,6 +3352,115 @@ if ( $album_edit_id > 0 ) {
 			&& $intruder_ids === array_map( 'intval', wp_list_pluck( $album_record['items'], 'id' ) ),
 		'the album stored ' . implode( ',', $intruder_ids ) . ' when handed its own id as a member'
 	);
+
+	// --- a member the person cannot edit ------------------------------------------------
+	//
+	// The save guard authorises the ALBUM and says nothing about the galleries the request
+	// names. Until 26.8.25 nothing else asked either, so an author who could edit one album
+	// could POST another author's private or draft gallery id and have the editor render its
+	// title and cover thumbnail back to them. `handle_covers()` checks the album AND the
+	// gallery, and the two checks below it in this file prove it; this path did not share the
+	// rule, and no check reached it.
+	//
+	// Three boundaries, because a picker is markup and markup is a suggestion: the list must
+	// not offer it, the save must not store it, and the screen must not draw one that is
+	// already stored. Each has an allowed-object control in the same assertion, so a fix that
+	// simply refused everything would redden them rather than pass.
+
+	// Chosen from the FIXTURE, not through `gallery_choices()`. Deriving the subject of a test
+	// from the code under test means any mutation of that code silently removes the test: the
+	// first version of this block read the picker, and six unrelated mutations made all three
+	// checks disappear instead of fail.
+	$outsider = 0;
+
+	foreach ( $site->posts as $candidate_id => $candidate_row ) {
+		if ( Lichtbild_Post_Types::GALLERY !== ( $candidate_row['post_type'] ?? '' ) ) {
+			continue;
+		}
+
+		if ( ! in_array( (int) $candidate_id, $intruder_ids, true ) ) {
+			$outsider = (int) $candidate_id;
+
+			break;
+		}
+	}
+
+	if ( $outsider > 0 ) {
+		$adding                                        = $album_payload( $album_record, $album_edit_id );
+		$adding['lichtbild_album_items']['new']        = array( 'id' => (string) $outsider, 'cover_id' => '0', 'caption' => '' );
+		$adding['lichtbild_album_order']              .= ',new';
+
+		// Control first: with the capability, the same payload stores it. Without this the
+		// refusal below would be satisfied by a payload that never worked.
+		$album_save( $album_editor, $album_edit_id, $adding );
+		$allowed_ids = lichtbild_album_found( $checks, $album_reader()->album( $album_edit_id ), "album #{$album_edit_id} unreadable" )->gallery_ids();
+
+		$album_save( $album_editor, $album_edit_id, $album_payload( $album_record, $album_edit_id ) );
+
+		$site->capability_overrides[ 'edit_post:' . $outsider ] = false;
+
+		$album_save( $album_editor, $album_edit_id, $adding );
+		$refused_ids = lichtbild_album_found( $checks, $album_reader()->album( $album_edit_id ), "album #{$album_edit_id} unreadable" )->gallery_ids();
+
+		$denied_choices = $album_reader()->gallery_choices( 'edit_post' );
+
+		ob_start();
+		$album_editor->render_galleries_box( (object) array( 'ID' => $album_edit_id ) );
+		$denied_form = (string) ob_get_clean();
+
+		unset( $site->capability_overrides[ 'edit_post:' . $outsider ] );
+
+		$checks->assert(
+			'a gallery the person cannot edit is not stored as a member',
+			in_array( $outsider, $allowed_ids, true ) && ! in_array( $outsider, $refused_ids, true ),
+			'with the capability the album stored ' . implode( ',', $allowed_ids )
+				. '; without it, ' . implode( ',', $refused_ids )
+		);
+
+		$checks->assert(
+			'the gallery picker omits what the person cannot edit',
+			! array_key_exists( $outsider, $denied_choices ) && ! empty( $denied_choices ),
+			'the picker offered ' . count( $denied_choices ) . ' galleries and '
+				. ( array_key_exists( $outsider, $denied_choices ) ? 'included' : 'omitted' ) . " #{$outsider}"
+		);
+
+		// A member stored before the rule existed still names it, so the screen has to refuse
+		// too. Restore it as a member with the capability, then take the capability away.
+		$album_save( $album_editor, $album_edit_id, $adding );
+		$stored_title = (string) get_the_title( $outsider );
+
+		$site->capability_overrides[ 'edit_post:' . $outsider ] = false;
+
+		ob_start();
+		$album_editor->render_galleries_box( (object) array( 'ID' => $album_edit_id ) );
+		$stored_denied_form = (string) ob_get_clean();
+
+		unset( $site->capability_overrides[ 'edit_post:' . $outsider ] );
+
+		ob_start();
+		$album_editor->render_galleries_box( (object) array( 'ID' => $album_edit_id ) );
+		$stored_allowed_form = (string) ob_get_clean();
+
+		$album_save( $album_editor, $album_edit_id, $album_payload( $album_record, $album_edit_id ) );
+
+		$checks->assert(
+			'a stored member the person cannot edit is not drawn',
+			'' !== $stored_title
+				&& false !== strpos( $stored_allowed_form, esc_html( $stored_title ) )
+				&& false === strpos( $stored_denied_form, esc_html( $stored_title ) ),
+			'title "' . $stored_title . '" present with the capability: '
+				. ( false !== strpos( $stored_allowed_form, esc_html( $stored_title ) ) ? 'yes' : 'no' )
+				. ', without: ' . ( false !== strpos( $stored_denied_form, esc_html( $stored_title ) ) ? 'yes' : 'no' )
+		);
+	} else {
+		foreach ( array(
+			'a gallery the person cannot edit is not stored as a member',
+			'the gallery picker omits what the person cannot edit',
+			'a stored member the person cannot edit is not drawn',
+		) as $unreachable ) {
+			$checks->assert( $unreachable, false, 'no gallery outside this album to use as the unauthorised one' );
+		}
+	}
 
 	// --- a cover has to belong to the gallery it covers ----------------------------------
 	//
@@ -3492,7 +3651,11 @@ if ( $album_edit_id > 0 ) {
 		'server row: ' . ( $row_ok ? 'ok' : 'incomplete' ) . ', client template: ' . ( $template_ok ? 'ok' : 'incomplete' )
 	);
 
-	unset( $site->options[ Lichtbild_Settings::OPTION_SCHEMA ] );
+	// Schema 1 explicitly, rather than deleting the option. On a fixture the suite has already
+	// migrated, an ABSENT schema no longer means "unmigrated" -- it is the uninstall/reinstall
+	// state, and `initialise()` now correctly repairs it back to 2 from the rows themselves.
+	// Deleting it here would therefore assert the defect this release fixed.
+	$site->options[ Lichtbild_Settings::OPTION_SCHEMA ] = 1;
 
 	ob_start();
 	$album_editor->render_galleries_box( (object) array( 'ID' => $album_edit_id ) );
@@ -4216,6 +4379,108 @@ if ( ! $settings->has_migrated() && ! $settings->envira_is_active() ) {
 	);
 }
 
+// ============================================================================
+// An auxiliary write that fails must be REPORTED, and must not hide the galleries.
+//
+// `migrate()` copies two things beside the rows: Envira's standalone setting, and Yoast's title
+// and canonical settings onto the new post-type names. Neither write was read back, so a
+// targeted failure left the schema at 2, the success notice claiming a copied-key count that
+// never landed, and the site owner with no way to know.
+//
+// The obvious fix -- treat it as an error and refuse to advance the schema -- is worse than the
+// defect, and that is why this block asserts the opposite. By this point the rows are already
+// named `lichtbild_gallery`; a site whose schema says otherwise registers `envira` and finds
+// none of them, which was measured on a full copy of the live site as 52 galleries present and
+// 0 findable. Losing a Yoast title is a bad day. Hiding every gallery is a broken site. So the
+// schema advances, and the failure arrives as a warning beside the success rather than instead
+// of it -- the part that was genuinely missing, because it used to arrive as nothing at all.
+// ============================================================================
+
+$checks->expect(
+	'a failed standalone copy is reported and the galleries stay findable',
+	'a failed seo copy is reported and claims no copied keys',
+	'neither is reported when both writes land'
+);
+
+if ( ! $settings->has_migrated() && ! $settings->envira_is_active() ) {
+	$aux_rollback = static function () use ( $settings ) {
+		( new Lichtbild_Migration( $settings ) )->rollback();
+	};
+
+	// Both copies are no-ops on a repeat migration: the standalone option already holds the
+	// value about to be written, and `carry_seo_settings()` adds only keys that are not already
+	// there. A readback cannot catch a write that had nothing to change, and a copied-key count
+	// is 0 when there was nothing to copy -- so every assertion below would pass or fail for the
+	// wrong reason without putting the two options back the way a first migration finds them.
+	// The first draft of this block did exactly that and reported `warnings: 0` three times.
+	$aux_reset = static function () use ( $site ) {
+		unset( $site->options[ Lichtbild_Settings::OPTION_STANDALONE ] );
+
+		$titles = isset( $site->options['wpseo_titles'] ) && is_array( $site->options['wpseo_titles'] )
+			? $site->options['wpseo_titles']
+			: array();
+
+		foreach ( array_keys( $titles ) as $key ) {
+			if ( false !== strpos( (string) $key, 'lichtbild_' ) ) {
+				unset( $titles[ $key ] );
+			}
+		}
+
+		$site->options['wpseo_titles'] = $titles;
+	};
+
+	$aux_reset();
+	$site->fail_options_on = array( Lichtbild_Settings::OPTION_STANDALONE );
+	$standalone_failed     = ( new Lichtbild_Migration( $settings ) )->migrate();
+	$site->fail_options_on = array();
+	$standalone_migrated   = ( new Lichtbild_Settings() )->has_migrated();
+
+	$aux_rollback();
+
+	$checks->assert(
+		'a failed standalone copy is reported and the galleries stay findable',
+		! empty( $standalone_failed['warnings'] )
+			&& empty( $standalone_failed['errors'] )
+			&& true === $standalone_migrated,
+		'warnings: ' . count( $standalone_failed['warnings'] ) . ', errors: '
+			. count( $standalone_failed['errors'] ) . ', migrated: '
+			. var_export( $standalone_migrated, true )
+	);
+
+	$aux_reset();
+	$site->fail_options_on = array( 'wpseo_titles' );
+	$seo_failed            = ( new Lichtbild_Migration( $settings ) )->migrate();
+	$site->fail_options_on = array();
+	$seo_migrated          = ( new Lichtbild_Settings() )->has_migrated();
+
+	$aux_rollback();
+
+	$checks->assert(
+		'a failed seo copy is reported and claims no copied keys',
+		! empty( $seo_failed['warnings'] )
+			&& 0 === (int) $seo_failed['seo_keys']
+			&& empty( $seo_failed['errors'] )
+			&& true === $seo_migrated,
+		'warnings: ' . count( $seo_failed['warnings'] ) . ', seo_keys: '
+			. (int) $seo_failed['seo_keys'] . ', migrated: ' . var_export( $seo_migrated, true )
+	);
+
+	// The control, and without it both assertions above are satisfied by a migration that always
+	// warns. A clean run has to warn about nothing and report the keys it really copied.
+	$aux_reset();
+	$aux_clean = ( new Lichtbild_Migration( $settings ) )->migrate();
+
+	$aux_rollback();
+
+	$checks->assert(
+		'neither is reported when both writes land',
+		empty( $aux_clean['warnings'] )
+			&& empty( $aux_clean['errors'] )
+			&& (int) $aux_clean['seo_keys'] > 0,
+		'warnings: ' . count( $aux_clean['warnings'] ) . ', seo_keys: ' . (int) $aux_clean['seo_keys']
+	);
+}
+
 
 // The screen's guards are asserted against the handler, not the markup it draws. A control
 // the screen declines to render is still reachable by anyone holding the URL, so a guard that
@@ -4628,6 +4893,66 @@ $checks->assert(
 	! $waiting->has_migrated() && 'envira' === $waiting->slug_scheme(),
 	'has_migrated: ' . var_export( $waiting->has_migrated(), true ) . ', scheme: ' . $waiting->slug_scheme()
 );
+
+// Deleting the plugin and installing it again must not hide the galleries it deliberately kept.
+//
+// `uninstall.php` removes the schema and the slug scheme while retaining the migrated posts,
+// their v2 meta and Envira's `_eg_*` rollback records -- settings are a plugin's to delete,
+// photographs are not, and its docblock promises reinstalling brings them back. It did not.
+// With no schema, Envira's retained meta made the site look like one that had never migrated:
+// `has_migrated()` answered false and `register_types()` registered `envira`, so every retained
+// row -- still named `lichtbild_gallery` -- matched nothing. Measured on a full copy of the live
+// site before the fix: 52 galleries in the table, 0 under the registered type, and the gallery
+// permalink returning the same byte count as a deliberately bogus slug.
+//
+// The control for this is the check directly above: an Envira site with NO Lichtbild rows must
+// still answer "not migrated" after the same two deletions. One of these two checks going red
+// alone is meaningful; a fix that made both pass by always claiming migrated would redden that
+// one, which is why they belong together.
+$reinstall_posts = $site->posts;
+
+foreach ( $site->posts as $rid => $row ) {
+	if ( Lichtbild_Repository::GALLERY_POST_TYPE === ( $row['post_type'] ?? '' ) ) {
+		$site->posts[ $rid ]['post_type'] = Lichtbild_Post_Types::GALLERY;
+	}
+	if ( 'envira_album' === ( $row['post_type'] ?? '' ) ) {
+		$site->posts[ $rid ]['post_type'] = Lichtbild_Post_Types::ALBUM;
+	}
+}
+
+unset( $site->options[ Lichtbild_Settings::OPTION_SCHEMA ] );
+unset( $site->options[ Lichtbild_Settings::OPTION_SLUG_SCHEME ] );
+
+$reinstalled = new Lichtbild_Settings();
+
+$site->registered = array();
+( new Lichtbild_Post_Types( $reinstalled ) )->register_types();
+
+$checks->assert(
+	'reinstalling after uninstall finds the content it kept',
+	$reinstalled->has_migrated()
+		&& in_array( Lichtbild_Post_Types::GALLERY, $site->registered, true )
+		&& ! in_array( Lichtbild_Repository::GALLERY_POST_TYPE, $site->registered, true ),
+	'has_migrated: ' . var_export( $reinstalled->has_migrated(), true )
+		. ', registered: ' . implode( ', ', $site->registered )
+);
+
+// The literals in `Lichtbild_Settings::has_owned_content()` are hand-written, because reading
+// them through `Lichtbild_Post_Types::gallery_type()` would ask `has_migrated()` and close a
+// loop. A literal that drifts from the constant it copies would answer "no owned content" on a
+// site full of galleries -- the same failure, by another route -- and no other check would see
+// it, so the two are asserted against each other directly.
+$owned_sql = file_get_contents( LICHTBILD_DIR . 'includes/class-lichtbild-settings.php' );
+
+$checks->assert(
+	'the owned-content query names the post types the plugin registers',
+	false !== strpos( $owned_sql, "'" . Lichtbild_Post_Types::GALLERY . "', '" . Lichtbild_Post_Types::ALBUM . "'" ),
+	'looked for the pair ' . Lichtbild_Post_Types::GALLERY . '/' . Lichtbild_Post_Types::ALBUM
+);
+
+$site->posts = $reinstall_posts;
+unset( $site->options[ Lichtbild_Settings::OPTION_SCHEMA ] );
+unset( $site->options[ Lichtbild_Settings::OPTION_SLUG_SCHEME ] );
 
 // Making a fresh site "migrated" hands it a rollback it must never be offered: there is no
 // Envira installation behind it, so rolling back would move the owner's galleries onto post

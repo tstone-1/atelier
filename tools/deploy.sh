@@ -1120,16 +1120,39 @@ cmd_compare() {
 	# column and reported all 116 URLs as changed; it failed safe, but only by luck.
 	misjoined="$(awk -F'\t' 'NF!=5' "$WORK/joined.tsv" | wc -l | tr -d ' ')"
 
+	local statuses before_rows after_rows
+	statuses="$(awk -F'\t' '$3!=$5' "$WORK/joined.tsv" | wc -l | tr -d ' ')"
+	before_rows="$(wc -l < "$a" | tr -d ' ')"
+	after_rows="$(wc -l < "$b" | tr -d ' ')"
+
 	printf 'joined %s of %s rows, malformed %s, changed %s, status differences %s\n' \
-		"$rows" "$(wc -l < "$a" | tr -d ' ')" "$misjoined" "$changed" \
-		"$(awk -F'\t' '$3!=$5' "$WORK/joined.tsv" | wc -l | tr -d ' ')"
+		"$rows" "$before_rows" "$misjoined" "$changed" "$statuses"
 
 	awk -F'\t' '$2!=$4 {print "  CHANGED  "$1}' "$WORK/joined.tsv"
+	awk -F'\t' '$3!=$5 {print "  STATUS   "$1"  "$3" -> "$5}' "$WORK/joined.tsv"
 
-	[ "$rows" = "$(wc -l < "$a" | tr -d ' ')" ] || {
-		echo "[ERROR] the join dropped rows; the comparison covers less than it appears to" >&2
+	# BOTH directions. The row count was checked against the first capture only, so a URL that
+	# exists in the second and not the first -- a page the deploy ADDED, or a capture taken from
+	# a different url list -- joined to nothing and was invisible. A comparison that cannot see
+	# what appeared is not a comparison of two states.
+	[ "$rows" = "$before_rows" ] || {
+		echo "[ERROR] the join dropped rows present in $a; the comparison covers less than it appears to" >&2
 		return 1
 	}
+
+	[ "$rows" = "$after_rows" ] || {
+		echo "[ERROR] $b has $after_rows rows and only $rows joined; something appeared that the before-capture never had" >&2
+		return 1
+	}
+
+	# The exit code, which is the whole reason this is a gate rather than a report. It printed
+	# `changed 1` beside `CHANGED <url>` and exited 0, so the documented release ceremony's
+	# verification step was green over a page whose bytes had moved -- and anything scripted
+	# around it, branching on `$?`, could never have noticed.
+	if [ "$misjoined" != "0" ] || [ "$changed" != "0" ] || [ "$statuses" != "0" ]; then
+		echo "[ERROR] the site is not what it was: $changed changed, $statuses status differences, $misjoined malformed" >&2
+		return 1
+	fi
 
 	return 0
 }

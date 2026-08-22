@@ -421,6 +421,10 @@ class Lichtbild_Migration {
 			'albums_converted' => 0,
 			'seo_keys'         => 0,
 			'errors'           => array(),
+			// Separate from `errors` deliberately. An error means the migration failed and the
+			// screen shows it instead of the result; a warning means the rows moved correctly
+			// and something beside them did not, which the site owner still has to be told.
+			'warnings'         => array(),
 		);
 
 		if ( $this->settings->has_migrated() ) {
@@ -508,13 +512,29 @@ class Lichtbild_Migration {
 			// Carried across before the flag flips, because after it Envira's copy is the only
 			// record of a choice the site owner made, and uninstalling Envira would take it —
 			// blanking every gallery permalink on a site that had them switched on.
-			update_option(
-				Lichtbild_Settings::OPTION_STANDALONE,
-				(int) (bool) get_option( Lichtbild_Settings::OPTION_STANDALONE_ENVIRA, false )
-			);
+			//
+			// Read back, for the reason `set_schema()` is read back: `update_option()` answers
+			// false both for "the write failed" and for "the value was already that", so its
+			// return value cannot carry this. Comparing the stored value against the intended
+			// one can.
+			$standalone = (int) (bool) get_option( Lichtbild_Settings::OPTION_STANDALONE_ENVIRA, false );
 
-			$result['seo_keys'] = $this->carry_seo_settings();
+			update_option( Lichtbild_Settings::OPTION_STANDALONE, $standalone );
 
+			if ( (int) get_option( Lichtbild_Settings::OPTION_STANDALONE, -1 ) !== $standalone ) {
+				$result['warnings'][] = __( 'The setting that decides whether a gallery renders on its own permalink could not be copied across. Check Settings before uninstalling Envira Gallery, or those pages may come out blank.', 'lichtbild-gallery' );
+			}
+
+			$result['seo_keys'] = $this->carry_seo_settings( $result['warnings'] );
+
+			// A WARNING, never an error, and the distinction is the whole design of this block.
+			// An error suppresses the success notice and means "the migration failed"; the rows
+			// have already moved by this point, so refusing to advance the schema would leave a
+			// site whose posts are named `lichtbild_gallery` while the plugin registers `envira`
+			// — measured on a full copy of the live site as 52 galleries present and 0 findable.
+			// Losing a Yoast title is a bad day; hiding every gallery is a broken site. So the
+			// schema advances regardless and the auxiliary failure is reported beside it, which
+			// is the only part that was actually missing: it used to be silent.
 			$this->set_schema( Lichtbild_Settings::SCHEMA_MIGRATED, $result['errors'] );
 		}
 
@@ -552,7 +572,7 @@ class Lichtbild_Migration {
 	 *
 	 * @return int Number of keys added.
 	 */
-	private function carry_seo_settings() {
+	private function carry_seo_settings( array &$warnings ) {
 		$titles = get_option( 'wpseo_titles', null );
 
 		if ( ! is_array( $titles ) || empty( $titles ) ) {
@@ -608,6 +628,24 @@ class Lichtbild_Migration {
 		}
 
 		update_option( 'wpseo_titles', array_merge( $titles, $added ) );
+
+		// Read back before claiming a count. `count( $added )` is what this INTENDED to copy,
+		// and reporting it after a write that did not land tells the site owner their canonical
+		// URLs moved when they did not — the one number on the success notice nobody can check
+		// by looking at the site.
+		$stored = get_option( 'wpseo_titles', array() );
+
+		if ( ! is_array( $stored ) ) {
+			$stored = array();
+		}
+
+		foreach ( $added as $key => $value ) {
+			if ( ! array_key_exists( $key, $stored ) || $stored[ $key ] !== $value ) {
+				$warnings[] = __( 'The Yoast SEO titles and canonical settings for the old post types could not be carried onto the new ones. Check Yoast\'s Content Types settings; until then those pages fall back to Yoast\'s defaults.', 'lichtbild-gallery' );
+
+				return 0;
+			}
+		}
 
 		return count( $added );
 	}

@@ -158,13 +158,44 @@ class Lichtbild_Settings {
 	 * @return void
 	 */
 	private function initialise() {
+		$schema = get_option( self::OPTION_SCHEMA, null );
+
+		/*
+		 * Content this plugin owns outranks every inference below it, and this runs BEFORE the
+		 * early return rather than after, which is not a style choice.
+		 *
+		 * `uninstall.php` deletes the schema and the slug scheme while deliberately keeping the
+		 * migrated posts and their meta -- settings are a plugin's to remove, photographs are
+		 * not. Reinstalling then landed here with no schema, found Envira's retained
+		 * `_eg_*` meta, concluded "a site with an Envira history that has not migrated", and
+		 * left the schema absent. `has_migrated()` answered false, `register_types()` registered
+		 * `envira`/`envira_album`/`envira-tag`, and every retained row -- still named
+		 * `lichtbild_gallery` -- became invisible. Measured on a full copy of the live site:
+		 * 52 galleries in the table, 0 under the registered type, and the gallery permalink
+		 * returning the same byte count as a deliberately bogus slug. That is the exact opposite
+		 * of the promise `uninstall.php` makes, which is that reinstalling brings them back.
+		 *
+		 * After the first call had recorded a scheme, the early return made it permanent: the
+		 * schema could never be restored on any later request. So the repair has to happen
+		 * before that return, not inside the branch it guards.
+		 *
+		 * Only when the schema has never been set, which is the same guard the write below
+		 * uses: a site sitting deliberately at 1 while its owner prepares to migrate must not be
+		 * overruled, and a half-finished migration has the option set and is handled by the
+		 * mixed-state machinery instead.
+		 */
+		if ( null === $schema && $this->has_owned_content() ) {
+			update_option( self::OPTION_SCHEMA, self::SCHEMA_MIGRATED );
+
+			$schema = (string) self::SCHEMA_MIGRATED;
+		}
+
 		$scheme = get_option( self::OPTION_SLUG_SCHEME, '' );
 
 		if ( 'envira' === $scheme || 'generic' === $scheme ) {
 			return;
 		}
 
-		$schema  = get_option( self::OPTION_SCHEMA, null );
 		$history = ( null !== $schema && (int) $schema >= self::SCHEMA_MIGRATED )
 			|| $this->has_envira_history();
 
@@ -173,6 +204,32 @@ class Lichtbild_Settings {
 		if ( ! $history && null === $schema ) {
 			update_option( self::OPTION_SCHEMA, self::SCHEMA_MIGRATED );
 		}
+	}
+
+	/**
+	 * Reports whether any post this plugin owns exists, regardless of what the options say.
+	 *
+	 * The type names are written literally for the same reason `has_envira_history()` writes
+	 * Envira's meta keys literally, and for one more: `Lichtbild_Post_Types::gallery_type()`
+	 * asks `has_migrated()`, which is what calls this, so reading the names through that class
+	 * would be circular. `tests/render-test.php` asserts these two strings against
+	 * `Lichtbild_Post_Types::GALLERY` and `::ALBUM`, because a literal that drifts from the
+	 * constant it copies would make this answer false on a site full of galleries -- which is
+	 * the failure it exists to prevent, arriving by another route.
+	 *
+	 * @return bool True when the site holds galleries or albums under Lichtbild's own types.
+	 */
+	private function has_owned_content() {
+		global $wpdb;
+
+		// COUNT(*) rather than a LIMIT 1 probe, for the reason spelled out in
+		// `has_envira_history()`: a count is unambiguous to real WordPress and to the stub.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- asked only while the schema option is absent, which is once per site; the option it writes IS the cache.
+		$found = $wpdb->get_var(
+			"SELECT COUNT(*) FROM {$wpdb->posts} WHERE post_type IN ( 'lichtbild_gallery', 'lichtbild_album' )"
+		);
+
+		return (int) $found > 0;
 	}
 
 	/**

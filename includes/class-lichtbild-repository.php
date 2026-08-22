@@ -228,12 +228,27 @@ class Lichtbild_Repository {
 	 * *visitor*, and a draft gallery is a legitimate thing for an author to place in a post they
 	 * are also drafting. What stops it reaching the public is the publishing path, which asks.
 	 *
+	 * It IS filtered by capability, which is a different question and was missing entirely: the
+	 * status list above deliberately includes `private`, `draft` and `pending`, so an unfiltered
+	 * listing handed every author the titles of every other author's unpublished galleries.
+	 * `read_post` is the default because that is the picker's real question -- may this person
+	 * see that this exists -- and it maps to `read` for a published post, so placing a
+	 * colleague's published gallery in a post keeps working. The album editor passes
+	 * `edit_post` instead, because album membership republishes a gallery's cover and title
+	 * under the album, which is the same boundary `handle_covers()` already enforces.
+	 *
+	 * @param string $capability Meta capability to require for each listed object.
+	 *
 	 * @return array<int,string> Titles keyed by gallery post ID, ordered by title.
 	 */
-	public function gallery_choices() {
+	public function gallery_choices( $capability = 'read_post' ) {
 		$out = array();
 
 		foreach ( $this->rows( $this->gallery_type ) as $post_id ) {
+			if ( ! current_user_can( $capability, $post_id ) ) {
+				continue;
+			}
+
 			if ( null === $this->gallery( $post_id ) ) {
 				continue;
 			}
@@ -250,12 +265,21 @@ class Lichtbild_Repository {
 	/**
 	 * Lists the albums a picker may offer, titled.
 	 *
+	 * Capability-filtered for the reason given on `gallery_choices()`: the status list includes
+	 * unpublished objects, so an unfiltered listing leaks other authors' titles.
+	 *
+	 * @param string $capability Meta capability to require for each listed object.
+	 *
 	 * @return array<int,string> Titles keyed by album post ID, ordered by title.
 	 */
-	public function album_choices() {
+	public function album_choices( $capability = 'read_post' ) {
 		$out = array();
 
 		foreach ( $this->rows( $this->album_type ) as $post_id ) {
+			if ( ! current_user_can( $capability, $post_id ) ) {
+				continue;
+			}
+
 			if ( null === $this->album( $post_id ) ) {
 				continue;
 			}

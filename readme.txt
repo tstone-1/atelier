@@ -4,7 +4,7 @@ Tags: gallery, photo gallery, image gallery, lightbox, photography
 Requires at least: 6.0
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 26.8.24
+Stable tag: 26.8.25
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -97,6 +97,16 @@ than only in one gallery.
 4. The lightbox, showing the EXIF WordPress already parsed at upload.
 
 == Changelog ==
+
+= 26.8.25 =
+* Fixed: deleting the plugin and installing it again could leave migrated galleries in the
+  database but invisible. They are found again automatically.
+* Fixed: an album could be made to store a gallery its editor had no permission to open, and the
+  gallery and album pickers listed other authors' unpublished items.
+* Fixed: the message shown when a gallery page fails to load was empty, and a failed lightbox
+  load stopped every later image from opening until the page was reloaded.
+* Fixed: tag filter buttons now report which one is selected to screen readers.
+* The migration now warns when a setting it copies alongside the galleries cannot be written.
 
 = 26.8.24 =
 * Renamed to Lichtbild Gallery. The former name was too close to plugins already in this

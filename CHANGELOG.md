@@ -18,6 +18,74 @@ landed before anything was deployed, so the two shipped together as 26.8.4.
 > at the time. Nothing else about those entries was altered: the dates, the counts, the measured
 > numbers and the reasoning are as they were written.
 
+## [26.8.25] - 2026-08-22
+
+Answers an independent read-only review of the whole codebase at `511df7e`. Two blockers, both
+confirmed by measurement rather than by reading, and every warning it raised.
+
+### Fixed
+- **Deleting the plugin and installing it again no longer hides the galleries it kept.**
+  `uninstall.php` removes Lichtbild's options while deliberately retaining the migrated posts and
+  Envira's rollback records — settings are a plugin's to delete, photographs are not. With the
+  schema gone, `Lichtbild_Settings::initialise()` found Envira's retained meta, concluded the site
+  had never migrated, and registered `envira` against rows named `lichtbild_gallery`. Measured on
+  a full copy of the live site: 52 galleries in the table, **0** under the registered type, and
+  the gallery permalink returning a 404 byte-identical to a deliberately bogus slug. It now
+  rebuilds the schema from the rows themselves, before the early return that had made the wrong
+  answer permanent on the first request that asked.
+
+- **Album membership asks about the gallery, not only about the album.** The save guard
+  authorised the album; `collect_items()` then stored any gallery ID the repository could resolve,
+  so somebody who could edit one album could POST another author's private or draft gallery and
+  have the editor render its title and cover thumbnail back to them. `handle_covers()` had checked
+  both all along. The picker, the save and the render of an already-stored member now all ask.
+
+- **The gallery and album pickers are capability-filtered.** They list `private`, `draft` and
+  `pending` objects by design, so an unfiltered listing handed every author the titles of every
+  other author's unpublished galleries. Block pickers require `read_post`, which maps to `read`
+  for a published post; the album editor requires `edit_post`, because album membership
+  republishes a gallery's cover and title.
+
+- **The pagination failure message is no longer empty.** `wp_localize_script()` is given `i18n`
+  and the script read `LichtbildSettings.strings`, so every lookup fell through to `''` — for as
+  long as the message has existed. Neither language errors on that.
+
+- **A failed PhotoSwipe import no longer kills every later click.** The rejected module promise
+  was cached forever while the click handler had already suppressed native navigation, so one
+  transient failure made every image inert until a reload. The cache is cleared on rejection, and
+  a click that cannot open the lightbox follows the link instead.
+
+- **The tag filter announces which tag is applied.** `is-current` is a CSS hook and says nothing
+  to a screen reader; the buttons now carry `aria-pressed`, which the adjacent pagination has
+  exposed as `aria-current` since it was written.
+
+- **`tools/deploy.sh compare` fails when the site changed.** It printed `changed 1` beside the
+  URL and exited **0**, so the release ceremony's verification step could not go red. It now
+  returns non-zero on a changed body, a changed status or a malformed row, and compares the URL
+  sets in both directions — a page that only the *after* capture had was previously invisible.
+
+- **`tools/build-zip.sh` no longer requires `rsync`**, which it has not used since the build
+  became `git archive | tar`. The only surviving mentions explain why it is not used.
+
+### Changed
+- **The migration reports auxiliary writes that fail, and still advances the schema.** The
+  standalone-setting copy and the Yoast carry-over were not read back, so a targeted failure was
+  silent and the success notice claimed a copied-key count that never landed. Both are verified
+  now and reported as **warnings** beside the success message. Deliberately not as errors: by
+  that point the rows have moved, and a site whose schema says otherwise registers `envira` and
+  finds none of them — the state measured above. Losing a Yoast title is a bad day; hiding every
+  gallery is a broken site.
+
+- The `readme.txt` upgrade notice for 26.8.22 was 379 characters against Plugin Check's limit of
+  300, so the archive had been shipping one warning since that release while `AGENTS.md` claimed
+  zero. Trimmed to 284; all four notices measured, not just the newest.
+
+### Added
+- `tests/deploy-compare-test.sh`, six cases, in CI. The first exists so the other five mean
+  something: a gate that refuses two identical captures is as useless as one that refuses nothing.
+- Nine checks and six mutations covering the above; 247 checks and 215 mutations in total, all
+  killed by their predicted check.
+
 ## [26.8.24] - 2026-08-22
 
 Answers the third wordpress.org review round (`R ❗TRM atelier/tstone1/14Aug26/T4`, 2026-08-22),

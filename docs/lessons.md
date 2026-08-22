@@ -1810,3 +1810,101 @@ Everything else held: 238 checks green on all five PHP versions with none skippe
 **set** identical to baseline once the same substitution is applied to it — the instrument that
 distinguishes a check going red from a check quietly ceasing to exist — 209 of 209 mutations
 killed by the predicted check, and the harness restoring every file it edited by digest.
+
+## The third review, and the finding whose recommended fix was worse than the defect
+
+An independent read-only review of the whole codebase at `511df7e`, 2026-08-22. Two blockers,
+seven warnings, three nitpicks, and every one of them real — which is unusual enough to say, and
+is not the interesting part. The interesting part is what happened when they were checked.
+
+**Two findings were traced by the reviewer and decided by execution here.** The review said so
+itself about the first: *"verified by tracing the complete uninstall -> settings initialization ->
+registration/repository state transition; not executed against a live WordPress database."* That
+is an honest confidence statement and it is exactly the invitation to run it. On a full copy of
+the live site: migrate, apply the four `delete_option()` calls `uninstall.php` makes, reload.
+`has_migrated()` answered no, the registered types came back `envira, envira_album`, the 52 rows
+sat under `lichtbild_gallery`, and the gallery permalink returned **36857 bytes titled "Page not
+found" — the same byte count as a deliberately bogus slug.** Before the deletions the same URL
+served 61915 bytes of gallery. A traced finding is an argument; that is a measurement, and it is
+what made the fix obviously worth its risk rather than plausibly worth it.
+
+The same instrument settled `compare` in one command: it printed `changed 1`, listed the URL, and
+exited **0**.
+
+**And then the recommended fix for W3 would have caused the blocker.** The finding is right —
+`migrate()` advanced the schema without reading back the standalone-option copy or the Yoast
+write, so a targeted failure was silent and the success notice reported copied keys that never
+landed. The suggested repair was *"add an error before `set_schema()`"*. Errors in this codebase
+gate the flag: `set_schema()` runs only while `$result['errors']` is empty, and the screen shows
+errors **instead of** the result. So taking that advice literally means a failed Yoast write
+leaves the rows named `lichtbild_gallery` while the schema says unmigrated — which is precisely
+the state measured above, where every gallery is present and unreachable. **Losing a Yoast title
+is a bad day; hiding every gallery is a broken site.**
+
+The fix is a third channel: `$result['warnings']`, verified by readback, rendered beside the
+success notice rather than instead of it. The schema still advances, because by then the rows have
+already moved and the schema is what lets anything find them. What was actually missing was never
+the refusal — it was that the failure arrived as nothing at all.
+
+The general rule, and it is the one this repository keeps relearning from outside reports: **verify
+the fix against the codebase, not only the finding.** A reviewer reads the function; the fix lands
+in a system. Both halves of this review's own advice were sound in isolation.
+
+### Four ways the new tests were nearly worthless, all caught by the harness
+
+None of these was caught by reading. Each is the mutation harness or the check-name count
+refusing to accept a test at face value, which is the whole reason both exist.
+
+**A test whose subject comes from the code under test disappears when that code is mutated.** The
+first draft picked the unauthorised gallery by calling `gallery_choices()` — the very method whose
+capability filter was being tested. Six unrelated mutations then reported `240 checks, baseline
+243`: three checks had **left the report** rather than failed, which reads as "not applicable" and
+is indistinguishable from coverage lapsing. Taking the subject straight from the fixture fixed it.
+
+**`expect()` one level too deep is the same as no `expect()` at all.** Declaring the three
+conditional checks inside `if ( $album_edit_id > 0 )` still let them vanish, because a mutation
+that empties that condition skips the declaration with it. Every other `expect()` in the file sits
+at column 0, and that is not a formatting habit.
+
+**A behaviour change can silently retire an existing mutation.** `E5` had killed *an unmigrated
+site refuses to save* for as long as it existed; after the uninstall fix it **SURVIVED**. Nothing
+was wrong with the mutation. The check expressed "unmigrated" as a *deleted* schema option, and a
+deleted schema option now means "uninstalled and reinstalled" and is repaired back to migrated —
+so the post-type guard did all the refusing and the guard `E5` removes was never exercised. The
+comment directly above that check already warned about this exact collapse, from the other
+direction. Two setups had to say `schema = 1` explicitly. **A fix that changes what a state means
+invalidates every test that expressed that state by proxy**, and the only thing that reported it
+was a mutation surviving.
+
+**Two more mutations went `BROKEN` because their `find` text had moved** — `SEO1` and `B86`, both
+anchored on lines this change edited. That is the harness's honesty rule paying off: a target that
+matches nothing is `BROKEN`, never a pass, so re-anchoring is forced rather than optional.
+
+### Two instruments that lie in the same direction
+
+**Plugin Check derives the expected text domain from the DIRECTORY NAME.** Checking the shipped
+archive extracted to `zzcheck-lichtbild-gallery/` reported **24 `TextDomainMismatch` errors** that
+say nothing whatever about the plugin. The working tree is symlinked into the local WordPress
+under the real slug, so checking the *shipped bytes* means parking that symlink and extracting the
+zip in its place. Otherwise the thing measured is the tree, not the release.
+
+**And the claim it was supposed to support had gone stale in the most instructive way.**
+`AGENTS.md` said Plugin Check reported 0 errors and 0 warnings. It reported one, and had since
+26.8.22: the `upgrade_notice_limit` rule caps a `readme.txt` upgrade notice at 300 characters, the
+26.8.22 notice was 379, and **that notice was added by 26.8.22** — the claim was written true and
+falsified by the very release it was written for. Measure all four notices, not the newest: only
+one was over, and a spot check of the latest would have found nothing.
+
+### The near-miss, which cost nothing and was the largest risk of the day
+
+Backing up a gitignored file before editing it produced `tools/deploy.env.bak-before-rename`,
+which `.gitignore` did **not** cover — the rule was the exact path, `tools/deploy.env`, not a
+glob. That file holds the deployment host and account, in a public repository whose entire *Site
+access* section exists to keep exactly those two strings out of it, and `git add -A` would have
+committed it. The rule is now `tools/deploy.env*`, with a control asserting `tools/deploy.sh` is
+still not ignored, because a glob that swallows the deploy script is the other kind of mistake.
+
+**A gitignore protects a path, and a backup is a new path.** The habit that closes it is the one
+already written down for values rather than filenames: after any operation that copies a
+credentials-adjacent file, run `git status --porcelain` and read it, rather than trusting that the
+rule which covered the original covers its copy.

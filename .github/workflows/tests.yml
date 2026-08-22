@@ -102,6 +102,13 @@ jobs:
         # no network, no deployment target.
         run: bash tests/deploy-audit-test.sh
 
+      - name: Check the deploy script's before/after comparison
+        # The third tooling test, and the one whose absence was found by review rather than by
+        # failure: `compare` is the ceremony's verification step and it exited 0 while printing
+        # `changed 1`. Six cases, the first of which exists so the other five mean something --
+        # a gate that refuses two identical captures is as useless as one that refuses nothing.
+        run: bash tests/deploy-compare-test.sh
+
   mutations:
     name: mutations (PHP 8.2)
     runs-on: ubuntu-latest

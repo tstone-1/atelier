@@ -3,7 +3,7 @@
  * Plugin Name: Lichtbild Gallery
  * Plugin URI:  https://github.com/tstone-1/lichtbild-gallery
  * Description: Responsive galleries for WordPress. Reads existing Envira Gallery data in place, so galleries keep working without migration or a licence.
- * Version:     26.8.24
+ * Version:     26.8.25
  * Author:      tstone-1
  * License:     GPL-2.0-or-later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -12,11 +12,14 @@
  * Requires at least: 6.0
  * Requires PHP: 8.1
  *
- * Lichtbild is a drop-in replacement for Envira Gallery Pro. It does not own its data:
- * galleries live in the `envira` post type under the `_eg_gallery_data` post meta
- * exactly as Envira wrote them, and Lichtbild renders from that. Deactivating Lichtbild and
- * reactivating Envira is therefore lossless in both directions, which is what makes an
- * A/B comparison on a live site safe.
+ * Lichtbild replaces Envira Gallery Pro, and which storage it reads depends on where the site
+ * is. Before the migration it owns nothing: galleries live in the `envira` post type under the
+ * `_eg_gallery_data` post meta exactly as Envira wrote them, and Lichtbild renders from that,
+ * so deactivating Lichtbild and reactivating Envira is lossless in both directions and an A/B
+ * comparison on a live site is safe. After the migration the galleries are `lichtbild_gallery`
+ * posts carrying `_lichtbild_gallery` records that Lichtbild alone reads and writes, and a site
+ * that never had Envira starts there. Envira's own records are never destroyed either way,
+ * which is what keeps the rollback real rather than a reconstruction.
  *
  * NOT AFFILIATED WITH, ENDORSED BY, OR CONNECTED TO ENVIRA GALLERY OR AWESOME MOTIVE.
  * "Envira Gallery" is their product and their trademark. Lichtbild is independent, contains
@@ -58,7 +61,7 @@ defined( 'ABSPATH' ) || exit;
  * on the local WordPress before relying on it.
  */
 
-define( 'LICHTBILD_VERSION', '26.8.24' );
+define( 'LICHTBILD_VERSION', '26.8.25' );
 define( 'LICHTBILD_FILE', __FILE__ );
 define( 'LICHTBILD_DIR', plugin_dir_path( __FILE__ ) );
 define( 'LICHTBILD_URL', plugin_dir_url( __FILE__ ) );

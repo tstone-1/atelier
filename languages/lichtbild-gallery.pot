@@ -2,14 +2,14 @@
 # This file is distributed under the GPL-2.0-or-later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Lichtbild Gallery 26.8.24\n"
+"Project-Id-Version: Lichtbild Gallery 26.8.25\n"
 "Report-Msgid-Bugs-To: https://github.com/tstone-1/lichtbild-gallery/issues\n"
 "Last-Translator: tstone-1\n"
 "Language-Team: tstone-1\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-08-22T12:56:45+00:00\n"
+"POT-Creation-Date: 2026-08-22T14:19:55+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: lichtbild-gallery\n"
@@ -37,12 +37,12 @@ msgstr ""
 
 #: includes/class-lichtbild-ajax.php:227
 #: includes/class-lichtbild-ajax.php:235
-#: includes/class-lichtbild-album-editor.php:634
+#: includes/class-lichtbild-album-editor.php:658
 msgid "Gallery not found."
 msgstr ""
 
 #: includes/class-lichtbild-album-editor.php:92
-#: includes/class-lichtbild-album-editor.php:697
+#: includes/class-lichtbild-album-editor.php:721
 #: includes/class-lichtbild-post-types.php:208
 msgid "Galleries"
 msgstr ""
@@ -52,7 +52,7 @@ msgid "Album Settings"
 msgstr ""
 
 #: includes/class-lichtbild-album-editor.php:110
-#: includes/class-lichtbild-album-editor.php:698
+#: includes/class-lichtbild-album-editor.php:722
 #: includes/class-lichtbild-editor.php:143
 #: includes/class-lichtbild-editor.php:878
 msgid "Shortcode"
@@ -82,82 +82,82 @@ msgstr ""
 msgid "This album has no galleries yet."
 msgstr ""
 
-#: includes/class-lichtbild-album-editor.php:222
+#: includes/class-lichtbild-album-editor.php:226
 msgid "There are no galleries to add yet."
 msgstr ""
 
-#: includes/class-lichtbild-album-editor.php:261
+#: includes/class-lichtbild-album-editor.php:271
 msgid "No cover"
 msgstr ""
 
 #. translators: %d: post ID that is no longer a gallery.
-#: includes/class-lichtbild-album-editor.php:277
+#: includes/class-lichtbild-album-editor.php:287
 #, php-format
 msgid "Gallery %d is missing and will be removed when you save."
 msgstr ""
 
-#: includes/class-lichtbild-album-editor.php:289
-#: includes/class-lichtbild-album-editor.php:398
+#: includes/class-lichtbild-album-editor.php:299
+#: includes/class-lichtbild-album-editor.php:408
 msgid "Cover"
 msgstr ""
 
-#: includes/class-lichtbild-album-editor.php:294
-#: includes/class-lichtbild-album-editor.php:402
+#: includes/class-lichtbild-album-editor.php:304
+#: includes/class-lichtbild-album-editor.php:412
 #: includes/class-lichtbild-editor.php:247
 #: includes/class-lichtbild-editor.php:309
 msgid "Caption"
 msgstr ""
 
-#: includes/class-lichtbild-album-editor.php:301
-#: includes/class-lichtbild-album-editor.php:406
+#: includes/class-lichtbild-album-editor.php:311
+#: includes/class-lichtbild-album-editor.php:416
 #: includes/class-lichtbild-editor.php:280
 #: includes/class-lichtbild-editor.php:317
 msgid "Remove"
 msgstr ""
 
-#: includes/class-lichtbild-album-editor.php:319
-#: includes/class-lichtbild-album-editor.php:400
-#: includes/class-lichtbild-album-editor.php:680
+#: includes/class-lichtbild-album-editor.php:329
+#: includes/class-lichtbild-album-editor.php:410
+#: includes/class-lichtbild-album-editor.php:704
 msgid "First image in the gallery"
 msgstr ""
 
 #. translators: %d: attachment ID.
-#: includes/class-lichtbild-album-editor.php:354
+#: includes/class-lichtbild-album-editor.php:364
 #, php-format
 msgid "Image %d"
 msgstr ""
 
-#: includes/class-lichtbild-album-editor.php:434
+#: includes/class-lichtbild-album-editor.php:444
 #: includes/class-lichtbild-editor.php:383
 msgid "Columns"
 msgstr ""
 
-#: includes/class-lichtbild-album-editor.php:439
+#: includes/class-lichtbild-album-editor.php:449
 msgid "How many covers sit side by side."
 msgstr ""
 
-#: includes/class-lichtbild-album-editor.php:442
+#: includes/class-lichtbild-album-editor.php:452
 msgid "Under each cover"
 msgstr ""
 
-#: includes/class-lichtbild-album-editor.php:445
+#: includes/class-lichtbild-album-editor.php:455
 msgid "Show the gallery title"
 msgstr ""
 
-#: includes/class-lichtbild-album-editor.php:448
+#: includes/class-lichtbild-album-editor.php:458
 msgid "Show how many images it holds"
 msgstr ""
 
-#: includes/class-lichtbild-album-editor.php:464
+#: includes/class-lichtbild-album-editor.php:474
 #: includes/class-lichtbild-editor.php:649
 msgid "Paste this into a post or page:"
 msgstr ""
 
-#: includes/class-lichtbild-album-editor.php:468
+#: includes/class-lichtbild-album-editor.php:478
 msgid "The album also has its own page, which needs no shortcode at all."
 msgstr ""
 
-#: includes/class-lichtbild-album-editor.php:626
+#: includes/class-lichtbild-album-editor.php:650
 msgid "Not allowed."
 msgstr ""
 
@@ -600,7 +600,7 @@ msgid "Roll back to put everything on Envira's types, then migrate again. Nothin
 msgstr ""
 
 #: includes/class-lichtbild-migration-screen.php:248
-#: includes/class-lichtbild-migration-screen.php:437
+#: includes/class-lichtbild-migration-screen.php:464
 msgid "Roll back to Envira's storage"
 msgstr ""
 
@@ -616,109 +616,117 @@ msgstr ""
 msgid "Migrated. %1$d galleries, %2$d albums and %3$d image tags now belong to Lichtbild. %4$d gallery records and %5$d album records were converted, and %6$d Yoast SEO settings were carried onto the new names."
 msgstr ""
 
-#: includes/class-lichtbild-migration-screen.php:332
+#: includes/class-lichtbild-migration-screen.php:359
 msgid "Galleries are still stored the way Envira wrote them. Lichtbild reads them in place, so nothing needs to change — but while that is true, uninstalling Envira would take the gallery, album and tag URLs off the site along with it."
 msgstr ""
 
-#: includes/class-lichtbild-migration-screen.php:335
+#: includes/class-lichtbild-migration-screen.php:362
 msgid "Migrating moves the galleries onto Lichtbild's own post types. What it does:"
 msgstr ""
 
 #. translators: 1: galleries, 2: albums, 3: image tags.
-#: includes/class-lichtbild-migration-screen.php:342
+#: includes/class-lichtbild-migration-screen.php:369
 #, php-format
 msgid "Renames %1$d galleries, %2$d albums and %3$d image tags to Lichtbild's types, in place. Post IDs do not change, so every [envira-gallery id=\"…\"] shortcode keeps working."
 msgstr ""
 
 #. translators: 1: convertible galleries, 2: Envira's defaults record count.
-#: includes/class-lichtbild-migration-screen.php:353
+#: includes/class-lichtbild-migration-screen.php:380
 #, php-format
 msgid "Converts %1$d gallery records into Lichtbild's own format. %2$d are Envira's stored defaults rather than galleries and are skipped."
 msgstr ""
 
-#: includes/class-lichtbild-migration-screen.php:359
+#: includes/class-lichtbild-migration-screen.php:386
 msgid "Keeps every URL exactly as it is. /envira/, /envira_album/ and /envira-tag/ continue to work and are still canonical."
 msgstr ""
 
-#: includes/class-lichtbild-migration-screen.php:360
+#: includes/class-lichtbild-migration-screen.php:387
 msgid "Leaves Envira's own records untouched, so this can be reversed from this screen."
 msgstr ""
 
 #. translators: %d: number of galleries with no readable record.
-#: includes/class-lichtbild-migration-screen.php:368
+#: includes/class-lichtbild-migration-screen.php:395
 #, php-format
 msgid "%d gallery has no readable record. It will be renamed but not converted, and will render as empty."
 msgid_plural "%d galleries have no readable record. They will be renamed but not converted, and will render as empty."
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/class-lichtbild-migration-screen.php:378
+#: includes/class-lichtbild-migration-screen.php:405
 msgid "Deactivate Envira Gallery first."
 msgstr ""
 
-#: includes/class-lichtbild-migration-screen.php:379
+#: includes/class-lichtbild-migration-screen.php:406
 msgid "Migrating renames the rows out from under it, which would leave its screens empty and its shortcodes rendering nothing."
 msgstr ""
 
-#: includes/class-lichtbild-migration-screen.php:391
+#: includes/class-lichtbild-migration-screen.php:418
 msgid "I have a current backup of the database."
 msgstr ""
 
-#: includes/class-lichtbild-migration-screen.php:397
+#: includes/class-lichtbild-migration-screen.php:424
 msgid "Migrate galleries to Lichtbild"
 msgstr ""
 
-#: includes/class-lichtbild-migration-screen.php:418
+#: includes/class-lichtbild-migration-screen.php:445
 msgid "Galleries belong to Lichtbild."
 msgstr ""
 
 #. translators: 1: galleries, 2: albums, 3: image tags.
-#: includes/class-lichtbild-migration-screen.php:422
+#: includes/class-lichtbild-migration-screen.php:449
 #, php-format
 msgid "%1$d galleries, %2$d albums and %3$d image tags are stored under Lichtbild's own types. Envira Gallery can be uninstalled without taking any URL off the site."
 msgstr ""
 
-#: includes/class-lichtbild-migration-screen.php:431
+#: includes/class-lichtbild-migration-screen.php:458
 msgid "Envira's original records were left in place, so rolling back restores exactly what was there rather than reconstructing it."
 msgstr ""
 
-#: includes/class-lichtbild-migration.php:427
+#: includes/class-lichtbild-migration.php:431
 msgid "The galleries have already been migrated."
 msgstr ""
 
-#: includes/class-lichtbild-migration.php:436
+#: includes/class-lichtbild-migration.php:440
 msgid "Deactivate Envira Gallery before migrating."
 msgstr ""
 
 #. translators: %d: gallery post ID.
-#: includes/class-lichtbild-migration.php:448
+#: includes/class-lichtbild-migration.php:452
 #, php-format
 msgid "Gallery %d could not be converted, so the migration was stopped before anything was renamed."
 msgstr ""
 
 #. translators: %d: album post ID.
-#: includes/class-lichtbild-migration.php:469
+#: includes/class-lichtbild-migration.php:473
 #, php-format
 msgid "Album %d could not be converted, so the migration was stopped before anything was renamed."
 msgstr ""
 
+#: includes/class-lichtbild-migration.php:525
+msgid "The setting that decides whether a gallery renders on its own permalink could not be copied across. Check Settings before uninstalling Envira Gallery, or those pages may come out blank."
+msgstr ""
+
+#: includes/class-lichtbild-migration.php:644
+msgid "The Yoast SEO titles and canonical settings for the old post types could not be carried onto the new ones. Check Yoast's Content Types settings; until then those pages fall back to Yoast's defaults."
+msgstr ""
+
 #. translators: %d: schema version that could not be stored.
-#: includes/class-lichtbild-migration.php:647
+#: includes/class-lichtbild-migration.php:685
 #, php-format
 msgid "The rows were renamed but the schema version could not be set to %d. The site is still reading the old post types; do not deactivate anything until this is resolved."
 msgstr ""
 
 #. translators: 1: value being renamed, 2: table name.
-#: includes/class-lichtbild-migration.php:698
+#: includes/class-lichtbild-migration.php:736
 #, php-format
 msgid "Renaming %1$s in %2$s failed. Roll back from this screen and try again."
 msgstr ""
 
-#: includes/class-lichtbild-migration.php:740
+#: includes/class-lichtbild-migration.php:778
 msgid "This site has no Envira records, so there is nothing to roll back to."
 msgstr ""
 
-#: includes/class-lichtbild-migration.php:749
+#: includes/class-lichtbild-migration.php:787
 msgid "The galleries are not migrated, so there is nothing to roll back."
 msgstr ""
 
@@ -755,9 +763,9 @@ msgid "No galleries found."
 msgstr ""
 
 #: includes/class-lichtbild-post-types.php:216
-#: includes/class-lichtbild-settings.php:361
-#: includes/class-lichtbild-settings.php:362
-#: includes/class-lichtbild-settings.php:411
+#: includes/class-lichtbild-settings.php:418
+#: includes/class-lichtbild-settings.php:419
+#: includes/class-lichtbild-settings.php:468
 msgid "Lichtbild"
 msgstr ""
 
@@ -804,7 +812,7 @@ msgid "Filter by tag"
 msgstr ""
 
 #. translators: %d: number of images in a gallery.
-#: includes/class-lichtbild-renderer.php:437
+#: includes/class-lichtbild-renderer.php:443
 #, php-format
 msgid "%d image"
 msgid_plural "%d images"
@@ -812,70 +820,70 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %d: gallery post ID.
-#: includes/class-lichtbild-repository.php:244
+#: includes/class-lichtbild-repository.php:259
 #, php-format
 msgid "Gallery %d"
 msgstr ""
 
 #. translators: %d: album post ID.
-#: includes/class-lichtbild-repository.php:266
+#: includes/class-lichtbild-repository.php:290
 #, php-format
 msgid "Album %d"
 msgstr ""
 
-#: includes/class-lichtbild-settings.php:381
+#: includes/class-lichtbild-settings.php:438
 msgid "Settings"
 msgstr ""
 
 #. translators: %d: number of galleries found.
-#: includes/class-lichtbild-settings.php:417
+#: includes/class-lichtbild-settings.php:474
 #, php-format
 msgid "Reading %d gallery."
 msgid_plural "Reading %d galleries."
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/class-lichtbild-settings.php:422
+#: includes/class-lichtbild-settings.php:479
 msgid "Envira Gallery is currently active."
 msgstr ""
 
-#: includes/class-lichtbild-settings.php:424
+#: includes/class-lichtbild-settings.php:481
 msgid "Envira Gallery is not active."
 msgstr ""
 
-#: includes/class-lichtbild-settings.php:433
+#: includes/class-lichtbild-settings.php:490
 msgid "Handle Envira shortcodes"
 msgstr ""
 
-#: includes/class-lichtbild-settings.php:439
+#: includes/class-lichtbild-settings.php:496
 msgid "Automatically — only when Envira Gallery is deactivated"
 msgstr ""
 
-#: includes/class-lichtbild-settings.php:444
+#: includes/class-lichtbild-settings.php:501
 msgid "Always — render every gallery with Lichtbild, even if Envira is active"
 msgstr ""
 
-#: includes/class-lichtbild-settings.php:449
+#: includes/class-lichtbild-settings.php:506
 msgid "Never — only the [lichtbild-gallery] shortcode uses Lichtbild"
 msgstr ""
 
-#: includes/class-lichtbild-settings.php:454
+#: includes/class-lichtbild-settings.php:511
 msgid "This setting no longer applies. The galleries have been migrated to Lichtbild's own storage, so Envira cannot read them whatever it is set to, and Lichtbild handles both shortcodes."
 msgstr ""
 
-#: includes/class-lichtbild-settings.php:456
+#: includes/class-lichtbild-settings.php:513
 msgid "Lichtbild reads the same gallery records Envira wrote and never modifies them, so switching between the two is lossless in both directions."
 msgstr ""
 
-#: includes/class-lichtbild-settings.php:472
+#: includes/class-lichtbild-settings.php:529
 msgid "Shortcodes"
 msgstr ""
 
-#: includes/class-lichtbild-settings.php:475
+#: includes/class-lichtbild-settings.php:532
 msgid "renders a gallery, and always uses Lichtbild regardless of the setting above."
 msgstr ""
 
-#: includes/class-lichtbild-settings.php:479
+#: includes/class-lichtbild-settings.php:536
 msgid "renders an album as a grid of gallery covers."
 msgstr ""
 

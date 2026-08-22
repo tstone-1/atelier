@@ -36,6 +36,16 @@
 		if ( ! photoSwipePromise ) {
 			photoSwipePromise = import( settings.photoswipe ).then( function ( module ) {
 				return module.default;
+			} ).catch( function ( error ) {
+				// Clear the cache so the NEXT click tries again. A rejected promise is a
+				// settled promise: caching it turned one transient module-load failure -- a
+				// dropped connection, a proxy hiccup -- into a permanently dead lightbox,
+				// because every later click reused the same rejection. And the click handler
+				// has already called `preventDefault()`, so the failure presented as an image
+				// that simply does nothing, forever, with no way back short of a reload.
+				photoSwipePromise = null;
+
+				throw error;
 			} );
 		}
 
@@ -248,6 +258,12 @@
 			}
 
 			self.launch( PhotoSwipe, slides, index );
+		} ).catch( function () {
+			// The click was cancelled on the assumption that a lightbox would open. It did not,
+			// so give the browser back what it would have done: follow the link to the image.
+			// Silent failure is the one outcome a visitor cannot work around, and this is the
+			// only path where the plugin has already taken the default action away.
+			window.location.href = link.href;
 		} );
 	};
 
@@ -712,6 +728,12 @@
 					return;
 				}
 			}
+		} ).catch( function () {
+			// Nothing to fall back to here -- no click was intercepted, the page is simply
+			// loaded at a deep link. The grid is already rendered and the linked image is in
+			// it, so leaving the page as it stands is the correct outcome; what matters is that
+			// the rejection is consumed, and that `loadPhotoSwipe()` has cleared its cache so a
+			// click afterwards can still succeed.
 		} );
 	};
 
@@ -838,7 +860,11 @@
 			self.activeTag = slug;
 
 			Array.prototype.forEach.call( bar.querySelectorAll( '.lichtbild-tag' ), function ( tag ) {
+				// The class and the attribute move together, or the announced state freezes at
+				// whatever the server rendered while the visible state keeps changing -- which
+				// is worse than never announcing it, because it is confidently wrong.
 				tag.classList.toggle( 'is-current', tag === button );
+				tag.setAttribute( 'aria-pressed', tag === button ? 'true' : 'false' );
 			} );
 
 			if ( self.config.pagination ) {

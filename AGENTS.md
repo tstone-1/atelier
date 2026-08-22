@@ -807,6 +807,21 @@ gallery.** The fresh-install path was written in 26.8.18 and is covered by the s
 stripped local WordPress, but that is the first thing every stranger does and it has only ever
 been exercised by a machine.
 
+## What the third review found (2026-08-22)
+
+An independent read-only review of the whole codebase; two blockers, seven warnings, three
+nitpicks, all real and all addressed in 26.8.25. Full text in [`docs/lessons.md`](docs/lessons.md).
+
+- *The third review, and the finding whose recommended fix was worse than the defect* — the
+  uninstall blocker was traced by the reviewer and **measured** here, where the permalink came
+  back byte-identical to a deliberately bogus slug; and the recommended repair for the migration
+  finding would have produced that same state, because errors gate the schema flag and a site
+  whose schema says unmigrated cannot find its own rows. Holds the four ways the new tests were
+  nearly worthless — a subject taken from the code under test, an `expect()` one level too deep,
+  a behaviour change that silently retired an existing mutation, two more that went `BROKEN` —
+  plus Plugin Check reading the text domain from the directory name, and the gitignore near-miss
+  that would have published the deployment host.
+
 ## Conventions
 
 - CalVer `YY.M.MICRO`, matching `screenpick`/`tpdf`. Version lives in the `lichtbild-gallery.php`

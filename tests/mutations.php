@@ -51,6 +51,7 @@ $album_editor = 'includes/class-lichtbild-album-editor.php';
 $metabox      = 'includes/class-lichtbild-metabox-editor.php';
 $screen       = 'includes/class-lichtbild-migration-screen.php';
 $block        = 'includes/class-lichtbild-block.php';
+$settings_php = 'includes/class-lichtbild-settings.php';
 
 /**
  * The mutations, each with the check it is predicted to kill.
@@ -700,7 +701,8 @@ $mutations = array(
 	array(
 		'id'      => 'SEO1',
 		'file'    => $migration,
-		'find'    => "\t\t\t\$result['seo_keys'] = \$this->carry_seo_settings();",
+		// Re-anchored in 26.8.25: the call now hands `carry_seo_settings()` the warnings array.
+		'find'    => "\t\t\t\$result['seo_keys'] = \$this->carry_seo_settings( \$result['warnings'] );",
 		'replace' => "\t\t\t\$result['seo_keys'] = 0;",
 		'expect'  => 'the migration carries seo settings onto the new names',
 		'why'     => 'a post type is a public identifier and other plugins have written it down',
@@ -1586,8 +1588,10 @@ $mutations = array(
 	array(
 		'id'      => 'B86',
 		'file'    => $migration,
-		'find'    => "\t\t\tupdate_option(\n\t\t\t\tLichtbild_Settings::OPTION_STANDALONE,\n\t\t\t\t(int) (bool) get_option( Lichtbild_Settings::OPTION_STANDALONE_ENVIRA, false )\n\t\t\t);",
-		'replace' => "\t\t\tupdate_option(\n\t\t\t\tLichtbild_Settings::OPTION_STANDALONE,\n\t\t\t\t1\n\t\t\t);",
+		// Re-anchored in 26.8.25: the value is read into a variable first so the write can be
+		// verified against it, so the mutation now targets that read rather than the call.
+		'find'    => "\t\t\t\$standalone = (int) (bool) get_option( Lichtbild_Settings::OPTION_STANDALONE_ENVIRA, false );",
+		'replace' => "\t\t\t\$standalone = 1;",
 		'expect'  => 'migration takes ownership of the standalone setting',
 		'why'     => 'the choice has to outlive the plugin that recorded it, whichever way it was set',
 	),
@@ -1862,6 +1866,64 @@ $mutations = array(
 		'expect'  => 'the picker offers the albums the reader can read',
 		'why'     => 'the album twin of AE11: envira keeps its album defaults in an album too',
 	),
+	// The lifecycle findings from the 2026-08-22 review, and the reason they are three mutations
+	// rather than one: the same rule -- ask before you resolve, list or draw somebody else's post
+	// -- is enforced at three separate boundaries, and a fix applied to only one of them leaves
+	// the other two open while every check that names the rule still passes.
+	array(
+		'id'      => 'LC1',
+		'file'    => $settings_php,
+		'find'    => "\t\tif ( null === \$schema && \$this->has_owned_content() ) {",
+		'replace' => "\t\tif ( false && null === \$schema && \$this->has_owned_content() ) {",
+		'expect'  => 'reinstalling after uninstall finds the content it kept',
+		'why'     => 'uninstall keeps the galleries and deletes the options that find them',
+	),
+	array(
+		'id'      => 'CAP1',
+		'file'    => $album_editor,
+		'find'    => "\t\t\tif ( \$gallery_id > 0 && ! current_user_can( 'edit_post', \$gallery_id ) ) {",
+		'replace' => "\t\t\tif ( false && \$gallery_id > 0 && ! current_user_can( 'edit_post', \$gallery_id ) ) {",
+		'expect'  => 'a gallery the person cannot edit is not stored as a member',
+		'why'     => 'the save guard authorises the album and says nothing about its members',
+	),
+	array(
+		'id'      => 'CAP2',
+		'file'    => $repository,
+		'find'    => "\t\t\tif ( ! current_user_can( \$capability, \$post_id ) ) {\n\t\t\t\tcontinue;\n\t\t\t}\n\n\t\t\tif ( null === \$this->gallery( \$post_id ) ) {",
+		'replace' => "\t\t\tif ( null === \$this->gallery( \$post_id ) ) {",
+		'expect'  => 'the gallery picker omits what the person cannot edit',
+		'why'     => 'the picker lists private, draft and pending objects by design',
+	),
+	array(
+		'id'      => 'CAP3',
+		'file'    => $album_editor,
+		'find'    => "\t\t\$gallery    = \$gallery_id > 0 && current_user_can( 'edit_post', \$gallery_id )\n\t\t\t? \$this->repository->gallery( \$gallery_id )\n\t\t\t: null;",
+		'replace' => "\t\t\$gallery    = \$gallery_id > 0 ? \$this->repository->gallery( \$gallery_id ) : null;",
+		'expect'  => 'a stored member the person cannot edit is not drawn',
+		'why'     => 'a member stored before the rule existed still names the gallery',
+	),
+
+	// The auxiliary writes the migration makes beside the rows. `update_option()` answers false
+	// both for "the write failed" and for "the value was already that", so only a readback can
+	// tell them apart -- the same reasoning `set_schema()` carries, applied to the two copies
+	// that did not have it.
+	array(
+		'id'      => 'AUX1',
+		'file'    => $migration,
+		'find'    => "\t\t\tif ( (int) get_option( Lichtbild_Settings::OPTION_STANDALONE, -1 ) !== \$standalone ) {",
+		'replace' => "\t\t\tif ( false ) {",
+		'expect'  => 'a failed standalone copy is reported and the galleries stay findable',
+		'why'     => 'a lost permalink setting blanks every gallery page once Envira is removed',
+	),
+	array(
+		'id'      => 'AUX2',
+		'file'    => $migration,
+		'find'    => "\t\t\tif ( ! array_key_exists( \$key, \$stored ) || \$stored[ \$key ] !== \$value ) {",
+		'replace' => "\t\t\tif ( false ) {",
+		'expect'  => 'a failed seo copy is reported and claims no copied keys',
+		'why'     => 'the success notice would report keys copied that never landed',
+	),
+
 );
 
 /**

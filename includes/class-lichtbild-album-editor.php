@@ -216,7 +216,11 @@ class Lichtbild_Album_Editor extends Lichtbild_Metabox_Editor {
 	 * @return void
 	 */
 	private function render_add_control() {
-		$galleries = $this->repository->gallery_choices();
+		// `edit_post`, not the picker default: putting a gallery in an album republishes its
+		// title and cover under that album, which is the same boundary `handle_covers()`
+		// enforces on the AJAX side. `collect_items()` re-checks it, because a crafted POST
+		// never sees this list.
+		$galleries = $this->repository->gallery_choices( 'edit_post' );
 
 		if ( empty( $galleries ) ) {
 			echo '<span class="description">' . esc_html__( 'There are no galleries to add yet.', 'lichtbild-gallery' ) . '</span>';
@@ -246,7 +250,13 @@ class Lichtbild_Album_Editor extends Lichtbild_Metabox_Editor {
 		$cover_id   = isset( $item['cover_id'] ) ? (int) $item['cover_id'] : 0;
 		$caption    = isset( $item['caption'] ) ? (string) $item['caption'] : '';
 		$name       = 'lichtbild_album_items[' . $key . ']';
-		$gallery    = $gallery_id > 0 ? $this->repository->gallery( $gallery_id ) : null;
+		// A member stored before 26.8.25 can still name a gallery this person cannot edit, and
+		// the save path dropping it is no help until the album is next saved. Resolving nothing
+		// renders the row as an empty placeholder, which is what an unresolvable member already
+		// looks like -- so the leak closes without inventing a new state for the screen.
+		$gallery    = $gallery_id > 0 && current_user_can( 'edit_post', $gallery_id )
+			? $this->repository->gallery( $gallery_id )
+			: null;
 		$title      = null === $gallery ? '' : $gallery->title();
 		$thumb      = $this->cover_thumb( $gallery, $cover_id );
 		$edit       = get_edit_post_link( $gallery_id );
@@ -536,7 +546,21 @@ class Lichtbild_Album_Editor extends Lichtbild_Metabox_Editor {
 
 		foreach ( $this->ordered_rows( $submitted, $order ) as $row ) {
 			$gallery_id = isset( $row['id'] ) ? (int) $row['id'] : 0;
-			$gallery    = $gallery_id > 0 ? $this->repository->gallery( $gallery_id ) : null;
+
+			// The save guard authorised the ALBUM. It says nothing about the galleries the
+			// request names, and until 26.8.25 nothing else asked either: any id the repository
+			// could resolve was stored, so somebody who could edit one album could POST another
+			// author's private or draft gallery and have the editor render its title and cover
+			// thumbnails back to them. `handle_covers()` had the rule right all along -- it
+			// checks the album AND the gallery -- and this path simply did not share it.
+			//
+			// Before resolving the row, because `gallery()` reads the record of a post this
+			// person may have no business knowing exists.
+			if ( $gallery_id > 0 && ! current_user_can( 'edit_post', $gallery_id ) ) {
+				continue;
+			}
+
+			$gallery = $gallery_id > 0 ? $this->repository->gallery( $gallery_id ) : null;
 
 			// An album is an ordered set of galleries. A row naming a post that is not one is not
 			// a member with a problem; it is not a member.
