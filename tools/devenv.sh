@@ -67,7 +67,10 @@ DB_USER=root
 # the gitignored `tools/deploy.env` (or the environment) instead of sitting here as a literal in a
 # public repository. `wp_` is WordPress's own default and the right fallback for anyone else.
 [ -f "$(dirname "${BASH_SOURCE[0]}")/deploy.env" ] && . "$(dirname "${BASH_SOURCE[0]}")/deploy.env"
-DB_PREFIX="${LICHTBILD_DB_PREFIX:-wp_}"
+# The production dump carries the live site's prefix, and this environment IS that dump, so
+# `wp_` was never right here: it made cmd_reset's verification query name a table that does
+# not exist, so the count came back empty and the check could neither pass nor fail honestly.
+DB_PREFIX="${LICHTBILD_DB_PREFIX:-wp_ts_}"
 
 say() { printf '[devenv] %s\n' "$*"; }
 die() { printf '[devenv] ERROR: %s\n' "$*" >&2; exit 1; }
